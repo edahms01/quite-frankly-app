@@ -13,11 +13,12 @@ Native-feeling iOS/Android mobile app for the *Quite Frankly* podcast (quitefran
 - **Screen/data reference**: `quite-frankly-app-component-map.md` (every screen's purpose, links, data source, plus the sheet's read/write mechanics)
 - **Frontend prep**: `quite-frankly-app-frontend-prep.md` (design tokens, nav architecture)
 - **Theme file**: `theme.js` — drop into repo, import rather than hardcoding colors/spacing
+- **Header logo asset**: `quite-frankly-logo-final.png` — the actual composited "QUITE FRANKLY" wordmark + jester, real PNG (1720×404, transparent bg) matching exactly what's base64-embedded in `Home.dc.html`'s header. Use this file, not a recreation — display at a fixed height with the header row's `align-items: flex-end` (see plan doc, "Header wordmark" section, for why: the jester's hat fills the top half of the image and the letters fill the bottom half, so bottom-aligning against the full image is what lines the header's account-avatar circle up with the letters). **If any other file in this folder starts with `quite-frankly-combined-logo` or `quite-frankly-letters/jester-cutout`, it's an earlier intermediate version — superseded, don't use it.**
 
 ---
 
 ## Tech stack
-- **React Native.** Expo-with-dev-client vs. bare workflow: not yet decided — call it based on what's cleanest for `react-native-track-player` v4's native module needs.
+- **React Native**, via **Expo with dev client** (decided in Phase 1) — `react-native-track-player` v4 needs native linking regardless of Expo vs. bare, so Expo+dev-client was chosen for the added `expo-font` and EAS Build path (relevant to Phase 8) at no real cost.
 - **Audio**: `react-native-track-player`, pinned to **v4** (Apache-2.0, free). v5 went commercially licensed — do not upgrade without checking that license first.
 - **Navigation**: bottom tab navigator + per-tab stacks + one modal screen (see below).
 - **Styling**: `theme.js` — RN StyleSheet objects, not CSS. Shadows are platform-specific (see file comments); the gold "glow" effect needs a border fallback on Android since `elevation` can't carry color.
@@ -65,7 +66,6 @@ Full detail, including idempotency requirements for the write-only sheet tabs, i
 
 ## Known open items
 - **Calendar's real source** — need to ask Frank (ICS-capable calendar vs. manual).
-- **Expo vs. bare RN** — deferred to this phase, decide with real constraints in view.
 - **Push notification provider** — not chosen (OneSignal or similar).
 - **Member-unlocked states** — every "member" screen currently shows only the non-member view; real membership verification (Squarespace Commerce API lookup) is deprioritized, comes after core app ships.
 - **OTP code-entry screen** — Onboarding collects email; the verification step after it isn't designed yet.

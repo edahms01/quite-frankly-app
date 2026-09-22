@@ -32,7 +32,7 @@ Pulled from the Design System artifact and used consistently across every wirefr
 
 ## Navigation architecture
 
-**Root**: Onboarding stack (first-launch only — Welcome → Notifications → Email, each skippable) → hands off to Main App and never returns unless the app is reinstalled.
+**Root**: Onboarding stack (first-launch only, skippable — Welcome → **Notifications permission screen** → Email) → hands off to Main App and never returns unless the app is reinstalled.
 
 **Main App**: Bottom tab navigator, 3 tabs — Home, Watch, Members Only.
 
@@ -41,7 +41,7 @@ Pulled from the Design System artifact and used consistently across every wirefr
 - **Watch stack**: Watch → Video Player, Listen
 - **Members Only stack**: Culture Club (Members Only tab root) → Subscription
 
-**Global/account screens** — reached via the avatar icon on any tab, so these live in a stack reachable from all three tabs rather than duplicated per-tab: Account → Subscription, Notifications, Donation, Report a Bug.
+**Global/account screens** — reached via the avatar icon on any tab, so these live in a stack reachable from all three tabs rather than duplicated per-tab: Account → Subscription, **Notification settings screen** (toggles — distinct from the onboarding permission screen above), Donation, Report a Bug.
 
 **Modal presentation** (not a push — a sheet over the current screen): Subscription Checkout. This is the system-browser-style sheet (SFSafariViewController / Custom Tabs) loading Frank's real Squarespace checkout — needs modal presentation, not a stack push, to get that native "sheet slides up" feel and easy dismissal.
 
