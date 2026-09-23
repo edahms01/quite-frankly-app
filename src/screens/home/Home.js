@@ -4,6 +4,8 @@ import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as 
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
 import DestinationCard from '../../components/DestinationCard';
 import AvatarButton from '../../components/AvatarButton';
+import { useYouTubeFeed } from '../../context/YouTubeFeedContext';
+import { relativeTime } from '../../utils/relativeTime';
 
 const DESTINATIONS = [
   { label: 'Watch', Icon: CirclePlay, route: 'Watch' },
@@ -17,6 +19,8 @@ const DESTINATIONS = [
 ];
 
 export default function Home({ navigation }) {
+  const { mostRecent, loading, error } = useYouTubeFeed();
+
   const goTo = (route) => {
     if (route === 'MembersOnlyTab') {
       navigation.getParent()?.navigate('MembersOnly');
@@ -39,20 +43,28 @@ export default function Home({ navigation }) {
 
       <TouchableOpacity
         style={styles.mostRecentCard}
-        onPress={() => navigation.navigate('Watch')}
+        onPress={() => mostRecent && navigation.navigate('VideoPlayer', { video: mostRecent })}
         activeOpacity={0.85}
+        disabled={!mostRecent}
       >
         <View style={styles.badge}>
           <Text style={styles.badgeText}>MOST RECENT</Text>
         </View>
         <View style={styles.thumbnail}>
+          {mostRecent?.thumbnailUrl ? (
+            <Image source={{ uri: mostRecent.thumbnailUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+          ) : null}
           <View style={styles.playButton}>
             <CirclePlay color={colors.inkPrimary} size={28} />
           </View>
         </View>
         <View style={styles.mostRecentInfo}>
-          <Text style={styles.videoTitle}>Frank Talks the Week's Fallout</Text>
-          <Text style={styles.videoMeta}>Uploaded 3d ago</Text>
+          <Text style={styles.videoTitle} numberOfLines={2}>
+            {loading ? 'Loading…' : error ? 'Unable to load latest video' : mostRecent?.title}
+          </Text>
+          {mostRecent ? (
+            <Text style={styles.videoMeta}>Uploaded {relativeTime(mostRecent.publishedAt)}</Text>
+          ) : null}
         </View>
       </TouchableOpacity>
 

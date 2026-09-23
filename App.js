@@ -12,6 +12,7 @@ import { BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
 
 import RootNavigator from './src/navigation/RootNavigator';
 import MiniPlayer from './src/components/MiniPlayer';
+import { YouTubeFeedProvider } from './src/context/YouTubeFeedContext';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -28,12 +29,14 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <View style={{ flex: 1 }}>
-        <NavigationContainer>
-          <RootNavigator />
-        </NavigationContainer>
-        <MiniPlayer />
-      </View>
+      <YouTubeFeedProvider>
+        <View style={{ flex: 1 }}>
+          <NavigationContainer>
+            <RootNavigator />
+          </NavigationContainer>
+          <MiniPlayer />
+        </View>
+      </YouTubeFeedProvider>
     </SafeAreaProvider>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Mail } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, spacing, radius } from '../../theme';
 import OnboardingDots from '../../components/OnboardingDots';
@@ -7,9 +8,14 @@ import OnboardingDots from '../../components/OnboardingDots';
 export default function Email({ navigation }) {
   const [email, setEmail] = useState('');
 
-  // Submission (storage only, no verification) is Phase 3/4 — this just
-  // completes onboarding for now.
-  const finishOnboarding = () => navigation.navigate('MainTabs');
+  // Storage only, no verification — OTP/verification flow is
+  // deprioritized per plan.md, not part of this app's near-term scope.
+  const finishOnboarding = async () => {
+    if (email.trim()) {
+      await AsyncStorage.setItem('onboarding_email', email.trim());
+    }
+    navigation.navigate('MainTabs');
+  };
 
   return (
     <View style={styles.container}>

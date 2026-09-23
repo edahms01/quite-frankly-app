@@ -1,8 +1,10 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Linking } from 'react-native';
+import { Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CirclePlay } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
+import { useYouTubeFeed } from '../../context/YouTubeFeedContext';
+import { useLiveStatus } from '../../hooks/useLiveStatus';
+import { relativeTime } from '../../utils/relativeTime';
 
 const PLATFORMS = [
   { label: 'YouTube', url: 'https://www.youtube.com/channel/UCtB5nbKHYsX8EGIk9cOevaQ' },
@@ -11,19 +13,10 @@ const PLATFORMS = [
   { label: 'Pilled', url: 'https://pilled.net/foxhole/27724/iframe?theme=black' },
 ];
 
-// Realistic mock shaped like the real YT-RSS feed (Phase 3 wires the live
-// fetch) — last 14 videos, even rows, 7x2 per plan.md's exact grid spec.
-const TITLES = [
-  'Frank Talks the Week\'s Fallout', 'Live Q&A: Ask Frank Anything',
-  'The Culture War Recap', 'Guest Spot: Late Night Ramble',
-  'Breaking Down the Headlines', 'Culture Club Preview',
-  'Mailbag Monday', 'Frank Reacts',
-  'Behind the Scenes', 'Listener Stories',
-  'Friday Free-For-All', 'The Deep Dive',
-  'Weekend Wrap-Up', 'Frank\'s Hot Takes',
-];
-
 export default function Watch({ navigation }) {
+  const { gridItems, loading, error } = useYouTubeFeed();
+  const liveStatus = useLiveStatus();
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
     <ScrollView>
@@ -32,7 +25,9 @@ export default function Watch({ navigation }) {
       </View>
 
       <View style={styles.statusCard}>
-        <Text style={styles.statusText}>Not live right now</Text>
+        <Text style={styles.statusText}>
+          {liveStatus.loading ? 'Checking live status…' : liveStatus.isLive ? 'LIVE NOW' : 'Not live right now'}
+        </Text>
       </View>
 
       <TouchableOpacity
@@ -55,19 +50,29 @@ export default function Watch({ navigation }) {
       </View>
 
       <View style={styles.grid}>
-        {TITLES.map((title, i) => (
-          <TouchableOpacity
-            key={i}
-            style={styles.videoCard}
-            onPress={() => navigation.navigate('VideoPlayer', { title })}
-          >
-            <View style={styles.thumbnail}>
-              <CirclePlay color={colors.inkPrimary} size={28} />
-            </View>
-            <Text style={styles.videoTitle} numberOfLines={1}>{title}</Text>
-            <Text style={styles.videoMeta}>{i + 1}d ago</Text>
-          </TouchableOpacity>
-        ))}
+        {loading ? (
+          <Text style={styles.statusText}>Loading videos…</Text>
+        ) : error ? (
+          <Text style={styles.statusText}>Unable to load videos</Text>
+        ) : (
+          gridItems.map((video) => (
+            <TouchableOpacity
+              key={video.id}
+              style={styles.videoCard}
+              onPress={() => navigation.navigate('VideoPlayer', { video })}
+            >
+              <View style={styles.thumbnail}>
+                {video.thumbnailUrl ? (
+                  <Image source={{ uri: video.thumbnailUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+                ) : (
+                  <CirclePlay color={colors.inkPrimary} size={28} />
+                )}
+              </View>
+              <Text style={styles.videoTitle} numberOfLines={2}>{video.title}</Text>
+              <Text style={styles.videoMeta}>{relativeTime(video.publishedAt)}</Text>
+            </TouchableOpacity>
+          ))
+        )}
       </View>
     </ScrollView>
     </SafeAreaView>

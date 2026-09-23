@@ -1,40 +1,79 @@
+import { useEffect, useState } from 'react';
 import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
+import Papa from 'papaparse';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ShoppingBag } from 'lucide-react-native';
-import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
+import { colors, fontFamily, fontSize, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
 import DestinationCard from '../../components/DestinationCard';
 import ExternalRow from '../../components/ExternalRow';
 
-const STORES = [
-  { label: 'Apparel', url: 'https://riseattireusa.com/intl/quitefrankly/' },
-  { label: 'Coffee Revolution', url: 'https://www.coffeerevolution.shop/category/quite-frankly' },
-  { label: 'Keto Brainz', url: 'https://ketobrainz.com/pages/quite-frankly-tv-podcast' },
-  { label: 'Gold & Silver', url: 'https://quitefrankly.gold/' },
-];
+const CSV_URL =
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vTPD9jF4yGWK1nP6NTVLWieooQGpWYRO0h2RVK0zBQNIoUYDLAhUmHp7Y23I9bHjWMvvqSjxLrLQl6T/pub?gid=863514589&single=true&output=csv';
+const CACHE_KEY = 'shop_csv_cache';
 
-const AFFILIATES = [
-  { title: 'Keto Brainz', subtitle: "15% off · Frank's coffee creamer", badge: 'FRANKLY', url: 'https://ketobrainz.com/pages/quite-frankly-tv-podcast' },
-  { title: 'Farmalogical Bone Broth', subtitle: '15% off', badge: 'FRANKLY', url: 'https://farmalogical.com' },
-  { title: 'Coffee Revolution', subtitle: 'QF Elevation Blend', badge: 'Free ship $50+', url: 'https://www.coffeerevolution.shop/category/quite-frankly' },
-  { title: 'Patriot Protect', subtitle: '15% off · data removal service', badge: 'FRANKLY', url: 'http://patriot-protect.com/' },
-  { title: 'Wise Wolf Gold & Silver', subtitle: 'Mention "Quite Frankly"', url: 'https://quitefrankly.gold' },
-  { title: 'Blue Monster Prep', subtitle: 'Free shipping · emergency prep', badge: 'FRANKLY', url: 'https://bluemonsterprep.com' },
-  { title: 'Pluck', subtitle: 'Superfood seasoning', badge: 'SUMMER', url: 'https://eatpluck.com/discount/SUMMER?redirect=%2Fproducts%2Fpluck-superfood-seasoning-master' },
-  { title: 'Cultivate Elevate', subtitle: '10% off', badge: 'Frankly10', url: 'https://cultivateelevate.com/?ref=quitefrankly' },
-  { title: 'Health Reclamation Project', subtitle: 'J Gulinello', url: 'https://www.HealthReclamationProject.com' },
-  { title: 'YesCacao', subtitle: 'Ceremonial cacao', badge: 'FRANKLY', url: 'https://www.yescacao.com' },
-  { title: 'Apex Water', subtitle: 'Mention "Victoria"', url: 'https://www.apex-water.com/frankly/' },
-  { title: 'Flip City Magazine', subtitle: '10% off', badge: 'FRANKLY', url: 'https://flip-city-magazine.myshopify.com?rs_ref=4kksofoy' },
-];
+function partition(rows) {
+  const stores = rows
+    .filter((r) => r.Category === 'Shop')
+    .map((r) => ({ label: r.Name, url: r.URL }));
+  const affiliates = rows
+    .filter((r) => r.Category === 'Affiliate')
+    .map((r) => ({
+      title: r.Name,
+      subtitle: r.Note || undefined,
+      badge: r.Code || undefined,
+      url: r.URL,
+    }));
+  return { stores, affiliates };
+}
 
 export default function Shop({ navigation }) {
+  const [data, setData] = useState({ stores: [], affiliates: [] });
+  const [loading, setLoading] = useState(true);
+  const [usingCache, setUsingCache] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await fetch(CSV_URL);
+        if (!response.ok) throw new Error(`CSV request failed: ${response.status}`);
+        const csvText = await response.text();
+        const { data: rows } = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+        const partitioned = partition(rows);
+        if (!cancelled) {
+          setData(partitioned);
+          setLoading(false);
+          setUsingCache(false);
+        }
+        await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(partitioned));
+      } catch (error) {
+        const cached = await AsyncStorage.getItem(CACHE_KEY);
+        if (!cancelled) {
+          if (cached) {
+            setData(JSON.parse(cached));
+            setUsingCache(true);
+          }
+          setLoading(false);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <ScrollView style={styles.container}>
       <BackHeader title="Shop" navigation={navigation} />
       <View style={styles.body}>
+        {usingCache ? (
+          <Text style={styles.cacheNotice}>Showing last saved version — couldn't refresh.</Text>
+        ) : null}
+
         <Text style={styles.sectionLabel}>SHOP</Text>
         <View style={styles.grid}>
-          {STORES.map((s) => (
+          {data.stores.map((s) => (
             <DestinationCard
               key={s.label}
               Icon={ShoppingBag}
@@ -46,7 +85,7 @@ export default function Shop({ navigation }) {
 
         <Text style={[styles.sectionLabel, styles.affiliatesLabel]}>AFFILIATES</Text>
         <View style={styles.list}>
-          {AFFILIATES.map((a) => (
+          {data.affiliates.map((a) => (
             <ExternalRow
               key={a.title}
               title={a.title}
@@ -56,6 +95,8 @@ export default function Shop({ navigation }) {
             />
           ))}
         </View>
+
+        {loading ? <Text style={styles.sectionLabel}>Loading…</Text> : null}
       </View>
     </ScrollView>
   );
@@ -70,6 +111,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.lg,
     gap: spacing.md,
+  },
+  cacheNotice: {
+    color: colors.accentGold,
+    fontFamily: fontFamily.medium,
+    fontSize: fontSize.sm,
   },
   sectionLabel: {
     color: colors.inkMuted,

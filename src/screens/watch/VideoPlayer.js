@@ -1,13 +1,21 @@
-import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View, Share } from 'react-native';
+import { Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View, Share } from 'react-native';
 import { CirclePlay, ChevronLeft } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
+import { relativeTime } from '../../utils/relativeTime';
 
 export default function VideoPlayer({ navigation, route }) {
-  const title = route?.params?.title ?? '[Video title]';
+  const video = route?.params?.video;
+  const title = video?.title ?? '[Video title]';
+  const youtubeUrl = video?.id
+    ? `https://www.youtube.com/watch?v=${video.id}`
+    : 'https://www.youtube.com/channel/UCtB5nbKHYsX8EGIk9cOevaQ';
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.playerArea}>
+        {video?.thumbnailUrl ? (
+          <Image source={{ uri: video.thumbnailUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+        ) : null}
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <ChevronLeft color={colors.inkPrimary} size={24} />
         </TouchableOpacity>
@@ -19,18 +27,20 @@ export default function VideoPlayer({ navigation, route }) {
 
       <View style={styles.body}>
         <Text style={styles.title}>{title}</Text>
-        <Text style={styles.meta}>Quite Frankly · 2d ago · 4.2K views</Text>
+        {video?.publishedAt ? (
+          <Text style={styles.meta}>Quite Frankly · {relativeTime(video.publishedAt)}</Text>
+        ) : null}
 
         <View style={styles.actionsRow}>
           <TouchableOpacity
             style={styles.actionButton}
-            onPress={() => Linking.openURL('https://www.youtube.com/channel/UCtB5nbKHYsX8EGIk9cOevaQ')}
+            onPress={() => Linking.openURL(youtubeUrl)}
           >
             <Text style={styles.actionText}>Watch on YouTube</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.actionButton}
-            onPress={() => Share.share({ message: title })}
+            onPress={() => Share.share({ message: title, url: youtubeUrl })}
           >
             <Text style={styles.actionText}>Share</Text>
           </TouchableOpacity>
