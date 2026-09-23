@@ -8,8 +8,8 @@ import OnboardingDots from '../../components/OnboardingDots';
 export default function Email({ navigation }) {
   const [email, setEmail] = useState('');
 
-  // Storage only, no verification — OTP/verification flow is
-  // deprioritized per plan.md, not part of this app's near-term scope.
+  // Storage only — real code delivery/verification isn't wired yet,
+  // Phase 4 will add it.
   const finishOnboarding = async () => {
     if (email.trim()) {
       await AsyncStorage.setItem('onboarding_email', email.trim());
@@ -29,7 +29,9 @@ export default function Email({ navigation }) {
           <Mail color={colors.accentGold} size={32} />
         </View>
         <Text style={styles.title}>Add your email</Text>
-        <Text style={styles.body}>No password, just your email.</Text>
+        <Text style={styles.body}>
+          No password, just your email and a one-time code to enter.
+        </Text>
         <Text style={styles.sponsorNote}>
           Are you a Quite Frankly Sponsor? Use the same email you used for
           your subscription.
@@ -45,6 +47,9 @@ export default function Email({ navigation }) {
         />
         <TouchableOpacity style={styles.cta} onPress={finishOnboarding}>
           <Text style={styles.ctaText}>Continue</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.skipLink} onPress={finishOnboarding}>
+          <Text style={styles.skipLinkText}>Skip</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -128,5 +133,14 @@ const styles = StyleSheet.create({
     color: colors.inkPrimary,
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.lg,
+  },
+  skipLink: {
+    marginTop: spacing.md,
+    padding: spacing.xs,
+  },
+  skipLinkText: {
+    color: colors.inkMuted,
+    fontFamily: fontFamily.medium,
+    fontSize: fontSize.base,
   },
 });
