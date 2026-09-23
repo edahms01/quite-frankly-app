@@ -28,9 +28,10 @@ export default function Email({ navigation }) {
         <View style={styles.iconCircle}>
           <Mail color={colors.accentGold} size={32} />
         </View>
-        <Text style={styles.title}>Add your email</Text>
+        <Text style={styles.title}>Create Account</Text>
         <Text style={styles.body}>
-          No password, just your email and a one-time code to enter.
+          Enter your email address and a one-time verification code will be
+          sent to your email.
         </Text>
         <Text style={styles.sponsorNote}>
           Are you a Quite Frankly Sponsor? Use the same email you used for
@@ -103,10 +104,10 @@ const styles = StyleSheet.create({
   },
   sponsorNote: {
     color: colors.inkMuted,
-    fontFamily: fontFamily.regular,
+    fontFamily: fontFamily.regularItalic,
     fontSize: fontSize.sm,
     textAlign: 'center',
-    marginTop: spacing.xs,
+    marginTop: spacing.lg,
     marginBottom: spacing.lg,
   },
   input: {

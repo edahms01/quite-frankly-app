@@ -55,6 +55,7 @@ export const fontSize = {
 export const fontFamily = {
   display: 'BebasNeue_400Regular', // hero/splash only, never body text
   regular: 'Inter_400Regular',
+  regularItalic: 'Inter_400Regular_Italic',
   medium: 'Inter_500Medium',
   semiBold: 'Inter_600SemiBold',
   bold: 'Inter_700Bold',

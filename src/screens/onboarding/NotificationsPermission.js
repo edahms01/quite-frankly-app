@@ -33,7 +33,7 @@ export default function NotificationsPermission({ navigation }) {
         </View>
         <Text style={styles.title}>Never miss a show</Text>
         <Text style={styles.body}>
-          Get notified the moment Frank goes live, or when a new video drops.
+          Get notified the moment Frank goes live or when a new video drops.
         </Text>
         <TouchableOpacity
           style={styles.cta}
