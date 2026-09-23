@@ -1,30 +1,62 @@
 import { useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Mail } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, spacing, radius } from '../../theme';
 import OnboardingDots from '../../components/OnboardingDots';
 
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+
 export default function Email({ navigation }) {
   const [email, setEmail] = useState('');
+  const [sending, setSending] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  // Storage only — real code delivery/verification isn't wired yet,
-  // Phase 4 will add it.
-  const finishOnboarding = async () => {
+  const skipOnboarding = async () => {
     if (email.trim()) {
       await AsyncStorage.setItem('onboarding_email', email.trim());
     }
     navigation.navigate('MainTabs');
   };
 
+  const handleContinue = async () => {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      setErrorMessage('Enter an email address to continue.');
+      return;
+    }
+
+    setSending(true);
+    setErrorMessage('');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/.netlify/functions/send-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmedEmail }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Send failed');
+      }
+
+      await AsyncStorage.setItem('onboarding_email', trimmedEmail);
+      setSending(false);
+      navigation.navigate('CodeEntry', { email: trimmedEmail });
+    } catch (err) {
+      setSending(false);
+      setErrorMessage("Couldn't send a code. Check your connection and try again.");
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.skip} onPress={finishOnboarding}>
+      <TouchableOpacity style={styles.skip} onPress={skipOnboarding}>
         <Text style={styles.skipText}>Skip</Text>
       </TouchableOpacity>
 
       <View style={styles.content}>
-        <OnboardingDots total={3} activeIndex={2} />
+        <OnboardingDots total={4} activeIndex={2} />
         <View style={styles.iconCircle}>
           <Mail color={colors.accentGold} size={32} />
         </View>
@@ -46,10 +78,19 @@ export default function Email({ navigation }) {
           value={email}
           onChangeText={setEmail}
         />
-        <TouchableOpacity style={styles.cta} onPress={finishOnboarding}>
-          <Text style={styles.ctaText}>Continue</Text>
+        {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+        <TouchableOpacity
+          style={[styles.cta, sending && styles.ctaDisabled]}
+          onPress={handleContinue}
+          disabled={sending}
+        >
+          {sending ? (
+            <ActivityIndicator color={colors.inkPrimary} />
+          ) : (
+            <Text style={styles.ctaText}>Continue</Text>
+          )}
         </TouchableOpacity>
-        <TouchableOpacity style={styles.skipLink} onPress={finishOnboarding}>
+        <TouchableOpacity style={styles.skipLink} onPress={skipOnboarding}>
           <Text style={styles.skipLinkText}>Skip</Text>
         </TouchableOpacity>
       </View>
@@ -123,12 +164,22 @@ const styles = StyleSheet.create({
     fontSize: fontSize.md,
     marginBottom: spacing.md,
   },
+  errorText: {
+    color: colors.brandRed,
+    fontFamily: fontFamily.medium,
+    fontSize: fontSize.base,
+    textAlign: 'center',
+    marginBottom: spacing.md,
+  },
   cta: {
     backgroundColor: colors.brandRed,
     borderRadius: radius.md,
     paddingVertical: spacing.md,
     alignSelf: 'stretch',
     alignItems: 'center',
+  },
+  ctaDisabled: {
+    opacity: 0.6,
   },
   ctaText: {
     color: colors.inkPrimary,

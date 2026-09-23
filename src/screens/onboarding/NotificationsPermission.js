@@ -27,7 +27,7 @@ export default function NotificationsPermission({ navigation }) {
       </TouchableOpacity>
 
       <View style={styles.content}>
-        <OnboardingDots total={3} activeIndex={1} />
+        <OnboardingDots total={4} activeIndex={1} />
         <View style={styles.iconCircle}>
           <Bell color={colors.accentGold} size={32} />
         </View>
