@@ -31,6 +31,12 @@
             "enableSceneSupport": true
           }
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Quite Frankly to access your photos to attach a screenshot to a bug report."
+        }
       ]
     ]
   }

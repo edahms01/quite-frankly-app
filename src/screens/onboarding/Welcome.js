@@ -13,7 +13,7 @@ export default function Welcome({ navigation }) {
       </TouchableOpacity>
 
       <View style={styles.content}>
-        <OnboardingDots total={3} activeIndex={0} />
+        <OnboardingDots total={4} activeIndex={0} />
         <Image
           source={require('../../assets/images/quite-frankly-logo-final.png')}
           style={styles.wordmark}
