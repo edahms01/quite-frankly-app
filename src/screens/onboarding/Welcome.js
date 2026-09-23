@@ -52,9 +52,8 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
     paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.lg,
   },
   wordmark: {
     width: 280,
