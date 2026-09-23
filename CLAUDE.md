@@ -6,7 +6,7 @@ Native-feeling iOS/Android mobile app for the *Quite Frankly* podcast (quitefran
 ---
 
 ## Key links
-- **Wireframes** (interactive, all 19 screens wired with real navigation): https://claude.ai/artifact/TCXi4rB8DcD1NuLAFEMwXq
+- **Wireframes** (interactive, all 20 screens wired with real navigation): https://claude.ai/artifact/TCXi4rB8DcD1NuLAFEMwXq
 - **Design System** (colors, type, components, brand assets — banner + jester avatar): https://claude.ai/artifact/SM9ZjiDwh76L8oRRsCyezw
 - **Live data sheet** (Shop & Affiliates / Bug Reports / `youtube rss` / `audio history`): https://docs.google.com/spreadsheets/d/1hSUIK7bpNtwALYjKZBPOHRSynryRiDWRRe8TOtHV4Vs/edit
 - **Full decision log**: `quite-frankly-app-plan.md` (reasoning behind every product call — read this when a decision seems unexplained)
@@ -54,7 +54,7 @@ Full detail, including idempotency requirements for the write-only sheet tabs, i
 
 ## Build phases
 1. **Scaffold** — RN init, core deps (`react-native-track-player` v4, `@react-navigation`, font linking), `theme.js` in place, folder structure.
-2. **Static shell** — all 19 screens built to match the wireframes exactly, full navigation wired, no real data yet. Gives a clickable app to sanity-check against the canvas before backend complexity starts.
+2. **Static shell** — all 20 screens built to match the wireframes exactly, full navigation wired, no real data yet. Gives a clickable app to sanity-check against the canvas before backend complexity starts.
 3. **Read-only data** — wire Home/Watch (YouTube RSS + live polling), Shop (CSV fetch), Onboarding email capture (storage only, no verification yet).
 4. **Backend functions** (Netlify) — Bug Report writer, video-polling job (writes `youtube rss`, triggers Home/Watch refresh), SoundCloud polling/caching job (powers Listen, writes `audio history`).
 5. **Audio player** — `react-native-track-player` wired to Listen's episode list, persistent mini-player, background playback and lock-screen controls.

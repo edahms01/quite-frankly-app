@@ -45,23 +45,19 @@ export const fontSize = {
 };
 
 /**
- * Font families. Bebas Neue and Inter are NOT system fonts — they need
- * to be bundled and linked before these names will resolve:
- *   - Expo: `expo-font` + `useFonts`, or a config plugin if using a
- *     bare/dev-client workflow (needed anyway for react-native-track-player)
- *   - Bare RN: drop .ttf files in an assets/fonts directory and run
- *     `npx react-native-asset` (or link manually), then reference the
- *     exact PostScript name below
- * fontFamily values below assume standard weight-suffixed file names
- * (e.g. Inter-Regular.ttf, Inter-SemiBold.ttf) — adjust to match
- * whatever the actual bundled files are named.
+ * Font families, loaded via @expo-google-fonts/inter and
+ * @expo-google-fonts/bebas-neue + expo-font's useFonts (see App.js) —
+ * upstream Google Fonts ships Inter as variable-only now, so these
+ * packages are used instead of raw static .ttf files to get real
+ * discrete weights. Names below must match the exported constants
+ * from those packages exactly.
  */
 export const fontFamily = {
-  display: 'BebasNeue-Regular',   // hero/splash only, never body text
-  regular: 'Inter-Regular',
-  medium: 'Inter-Medium',
-  semiBold: 'Inter-SemiBold',
-  bold: 'Inter-Bold',
+  display: 'BebasNeue_400Regular', // hero/splash only, never body text
+  regular: 'Inter_400Regular',
+  medium: 'Inter_500Medium',
+  semiBold: 'Inter_600SemiBold',
+  bold: 'Inter_700Bold',
 };
 
 /**
