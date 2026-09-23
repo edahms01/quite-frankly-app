@@ -34,7 +34,6 @@ export default function NotificationsPermission({ navigation }) {
         <Text style={styles.title}>Never miss a show</Text>
         <Text style={styles.body}>
           Get notified the moment Frank goes live, or when a new video drops.
-          You can change this anytime in Settings.
         </Text>
         <TouchableOpacity
           style={styles.cta}

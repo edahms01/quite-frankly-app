@@ -29,8 +29,10 @@ export default function Email({ navigation }) {
           <Mail color={colors.accentGold} size={32} />
         </View>
         <Text style={styles.title}>Add your email</Text>
-        <Text style={styles.body}>
-          We'll send a one-time code — no password needed.
+        <Text style={styles.body}>No password, just your email.</Text>
+        <Text style={styles.sponsorNote}>
+          Are you a Quite Frankly Sponsor? Use the same email you used for
+          your subscription.
         </Text>
         <TextInput
           style={styles.input}
@@ -94,6 +96,13 @@ const styles = StyleSheet.create({
     fontSize: fontSize.md,
     textAlign: 'center',
     marginTop: spacing.sm,
+  },
+  sponsorNote: {
+    color: colors.inkMuted,
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.sm,
+    textAlign: 'center',
+    marginTop: spacing.xs,
     marginBottom: spacing.lg,
   },
   input: {

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { colors, fontFamily, fontSize, spacing, radius } from '../../theme';
 import OnboardingDots from '../../components/OnboardingDots';
 
@@ -14,10 +14,14 @@ export default function Welcome({ navigation }) {
 
       <View style={styles.content}>
         <OnboardingDots total={3} activeIndex={0} />
-        <Text style={styles.wordmark}>QUITE FRANKLY</Text>
+        <Image
+          source={require('../../assets/images/quite-frankly-logo-final.png')}
+          style={styles.wordmark}
+          resizeMode="contain"
+        />
         <Text style={styles.subtitle}>Live weeknights · 7:00 PM ET</Text>
         <Text style={styles.body}>
-          Live alerts, new videos, and Culture Club events — all in one place.
+          The Quite Frankly Universe. All in one place.
         </Text>
         <TouchableOpacity
           style={styles.cta}
@@ -53,10 +57,9 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
   },
   wordmark: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.display,
-    fontSize: fontSize.display,
-    textAlign: 'center',
+    width: 280,
+    height: 280 * (404 / 1720),
+    alignSelf: 'center',
   },
   subtitle: {
     color: colors.inkMuted,
