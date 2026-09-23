@@ -16,12 +16,12 @@ export default function RootNavigator() {
       <Stack.Screen
         name="SubscriptionCheckout"
         component={SubscriptionCheckout}
-        options={{ presentation: 'modal', headerShown: true }}
+        options={{ presentation: 'modal', headerShown: false }}
       />
       <Stack.Screen
         name="SubscriptionConfirmed"
         component={SubscriptionConfirmed}
-        options={{ presentation: 'modal', headerShown: true }}
+        options={{ presentation: 'modal', headerShown: false }}
       />
     </Stack.Navigator>
   );

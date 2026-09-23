@@ -22,7 +22,7 @@ Native-feeling iOS/Android mobile app for the *Quite Frankly* podcast (quitefran
 - **Audio**: `react-native-track-player`, pinned to **v4** (Apache-2.0, free). v5 went commercially licensed — do not upgrade without checking that license first.
 - **Navigation**: bottom tab navigator + per-tab stacks + one modal screen (see below).
 - **Styling**: `theme.js` — RN StyleSheet objects, not CSS. Shadows are platform-specific (see file comments); the gold "glow" effect needs a border fallback on Android since `elevation` can't carry color.
-- **Fonts**: Bebas Neue (display/hero only) + Inter (everything else) — not system fonts, need bundling/linking before use.
+- **Fonts**: Bebas Neue (display/hero only) + Inter (everything else) — not system fonts, loaded via `@expo-google-fonts/bebas-neue` + `@expo-google-fonts/inter` and `expo-font`'s `useFonts` (see `App.js`), not raw bundled `.ttf` files.
 
 ---
 

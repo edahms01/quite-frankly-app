@@ -11,14 +11,14 @@ const Stack = createNativeStackNavigator();
 
 export default function HomeStackNavigator() {
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="Home" component={Home} />
-      <Stack.Screen name="Shop" component={Shop} />
-      <Stack.Screen name="Community" component={Community} />
-      <Stack.Screen name="Writing" component={Writing} />
-      <Stack.Screen name="Band" component={Band} />
-      <Stack.Screen name="Calendar" component={Calendar} />
-      <Stack.Screen name="Listen" component={Listen} />
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
+      <Stack.Screen name="Shop" component={Shop} options={{ headerShown: false }} />
+      <Stack.Screen name="Community" component={Community} options={{ headerShown: false }} />
+      <Stack.Screen name="Writing" component={Writing} options={{ headerShown: false }} />
+      <Stack.Screen name="Band" component={Band} options={{ headerShown: false }} />
+      <Stack.Screen name="Calendar" component={Calendar} options={{ headerShown: false }} />
+      <Stack.Screen name="Listen" component={Listen} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }

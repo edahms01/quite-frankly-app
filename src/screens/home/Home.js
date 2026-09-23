@@ -1,18 +1,146 @@
-import { Button } from 'react-native';
-import PlaceholderScreen from '../../components/PlaceholderScreen';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2 } from 'lucide-react-native';
+import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
+import DestinationCard from '../../components/DestinationCard';
+import AvatarButton from '../../components/AvatarButton';
 
-/**
- * Scaffold-only: the "Open Subscription Modal" button below exists purely to
- * verify the SubscriptionCheckout -> SubscriptionConfirmed modal route resolves
- * structurally (Phase 1 QA). Remove once Phase 2 wires the real trigger.
- */
+const DESTINATIONS = [
+  { label: 'Watch', Icon: CirclePlay, route: 'Watch' },
+  { label: 'Listen', Icon: Headphones, route: 'Listen' },
+  { label: 'Members Only', Icon: Crown, route: 'MembersOnlyTab' },
+  { label: 'Community', Icon: MessageSquare, route: 'Community' },
+  { label: 'Shop', Icon: ShoppingBag, route: 'Shop' },
+  { label: 'Calendar', Icon: CalendarIcon, route: 'Calendar' },
+  { label: 'Writing', Icon: FileText, route: 'Writing' },
+  { label: 'Band', Icon: Music2, route: 'Band' },
+];
+
 export default function Home({ navigation }) {
+  const goTo = (route) => {
+    if (route === 'MembersOnlyTab') {
+      navigation.getParent()?.navigate('MembersOnly');
+    } else {
+      navigation.navigate(route);
+    }
+  };
+
   return (
-    <PlaceholderScreen title="Home">
-      <Button
-        title="[Scaffold QA] Open Subscription Modal"
-        onPress={() => navigation.navigate('SubscriptionCheckout')}
-      />
-    </PlaceholderScreen>
+    <SafeAreaView style={styles.container} edges={['top']}>
+    <ScrollView contentContainerStyle={styles.content}>
+      <View style={styles.header}>
+        <Image
+          source={require('../../assets/images/quite-frankly-logo-final.png')}
+          style={styles.wordmark}
+          resizeMode="contain"
+        />
+        <AvatarButton onPress={() => navigation.navigate('AccountStack')} />
+      </View>
+
+      <TouchableOpacity
+        style={styles.mostRecentCard}
+        onPress={() => navigation.navigate('Watch')}
+        activeOpacity={0.85}
+      >
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>MOST RECENT</Text>
+        </View>
+        <View style={styles.thumbnail}>
+          <View style={styles.playButton}>
+            <CirclePlay color={colors.inkPrimary} size={28} />
+          </View>
+        </View>
+        <View style={styles.mostRecentInfo}>
+          <Text style={styles.videoTitle}>Frank Talks the Week's Fallout</Text>
+          <Text style={styles.videoMeta}>Uploaded 3d ago</Text>
+        </View>
+      </TouchableOpacity>
+
+      <View style={styles.grid}>
+        {DESTINATIONS.map((d) => (
+          <DestinationCard
+            key={d.label}
+            Icon={d.Icon}
+            label={d.label}
+            onPress={() => goTo(d.route)}
+          />
+        ))}
+      </View>
+    </ScrollView>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.surfaceGround,
+  },
+  content: {
+    padding: spacing.md,
+    gap: spacing.md,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+  },
+  wordmark: {
+    width: 172,
+    height: 40,
+  },
+  mostRecentCard: {
+    backgroundColor: colors.surfaceCard,
+    borderRadius: radius.md,
+    overflow: 'hidden',
+    ...shadows.sm,
+  },
+  badge: {
+    position: 'absolute',
+    top: spacing.sm,
+    left: spacing.sm,
+    backgroundColor: colors.accentGold,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    zIndex: 1,
+  },
+  badgeText: {
+    color: colors.surfaceGround,
+    fontFamily: fontFamily.bold,
+    fontSize: fontSize.xs,
+  },
+  thumbnail: {
+    height: 160,
+    backgroundColor: colors.surfaceLive,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  playButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mostRecentInfo: {
+    padding: spacing.md,
+  },
+  videoTitle: {
+    color: colors.inkPrimary,
+    fontFamily: fontFamily.semiBold,
+    fontSize: fontSize.md,
+  },
+  videoMeta: {
+    color: colors.inkMuted,
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.sm,
+    marginTop: 2,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+  },
+});

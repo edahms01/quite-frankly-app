@@ -9,12 +9,12 @@ const Stack = createNativeStackNavigator();
 
 export default function AccountStackNavigator() {
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="Account" component={Account} />
-      <Stack.Screen name="Subscription" component={Subscription} />
-      <Stack.Screen name="NotificationsSettings" component={NotificationsSettings} />
-      <Stack.Screen name="Donation" component={Donation} />
-      <Stack.Screen name="ReportBug" component={ReportBug} />
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Account" component={Account} options={{ headerShown: false }} />
+      <Stack.Screen name="Subscription" component={Subscription} options={{ headerShown: false }} />
+      <Stack.Screen name="NotificationsSettings" component={NotificationsSettings} options={{ headerShown: false }} />
+      <Stack.Screen name="Donation" component={Donation} options={{ headerShown: false }} />
+      <Stack.Screen name="ReportBug" component={ReportBug} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }

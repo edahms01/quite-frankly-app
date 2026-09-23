@@ -7,10 +7,10 @@ const Stack = createNativeStackNavigator();
 
 export default function WatchStackNavigator() {
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="Watch" component={Watch} />
-      <Stack.Screen name="VideoPlayer" component={VideoPlayer} />
-      <Stack.Screen name="Listen" component={Listen} />
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Watch" component={Watch} options={{ headerShown: false }} />
+      <Stack.Screen name="VideoPlayer" component={VideoPlayer} options={{ headerShown: false }} />
+      <Stack.Screen name="Listen" component={Listen} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }
