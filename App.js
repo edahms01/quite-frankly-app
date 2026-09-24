@@ -1,4 +1,5 @@
 import { View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
@@ -14,6 +15,8 @@ import { BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
 import RootNavigator from './src/navigation/RootNavigator';
 import MiniPlayer from './src/components/MiniPlayer';
 import { YouTubeFeedProvider } from './src/context/YouTubeFeedContext';
+import { AudioPlayerProvider } from './src/context/AudioPlayerContext';
+import { navigationRef } from './src/navigation/navigationRef';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -30,15 +33,19 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <YouTubeFeedProvider>
-        <View style={{ flex: 1 }}>
-          <NavigationContainer>
-            <RootNavigator />
-          </NavigationContainer>
-          <MiniPlayer />
-        </View>
-      </YouTubeFeedProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <YouTubeFeedProvider>
+          <AudioPlayerProvider>
+            <View style={{ flex: 1 }}>
+              <NavigationContainer ref={navigationRef}>
+                <RootNavigator />
+              </NavigationContainer>
+              <MiniPlayer />
+            </View>
+          </AudioPlayerProvider>
+        </YouTubeFeedProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
