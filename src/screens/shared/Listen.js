@@ -10,13 +10,14 @@ import {
 import { CirclePlay, Pause } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import { relativeTime } from '../../utils/relativeTime';
+import { useAudioPlayer } from '../../context/AudioPlayerContext';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 const PAGE_SIZE = 20;
 
 export default function Listen() {
+  const { currentTrack, playbackState, play, togglePlayPause } = useAudioPlayer();
   const [episodes, setEpisodes] = useState([]);
-  const [playingIndex, setPlayingIndex] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
@@ -67,7 +68,9 @@ export default function Listen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.list}>
+      <ScrollView
+        contentContainerStyle={[styles.list, currentTrack && styles.listWithMiniPlayer]}
+      >
         <Text style={styles.title}>Listen</Text>
 
         {loading ? (
@@ -76,14 +79,17 @@ export default function Listen() {
           <Text style={styles.errorText}>Couldn't load episodes. Pull to refresh and try again.</Text>
         ) : (
           <>
-            {episodes.map((ep, i) => (
+            {episodes.map((ep, i) => {
+              const isCurrent = currentTrack?.guid === ep.guid;
+              const isPlaying = isCurrent && playbackState === 'playing';
+              return (
               <TouchableOpacity
                 key={ep.guid ?? i}
                 style={styles.row}
-                onPress={() => setPlayingIndex(i)}
+                onPress={() => (isCurrent ? togglePlayPause() : play(ep))}
               >
                 <View style={styles.iconCircle}>
-                  {playingIndex === i ? (
+                  {isPlaying ? (
                     <Pause color={colors.inkPrimary} size={16} />
                   ) : (
                     <CirclePlay color={colors.inkPrimary} size={16} />
@@ -96,7 +102,8 @@ export default function Listen() {
                   </Text>
                 </View>
               </TouchableOpacity>
-            ))}
+              );
+            })}
             {hasMore ? (
               <TouchableOpacity style={styles.loadMore} onPress={loadMore} disabled={loadingMore}>
                 {loadingMore ? (
@@ -109,20 +116,6 @@ export default function Listen() {
           </>
         )}
       </ScrollView>
-
-      {playingIndex !== null && (
-        <View style={styles.miniPlayer}>
-          <TouchableOpacity onPress={() => setPlayingIndex(null)}>
-            <Pause color={colors.inkPrimary} size={18} />
-          </TouchableOpacity>
-          <View style={styles.miniPlayerText}>
-            <Text style={styles.miniPlayerTitle} numberOfLines={1}>
-              {episodes[playingIndex].title}
-            </Text>
-            <Text style={styles.miniPlayerMeta}>12:04 / 1:42:00</Text>
-          </View>
-        </View>
-      )}
     </View>
   );
 }
@@ -135,6 +128,11 @@ const styles = StyleSheet.create({
   list: {
     padding: spacing.md,
     gap: spacing.sm,
+  },
+  listWithMiniPlayer: {
+    // MiniPlayer overlays app-wide as an absolute-positioned bar — keep the
+    // last rows from being hidden underneath it while it's showing.
+    paddingBottom: spacing.lg + 64,
   },
   title: {
     color: colors.inkPrimary,
@@ -190,27 +188,5 @@ const styles = StyleSheet.create({
     color: colors.accentGold,
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.md,
-  },
-  miniPlayer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    backgroundColor: colors.surfaceCard,
-    borderTopWidth: 1,
-    borderTopColor: colors.surfaceLine,
-    padding: spacing.md,
-  },
-  miniPlayerText: {
-    flex: 1,
-  },
-  miniPlayerTitle: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.md,
-  },
-  miniPlayerMeta: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.regular,
-    fontSize: fontSize.sm,
   },
 });
