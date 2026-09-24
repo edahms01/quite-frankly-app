@@ -77,3 +77,7 @@ Full detail, including idempotency requirements for the write-only sheet tabs, i
 - Surgical edits over full-file rewrites where practical.
 - Run `node --check` and verify div/bracket balance after edits, where applicable.
 - Cost-benefit discipline — flag when a fix is disproportionate to what the product actually needs, rather than defaulting to the "more correct" but heavier option.
+- **Android/iOS QA**: never run both emulators concurrently — starves the
+  host, causes ANRs/phantom reloads. Alternate platforms. Boot Android with
+  `-gpu swiftshader_indirect -memory 1536` (not `-gpu auto`), and kill stale
+  gradle/kotlin daemons first if instability resurfaces.
