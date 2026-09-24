@@ -86,3 +86,16 @@ Full detail, including idempotency requirements for the write-only sheet tabs, i
   blocking taps there. Workaround: temporarily point RootNavigator's
   entry route at the screen you need to reach, verify, then revert and
   confirm via `git status` before committing anything else.
+- **Android build: JDK version matters.** `npx expo run:android` needs
+  `JAVA_HOME` set explicitly — without it, `gradlew` fails immediately
+  ("Unable to locate a Java Runtime"), and if that failure is piped
+  through `tail` or similar, the masked exit code can look like success.
+  With `JAVA_HOME` pointed at Android Studio's bundled JBR (Java 25 as
+  of this writing), the build gets further but fails at
+  `configureCMakeDebug` with `IllegalStateException: WARNING: A
+  restricted method in java.lang.System has been called` — a JDK 24+
+  "restricted native method" stderr line from the prefab/CMake step
+  that AGP's error scanner misreads as fatal. Fix: use JDK 21 instead
+  (`brew install openjdk@21`, then
+  `export JAVA_HOME="/opt/homebrew/opt/openjdk@21"`) for Android builds
+  on this machine.
