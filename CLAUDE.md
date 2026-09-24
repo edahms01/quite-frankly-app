@@ -59,14 +59,14 @@ Full detail, including idempotency requirements for the write-only sheet tabs, i
 4. **Backend functions** (Netlify) — Bug Report writer, video-polling job (writes `youtube rss`, triggers Home/Watch refresh), SoundCloud polling/caching job (powers Listen, writes `audio history`).
 5. **Audio player** — `react-native-track-player` wired to Listen's episode list, persistent mini-player, background playback and lock-screen controls.
 6. **Subscription flow** — native checkout modal, Patreon/SubscribeStar external opens.
-7. **Notifications** — push infrastructure (provider not yet chosen), live-alert and new-video-alert triggers off the Phase 4 polling jobs.
+7. **Notifications** ✅ — Expo push service (register-push-device.js, `qf-push-tokens` Blobs store), real toggle persistence in NotificationsSettings.js, live-alert and new-video-alert triggers wired to twitch-webhook.js/poll-youtube.js. Culture Club Reminders has preference storage only, no trigger (no data source yet). Blocked on Eric linking an EAS project (`extra.eas.projectId`) for real device tokens/testing.
 8. **Polish** — empty/error/offline states, loading states, App Store/Play Store submission prep.
 
 ---
 
 ## Known open items
 - **Calendar's real source** — need to ask Frank (ICS-capable calendar vs. manual).
-- **Push notification provider** — not chosen (OneSignal or similar).
+- **EAS project linkage** — not yet done (`app.json` has no `extra.eas.projectId`, no `eas.json`). Blocks real push tokens (`getExpoPushTokenAsync`) on any platform; everything else in Phase 7 is built and works around this by failing closed. Provider itself is decided: Expo's own push service (`expo-notifications`, already installed), not OneSignal/Firebase.
 - **Member-unlocked states** — every "member" screen currently shows only the non-member view; real membership verification (Squarespace Commerce API lookup) is deprioritized, comes after core app ships.
 - **OTP code-entry screen** — Onboarding collects email; the verification step after it isn't designed yet.
 

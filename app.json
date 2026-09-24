@@ -45,7 +45,8 @@
           "enableBackgroundPlayback": true
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-notifications"
     ]
   }
 }
