@@ -1,4 +1,5 @@
 import { View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
@@ -32,17 +33,19 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <YouTubeFeedProvider>
-        <AudioPlayerProvider>
-          <View style={{ flex: 1 }}>
-            <NavigationContainer ref={navigationRef}>
-              <RootNavigator />
-            </NavigationContainer>
-            <MiniPlayer />
-          </View>
-        </AudioPlayerProvider>
-      </YouTubeFeedProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <YouTubeFeedProvider>
+          <AudioPlayerProvider>
+            <View style={{ flex: 1 }}>
+              <NavigationContainer ref={navigationRef}>
+                <RootNavigator />
+              </NavigationContainer>
+              <MiniPlayer />
+            </View>
+          </AudioPlayerProvider>
+        </YouTubeFeedProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
