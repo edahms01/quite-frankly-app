@@ -3,6 +3,7 @@
     "name": "Quite Frankly",
     "slug": "quite-frankly",
     "version": "1.0.0",
+    "scheme": "quitefrankly",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -43,7 +44,8 @@
         {
           "enableBackgroundPlayback": true
         }
-      ]
+      ],
+      "expo-web-browser"
     ]
   }
 }
