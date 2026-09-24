@@ -81,3 +81,8 @@ Full detail, including idempotency requirements for the write-only sheet tabs, i
   host, causes ANRs/phantom reloads. Alternate platforms. Boot Android with
   `-gpu swiftshader_indirect -memory 1536` (not `-gpu auto`), and kill stale
   gradle/kotlin daemons first if instability resurfaces.
+- **Dev-client testing**: the dev-tools floating button overlaps the
+  top-right corner in every screen (same spot as the avatar button),
+  blocking taps there. Workaround: temporarily point RootNavigator's
+  entry route at the screen you need to reach, verify, then revert and
+  confirm via `git status` before committing anything else.

@@ -1,13 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import TrackPlayer, {
-  AppKilledPlaybackBehavior,
-  Capability,
-  Event,
-  State,
-  usePlaybackState,
-  useProgress,
-  useTrackPlayerEvents,
-} from 'react-native-track-player';
+import { Image } from 'react-native';
+import {
+  setAudioModeAsync,
+  useAudioPlayer as useExpoAudioPlayer,
+  useAudioPlayerStatus,
+} from 'expo-audio';
 
 const AudioPlayerContext = createContext({
   currentTrack: null,
@@ -21,124 +18,84 @@ const AudioPlayerContext = createContext({
   seekTo: () => {},
 });
 
-// Module-level (not component state) so setupPlayer() only ever runs once
-// per app lifetime, surviving React 19/dev StrictMode's double-invoke of
-// effects — TrackPlayer.setupPlayer() rejects if called again while already
-// set up.
-let setupPromise = null;
-
-function setupTrackPlayer() {
-  if (!setupPromise) {
-    setupPromise = TrackPlayer.setupPlayer().then(() =>
-      TrackPlayer.updateOptions({
-        capabilities: [Capability.Play, Capability.Pause, Capability.SeekTo, Capability.Stop],
-        compactCapabilities: [Capability.Play, Capability.Pause],
-        notificationCapabilities: [Capability.Play, Capability.Pause],
-        android: {
-          appKilledPlaybackBehavior: AppKilledPlaybackBehavior.PausePlayback,
-        },
-      })
-    );
-  }
-  return setupPromise;
-}
-
-function mapState(state) {
-  switch (state) {
-    case State.Playing:
-      return 'playing';
-    case State.Paused:
-      return 'paused';
-    case State.Buffering:
-    case State.Loading:
-    case State.Connecting:
-      return 'buffering';
-    case State.Error:
-      return 'error';
-    default:
-      return 'idle';
-  }
-}
+// No per-episode artwork exists in the feed data — static show logo, resolved
+// to a URI via RN's built-in resolver (expo-audio's artworkUrl takes a URL
+// string, not a raw require() result — no need for the expo-asset dependency).
+const ARTWORK_URI = Image.resolveAssetSource(
+  require('../assets/images/quite-frankly-logo-final.png')
+).uri;
 
 export function AudioPlayerProvider({ children }) {
+  const player = useExpoAudioPlayer();
+  const status = useAudioPlayerStatus(player);
   const [currentTrack, setCurrentTrack] = useState(null);
-  const [error, setError] = useState(null);
-  const rawState = usePlaybackState();
-  const progress = useProgress(1000);
 
   useEffect(() => {
-    let cancelled = false;
-    setupTrackPlayer().catch((err) => {
-      if (!cancelled) setError(err.message);
+    // doNotMix is required for setActiveForLockScreen to work (per expo-audio docs).
+    setAudioModeAsync({
+      shouldPlayInBackground: true,
+      playsInSilentMode: true,
+      interruptionMode: 'doNotMix',
     });
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
-  useTrackPlayerEvents([Event.PlaybackError], (event) => {
-    setError(event?.message ?? 'Playback error');
-  });
-
-  const play = useCallback(async (episode) => {
-    if (!episode?.audioUrl) return;
-    setError(null);
-    try {
-      await setupTrackPlayer();
-      const active = await TrackPlayer.getActiveTrack();
-      if (active?.id === episode.guid) {
-        await TrackPlayer.play();
+  const play = useCallback(
+    (episode) => {
+      if (!episode?.audioUrl) return;
+      if (currentTrack?.guid === episode.guid) {
+        player.play();
         return;
       }
-      // Always reset before adding — single track at a time, no queue.
-      await TrackPlayer.reset();
-      await TrackPlayer.add({
-        id: episode.guid,
-        url: episode.audioUrl,
-        title: episode.title,
-        artist: 'Quite Frankly',
-        // No per-episode artwork exists in the feed data — static show logo.
-        artwork: require('../assets/images/quite-frankly-logo-final.png'),
-      });
+      // Single track at a time — replace() swaps the loaded source outright, no queue.
+      player.replace({ uri: episode.audioUrl });
       setCurrentTrack(episode);
-      await TrackPlayer.play();
-    } catch (err) {
-      setError(err.message);
-    }
-  }, []);
+      // Android kills background audio after ~3 min without this — must be
+      // called for every new track, not just once at app start.
+      player.setActiveForLockScreen(
+        true,
+        { title: episode.title, artist: 'Quite Frankly', artworkUrl: ARTWORK_URI },
+        { isLiveStream: false }
+      );
+      player.play();
+    },
+    [currentTrack, player]
+  );
 
-  const pause = useCallback(async () => {
-    try {
-      await TrackPlayer.pause();
-    } catch (err) {
-      setError(err.message);
-    }
-  }, []);
+  const pause = useCallback(() => {
+    player.pause();
+  }, [player]);
 
-  const playbackState = mapState(rawState?.state ?? rawState);
-
-  const togglePlayPause = useCallback(async () => {
-    if (playbackState === 'playing') {
-      await pause();
+  const togglePlayPause = useCallback(() => {
+    if (status.playing) {
+      pause();
     } else if (currentTrack) {
-      await play(currentTrack);
+      play(currentTrack);
     }
-  }, [playbackState, currentTrack, pause, play]);
+  }, [status.playing, currentTrack, pause, play]);
 
-  const seekTo = useCallback(async (seconds) => {
-    try {
-      await TrackPlayer.seekTo(seconds);
-    } catch (err) {
-      setError(err.message);
-    }
-  }, []);
+  const seekTo = useCallback(
+    (seconds) => {
+      player.seekTo(seconds);
+    },
+    [player]
+  );
+
+  const playbackState = !currentTrack
+    ? 'idle'
+    : status.error
+      ? 'error'
+      : status.isBuffering
+        ? 'buffering'
+        : status.playing
+          ? 'playing'
+          : 'paused';
 
   const value = {
     currentTrack,
     playbackState,
-    position: progress.position,
-    duration: progress.duration,
-    error,
+    position: status.currentTime,
+    duration: status.duration,
+    error: status.error,
     play,
     pause,
     togglePlayPause,

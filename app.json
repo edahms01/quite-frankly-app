@@ -8,10 +8,7 @@
     "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "tv.quitefrankly.app",
-      "infoPlist": {
-        "UIBackgroundModes": ["audio"]
-      }
+      "bundleIdentifier": "tv.quitefrankly.app"
     },
     "android": {
       "package": "tv.quitefrankly.app",
@@ -39,6 +36,12 @@
         "expo-image-picker",
         {
           "photosPermission": "Allow Quite Frankly to access your photos to attach a screenshot to a bug report."
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "enableBackgroundPlayback": true
         }
       ]
     ]
