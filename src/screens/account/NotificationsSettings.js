@@ -1,7 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, Switch, Text, View } from 'react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
+import {
+  getStoredPreferences,
+  setStoredPreferences,
+  registerForPushNotifications,
+  DEFAULT_PREFERENCES,
+} from '../../lib/pushNotifications';
 
 const INITIAL = [
   { key: 'live', label: 'Live Alerts' },
@@ -10,7 +16,25 @@ const INITIAL = [
 ];
 
 export default function NotificationsSettings({ navigation }) {
-  const [values, setValues] = useState({ live: true, video: true, club: true });
+  const [values, setValues] = useState(DEFAULT_PREFERENCES);
+
+  useEffect(() => {
+    (async () => {
+      const cached = await getStoredPreferences();
+      setValues(cached);
+      // Covers someone who skipped onboarding's prompt but enabled OS
+      // permission later — no-ops safely if permission still isn't
+      // granted or the EAS projectId isn't configured yet.
+      registerForPushNotifications(cached);
+    })();
+  }, []);
+
+  const handleToggle = (key, value) => {
+    const next = { ...values, [key]: value };
+    setValues(next);
+    setStoredPreferences(next);
+    registerForPushNotifications(next);
+  };
 
   return (
     <View style={styles.container}>
@@ -21,7 +45,7 @@ export default function NotificationsSettings({ navigation }) {
             <Text style={styles.label}>{item.label}</Text>
             <Switch
               value={values[item.key]}
-              onValueChange={(v) => setValues((prev) => ({ ...prev, [item.key]: v }))}
+              onValueChange={(v) => handleToggle(item.key, v)}
               trackColor={{ false: colors.surfaceLine, true: colors.accentGold }}
               thumbColor={colors.inkPrimary}
             />

@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { setJSON } from './lib/blobs.js';
+import { getTokensForPreference, sendExpoPushBatch } from './lib/push.js';
 
 const MESSAGE_TYPE_VERIFICATION = 'webhook_callback_verification';
 const MESSAGE_TYPE_NOTIFICATION = 'notification';
@@ -45,6 +46,15 @@ export default async (req) => {
     const eventType = body.subscription?.type;
     if (eventType === 'stream.online') {
       await setJSON('qf-live-status', 'status', { isLive: true, checkedAt: new Date().toISOString() });
+      try {
+        const tokens = await getTokensForPreference('live');
+        await sendExpoPushBatch(tokens, {
+          title: 'Quite Frankly is live',
+          body: 'Frank just went live — tap to watch now.',
+        });
+      } catch (err) {
+        console.error('Push notification step failed for stream.online', err);
+      }
     } else if (eventType === 'stream.offline') {
       await setJSON('qf-live-status', 'status', { isLive: false, checkedAt: new Date().toISOString() });
     }

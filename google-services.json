@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "416079153350",
+    "project_id": "quite-frankly-app",
+    "storage_bucket": "quite-frankly-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:416079153350:android:557ea3dace876275456fc7",
+        "android_client_info": {
+          "package_name": "tv.quitefrankly.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB79-2NZISQjTqfTNN7iTFITmBBe4DGlrA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -2,6 +2,7 @@ import { XMLParser } from 'fast-xml-parser';
 import { setJSON } from './lib/blobs.js';
 import { appendRow, getColumn } from './lib/sheets.js';
 import { filterNewByKey } from './lib/idempotency.js';
+import { getTokensForPreference, sendExpoPushBatch } from './lib/push.js';
 
 export const config = { schedule: '*/15 * * * *' };
 
@@ -54,6 +55,20 @@ export default async () => {
       item.id,
       'video',
     ]);
+  }
+
+  if (newItems.length > 0) {
+    try {
+      const tokens = await getTokensForPreference('video');
+      for (const item of newItems) {
+        await sendExpoPushBatch(tokens, {
+          title: 'New video from Quite Frankly',
+          body: item.title,
+        });
+      }
+    } catch (err) {
+      console.error('Push notification step failed for new videos', err);
+    }
   }
 
   return new Response(JSON.stringify({ ok: true, cached: items.length, newRows: newItems.length }), {

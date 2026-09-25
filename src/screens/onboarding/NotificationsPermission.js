@@ -4,6 +4,7 @@ import * as Notifications from 'expo-notifications';
 import { Bell } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, spacing, radius } from '../../theme';
 import OnboardingDots from '../../components/OnboardingDots';
+import { registerForPushNotifications, DEFAULT_PREFERENCES } from '../../lib/pushNotifications';
 
 export default function NotificationsPermission({ navigation }) {
   const [requesting, setRequesting] = useState(false);
@@ -13,7 +14,10 @@ export default function NotificationsPermission({ navigation }) {
   const handleEnable = async () => {
     setRequesting(true);
     try {
-      await Notifications.requestPermissionsAsync();
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status === 'granted') {
+        await registerForPushNotifications(DEFAULT_PREFERENCES);
+      }
     } finally {
       setRequesting(false);
       goNext();
