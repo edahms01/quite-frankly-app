@@ -6,6 +6,9 @@ import DestinationCard from '../../components/DestinationCard';
 import AvatarButton from '../../components/AvatarButton';
 import { useYouTubeFeed } from '../../context/YouTubeFeedContext';
 import { relativeTime } from '../../utils/relativeTime';
+import LoadingState from '../../components/LoadingState';
+import ErrorState from '../../components/ErrorState';
+import EmptyState from '../../components/EmptyState';
 
 const DESTINATIONS = [
   { label: 'Watch', Icon: CirclePlay, route: 'Watch' },
@@ -59,12 +62,18 @@ export default function Home({ navigation }) {
           </View>
         </View>
         <View style={styles.mostRecentInfo}>
-          <Text style={styles.videoTitle} numberOfLines={2}>
-            {loading ? 'Loading…' : error ? 'Unable to load latest video' : mostRecent?.title}
-          </Text>
-          {mostRecent ? (
-            <Text style={styles.videoMeta}>Uploaded {relativeTime(mostRecent.publishedAt)}</Text>
-          ) : null}
+          {loading ? (
+            <LoadingState message="Loading…" style={styles.inlineState} />
+          ) : error ? (
+            <ErrorState message="Unable to load latest video" style={styles.inlineState} />
+          ) : mostRecent ? (
+            <>
+              <Text style={styles.videoTitle} numberOfLines={2}>{mostRecent.title}</Text>
+              <Text style={styles.videoMeta}>Uploaded {relativeTime(mostRecent.publishedAt)}</Text>
+            </>
+          ) : (
+            <EmptyState message="No recent videos yet." style={styles.inlineState} />
+          )}
         </View>
       </TouchableOpacity>
 
@@ -138,6 +147,10 @@ const styles = StyleSheet.create({
   },
   mostRecentInfo: {
     padding: spacing.md,
+  },
+  inlineState: {
+    marginTop: 0,
+    alignItems: 'flex-start',
   },
   videoTitle: {
     color: colors.inkPrimary,

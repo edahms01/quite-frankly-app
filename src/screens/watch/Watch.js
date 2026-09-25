@@ -5,6 +5,9 @@ import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../th
 import { useYouTubeFeed } from '../../context/YouTubeFeedContext';
 import { useLiveStatus } from '../../hooks/useLiveStatus';
 import { relativeTime } from '../../utils/relativeTime';
+import LoadingState from '../../components/LoadingState';
+import ErrorState from '../../components/ErrorState';
+import EmptyState from '../../components/EmptyState';
 
 const PLATFORMS = [
   { label: 'YouTube', url: 'https://www.youtube.com/channel/UCtB5nbKHYsX8EGIk9cOevaQ' },
@@ -51,9 +54,11 @@ export default function Watch({ navigation }) {
 
       <View style={styles.grid}>
         {loading ? (
-          <Text style={styles.statusText}>Loading videos…</Text>
+          <LoadingState message="Loading videos…" />
         ) : error ? (
-          <Text style={styles.statusText}>Unable to load videos</Text>
+          <ErrorState message="Unable to load videos" />
+        ) : gridItems.length === 0 ? (
+          <EmptyState message="No videos yet — check back soon." />
         ) : (
           gridItems.map((video) => (
             <TouchableOpacity

@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,6 +12,8 @@ import { CirclePlay, Pause } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import { relativeTime } from '../../utils/relativeTime';
 import { useAudioPlayer } from '../../context/AudioPlayerContext';
+import LoadingState from '../../components/LoadingState';
+import ErrorState from '../../components/ErrorState';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 const PAGE_SIZE = 20;
@@ -19,9 +22,11 @@ export default function Listen() {
   const { currentTrack, playbackState, play, togglePlayPause } = useAudioPlayer();
   const [episodes, setEpisodes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState(null);
+  const [loadMoreError, setLoadMoreError] = useState(null);
 
   const fetchPage = async (offset) => {
     const response = await fetch(
@@ -31,36 +36,47 @@ export default function Listen() {
     return response.json();
   };
 
+  // Shared by the initial mount fetch and pull-to-refresh, so both go
+  // through the same success/error handling.
+  const loadInitial = useCallback(async () => {
+    try {
+      const data = await fetchPage(0);
+      setEpisodes(data.episodes);
+      setHasMore(data.hasMore);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    }
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      try {
-        const data = await fetchPage(0);
-        if (!cancelled) {
-          setEpisodes(data.episodes);
-          setHasMore(data.hasMore);
-          setLoading(false);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err.message);
-          setLoading(false);
-        }
-      }
+      await loadInitial();
+      if (!cancelled) setLoading(false);
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [loadInitial]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadInitial();
+    setRefreshing(false);
+  };
 
   const loadMore = async () => {
     setLoadingMore(true);
+    setLoadMoreError(null);
     try {
       const data = await fetchPage(episodes.length);
       setEpisodes((prev) => [...prev, ...data.episodes]);
       setHasMore(data.hasMore);
     } catch (err) {
-      setError(err.message);
+      // A loadMore failure shouldn't blank the already-loaded list — keep
+      // it separate from the initial-load `error` state.
+      setLoadMoreError(err.message);
     } finally {
       setLoadingMore(false);
     }
@@ -70,13 +86,23 @@ export default function Listen() {
     <View style={styles.container}>
       <ScrollView
         contentContainerStyle={[styles.list, currentTrack && styles.listWithMiniPlayer]}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.accentGold}
+          />
+        }
       >
         <Text style={styles.title}>Listen</Text>
 
         {loading ? (
-          <ActivityIndicator color={colors.accentGold} style={styles.stateIndicator} />
+          <LoadingState style={styles.stateIndicator} />
         ) : error ? (
-          <Text style={styles.errorText}>Couldn't load episodes. Pull to refresh and try again.</Text>
+          <ErrorState
+            message="Couldn't load episodes. Pull to refresh and try again."
+            style={styles.stateIndicator}
+          />
         ) : (
           <>
             {episodes.map((ep, i) => {
@@ -113,6 +139,13 @@ export default function Listen() {
                 )}
               </TouchableOpacity>
             ) : null}
+            {loadMoreError ? (
+              <ErrorState
+                message="Couldn't load more episodes."
+                onRetry={loadMore}
+                style={styles.loadMoreError}
+              />
+            ) : null}
           </>
         )}
       </ScrollView>
@@ -143,12 +176,8 @@ const styles = StyleSheet.create({
   stateIndicator: {
     marginTop: spacing.lg,
   },
-  errorText: {
-    color: colors.brandRed,
-    fontFamily: fontFamily.medium,
-    fontSize: fontSize.base,
-    marginTop: spacing.lg,
-    textAlign: 'center',
+  loadMoreError: {
+    marginTop: spacing.sm,
   },
   row: {
     flexDirection: 'row',
