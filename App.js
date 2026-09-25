@@ -14,8 +14,10 @@ import { BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
 
 import RootNavigator from './src/navigation/RootNavigator';
 import MiniPlayer from './src/components/MiniPlayer';
+import OfflineBanner from './src/components/OfflineBanner';
 import { YouTubeFeedProvider } from './src/context/YouTubeFeedContext';
 import { AudioPlayerProvider } from './src/context/AudioPlayerContext';
+import { NetworkProvider } from './src/context/NetworkContext';
 import { navigationRef } from './src/navigation/navigationRef';
 
 export default function App() {
@@ -35,16 +37,19 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <YouTubeFeedProvider>
-          <AudioPlayerProvider>
-            <View style={{ flex: 1 }}>
-              <NavigationContainer ref={navigationRef}>
-                <RootNavigator />
-              </NavigationContainer>
-              <MiniPlayer />
-            </View>
-          </AudioPlayerProvider>
-        </YouTubeFeedProvider>
+        <NetworkProvider>
+          <YouTubeFeedProvider>
+            <AudioPlayerProvider>
+              <View style={{ flex: 1 }}>
+                <NavigationContainer ref={navigationRef}>
+                  <RootNavigator />
+                </NavigationContainer>
+                <MiniPlayer />
+                <OfflineBanner />
+              </View>
+            </AudioPlayerProvider>
+          </YouTubeFeedProvider>
+        </NetworkProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
