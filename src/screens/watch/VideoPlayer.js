@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View, Share } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import { ChevronLeft } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
@@ -13,6 +14,7 @@ export default function VideoPlayer({ navigation, route }) {
     ? `https://www.youtube.com/watch?v=${video.id}`
     : 'https://www.youtube.com/channel/UCtB5nbKHYsX8EGIk9cOevaQ';
   const [loading, setLoading] = useState(true);
+  const insets = useSafeAreaInsets();
 
   return (
     <ScrollView style={styles.container}>
@@ -27,7 +29,10 @@ export default function VideoPlayer({ navigation, route }) {
           onLoadEnd={() => setLoading(false)}
         />
         {loading ? <LoadingState message="Loading video…" style={styles.playerLoading} /> : null}
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity
+          style={[styles.backButton, { top: insets.top + spacing.md }]}
+          onPress={() => navigation.goBack()}
+        >
           <ChevronLeft color={colors.inkPrimary} size={24} />
         </TouchableOpacity>
       </View>
@@ -77,6 +82,10 @@ const styles = StyleSheet.create({
     top: spacing.md,
     left: spacing.md,
     padding: spacing.xs,
+    // Guarantees contrast regardless of what's in the video thumbnail
+    // behind it — same treatment as Home's play button overlay.
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    borderRadius: radius.md,
   },
   webview: {
     flex: 1,

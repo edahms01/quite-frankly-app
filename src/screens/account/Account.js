@@ -1,26 +1,47 @@
+import { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { ChevronRight } from 'lucide-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ChevronRight, Eye, EyeOff } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
 
 const ROWS = [
-  { label: 'Subscription', route: 'Subscription' },
+  { label: 'Become a Sponsor', route: 'Subscription' },
   { label: 'Notifications', route: 'NotificationsSettings' },
-  { label: 'Donation', route: 'Donation' },
 ];
 
 export default function Account({ navigation }) {
+  const [email, setEmail] = useState(null);
+  const [emailVisible, setEmailVisible] = useState(false);
+
+  useEffect(() => {
+    AsyncStorage.getItem('onboarding_email').then(setEmail);
+  }, []);
+
+  const avatarInitial = email ? email[0].toUpperCase() : 'E';
+  const emailDisplay = email ?? 'No email on file';
+
   return (
     <View style={styles.container}>
       <BackHeader title="Account" navigation={navigation} />
       <View style={styles.body}>
         <View style={styles.profileRow}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarInitial}>E</Text>
+            <Text style={styles.avatarInitial}>{avatarInitial}</Text>
           </View>
-          <View>
-            <Text style={styles.name}>[Name]</Text>
-            <Text style={styles.email}>[email@placeholder.com]</Text>
+          <View style={styles.emailRow}>
+            <Text style={styles.email}>
+              {emailVisible ? emailDisplay : '••••••••••••'}
+            </Text>
+            {email ? (
+              <TouchableOpacity onPress={() => setEmailVisible((v) => !v)} hitSlop={8}>
+                {emailVisible ? (
+                  <EyeOff color={colors.inkMuted} size={18} />
+                ) : (
+                  <Eye color={colors.inkMuted} size={18} />
+                )}
+              </TouchableOpacity>
+            ) : null}
           </View>
         </View>
 
@@ -42,6 +63,14 @@ export default function Account({ navigation }) {
           onPress={() => navigation.navigate('ReportBug')}
         >
           <Text style={styles.rowLabel}>Report a Bug</Text>
+          <ChevronRight color={colors.inkMuted} size={18} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.row}
+          onPress={() => navigation.navigate('DonateToApp')}
+        >
+          <Text style={styles.rowLabel}>Donate to App</Text>
           <ChevronRight color={colors.inkMuted} size={18} />
         </TouchableOpacity>
 
@@ -81,10 +110,10 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.bold,
     fontSize: fontSize.xxl,
   },
-  name: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.lg,
+  emailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   email: {
     color: colors.inkMuted,

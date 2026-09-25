@@ -3,7 +3,6 @@ import OnboardingNavigator from './OnboardingNavigator';
 import MainTabNavigator from './MainTabNavigator';
 import AccountStackNavigator from './AccountStackNavigator';
 import SubscriptionCheckout from '../screens/modal/SubscriptionCheckout';
-import SubscriptionConfirmed from '../screens/modal/SubscriptionConfirmed';
 import FullPlayer from '../screens/modal/FullPlayer';
 
 const Stack = createNativeStackNavigator();
@@ -17,11 +16,6 @@ export default function RootNavigator() {
       <Stack.Screen
         name="SubscriptionCheckout"
         component={SubscriptionCheckout}
-        options={{ presentation: 'modal', headerShown: false }}
-      />
-      <Stack.Screen
-        name="SubscriptionConfirmed"
-        component={SubscriptionConfirmed}
         options={{ presentation: 'modal', headerShown: false }}
       />
       <Stack.Screen

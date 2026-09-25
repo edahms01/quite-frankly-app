@@ -1,4 +1,5 @@
 import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 import { MessageCircle, Send, MessageSquare, Camera, X, Music2, ChevronRight } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
 import BackHeader from '../../components/BackHeader';
@@ -6,7 +7,8 @@ import BackHeader from '../../components/BackHeader';
 const JOIN = [
   { label: 'Discord', Icon: MessageCircle, url: 'https://discord.gg/yzzqnGgzEv' },
   { label: 'Telegram', Icon: Send, url: 'https://t.me/quitefranklytv' },
-  { label: 'Forum', Icon: MessageSquare, url: 'https://quitefranklyforum.vbulletin.net/forum/quite-frankly-forum' },
+  // No dedicated Forum app — opens in-app rather than kicking out to Safari.
+  { label: 'Forum', Icon: MessageSquare, url: 'https://quitefranklyforum.vbulletin.net/forum/quite-frankly-forum', inAppBrowser: true },
 ];
 
 const FOLLOW = [
@@ -15,9 +17,13 @@ const FOLLOW = [
   { label: 'Tumblr', Icon: Music2, url: 'http://stonedandstudying.tumblr.com' },
 ];
 
-function IconTile({ label, Icon, url }) {
+function IconTile({ label, Icon, url, inAppBrowser }) {
   return (
-    <TouchableOpacity style={styles.tile} onPress={() => Linking.openURL(url)} activeOpacity={0.7}>
+    <TouchableOpacity
+      style={styles.tile}
+      onPress={() => (inAppBrowser ? WebBrowser.openBrowserAsync(url) : Linking.openURL(url))}
+      activeOpacity={0.7}
+    >
       <Icon color={colors.inkPrimary} size={22} />
       <Text style={styles.tileLabel}>{label}</Text>
     </TouchableOpacity>
@@ -46,7 +52,7 @@ export default function Community({ navigation }) {
         <Text style={styles.sectionLabel}>EVENTS</Text>
         <TouchableOpacity
           style={styles.eventRow}
-          onPress={() => Linking.openURL('https://www.quitefrankly.tv/the-quite-frankly-live-events')}
+          onPress={() => WebBrowser.openBrowserAsync('https://www.quitefrankly.tv/the-quite-frankly-live-events')}
         >
           <Text style={styles.eventText}>Main Event · Oct 23, 2027</Text>
           <ChevronRight color={colors.inkMuted} size={18} />

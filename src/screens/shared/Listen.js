@@ -14,11 +14,12 @@ import { relativeTime } from '../../utils/relativeTime';
 import { useAudioPlayer } from '../../context/AudioPlayerContext';
 import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
+import BackHeader from '../../components/BackHeader';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 const PAGE_SIZE = 20;
 
-export default function Listen() {
+export default function Listen({ navigation }) {
   const { currentTrack, playbackState, play, togglePlayPause } = useAudioPlayer();
   const [episodes, setEpisodes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -112,7 +113,7 @@ export default function Listen() {
   return (
     <View style={styles.container}>
       <ScrollView
-        contentContainerStyle={[styles.list, currentTrack && styles.listWithMiniPlayer]}
+        contentContainerStyle={currentTrack && styles.listWithMiniPlayer}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -121,66 +122,68 @@ export default function Listen() {
           />
         }
       >
-        <Text style={styles.title}>Listen</Text>
+        <BackHeader title="Listen" navigation={navigation} />
 
-        {loading ? (
-          <LoadingState style={styles.stateIndicator} />
-        ) : error ? (
-          <ErrorState
-            message="Couldn't load episodes. Pull to refresh and try again."
-            style={styles.stateIndicator}
-          />
-        ) : (
-          <>
-            {refreshError ? (
-              <ErrorState
-                message="Couldn't refresh episodes. Pull down and try again."
-                style={styles.refreshError}
-              />
-            ) : null}
-            {episodes.map((ep, i) => {
-              const isCurrent = currentTrack?.guid === ep.guid;
-              const isPlaying = isCurrent && playbackState === 'playing';
-              return (
-              <TouchableOpacity
-                key={ep.guid ?? i}
-                style={styles.row}
-                onPress={() => (isCurrent ? togglePlayPause() : play(ep))}
-              >
-                <View style={styles.iconCircle}>
-                  {isPlaying ? (
-                    <Pause color={colors.inkPrimary} size={16} />
+        <View style={styles.list}>
+          {loading ? (
+            <LoadingState style={styles.stateIndicator} />
+          ) : error ? (
+            <ErrorState
+              message="Couldn't load episodes. Pull to refresh and try again."
+              style={styles.stateIndicator}
+            />
+          ) : (
+            <>
+              {refreshError ? (
+                <ErrorState
+                  message="Couldn't refresh episodes. Pull down and try again."
+                  style={styles.refreshError}
+                />
+              ) : null}
+              {episodes.map((ep, i) => {
+                const isCurrent = currentTrack?.guid === ep.guid;
+                const isPlaying = isCurrent && playbackState === 'playing';
+                return (
+                <TouchableOpacity
+                  key={ep.guid ?? i}
+                  style={styles.row}
+                  onPress={() => (isCurrent ? togglePlayPause() : play(ep))}
+                >
+                  <View style={styles.iconCircle}>
+                    {isPlaying ? (
+                      <Pause color={colors.inkPrimary} size={16} />
+                    ) : (
+                      <CirclePlay color={colors.inkPrimary} size={16} />
+                    )}
+                  </View>
+                  <View style={styles.textBlock}>
+                    <Text style={styles.episodeTitle}>{ep.title}</Text>
+                    <Text style={styles.episodeMeta}>
+                      {relativeTime(ep.publishedAt)} · {ep.duration}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+                );
+              })}
+              {hasMore ? (
+                <TouchableOpacity style={styles.loadMore} onPress={loadMore} disabled={loadingMore}>
+                  {loadingMore ? (
+                    <ActivityIndicator color={colors.accentGold} />
                   ) : (
-                    <CirclePlay color={colors.inkPrimary} size={16} />
+                    <Text style={styles.loadMoreText}>Load More</Text>
                   )}
-                </View>
-                <View style={styles.textBlock}>
-                  <Text style={styles.episodeTitle}>{ep.title}</Text>
-                  <Text style={styles.episodeMeta}>
-                    {relativeTime(ep.publishedAt)} · {ep.duration}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-              );
-            })}
-            {hasMore ? (
-              <TouchableOpacity style={styles.loadMore} onPress={loadMore} disabled={loadingMore}>
-                {loadingMore ? (
-                  <ActivityIndicator color={colors.accentGold} />
-                ) : (
-                  <Text style={styles.loadMoreText}>Load More</Text>
-                )}
-              </TouchableOpacity>
-            ) : null}
-            {loadMoreError ? (
-              <ErrorState
-                message="Couldn't load more episodes."
-                onRetry={loadMore}
-                style={styles.loadMoreError}
-              />
-            ) : null}
-          </>
-        )}
+                </TouchableOpacity>
+              ) : null}
+              {loadMoreError ? (
+                <ErrorState
+                  message="Couldn't load more episodes."
+                  onRetry={loadMore}
+                  style={styles.loadMoreError}
+                />
+              ) : null}
+            </>
+          )}
+        </View>
       </ScrollView>
     </View>
   );
@@ -199,12 +202,6 @@ const styles = StyleSheet.create({
     // MiniPlayer overlays app-wide as an absolute-positioned bar — keep the
     // last rows from being hidden underneath it while it's showing.
     paddingBottom: spacing.lg + 64,
-  },
-  title: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.xxl,
-    marginBottom: spacing.sm,
   },
   stateIndicator: {
     marginTop: spacing.lg,

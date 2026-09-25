@@ -1,4 +1,5 @@
-import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 import { FileText, Mail } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
@@ -9,16 +10,17 @@ export default function Writing({ navigation }) {
     <ScrollView style={styles.container}>
       <BackHeader title="Writing" navigation={navigation} />
       <View style={styles.body}>
+        <Text style={styles.sectionLabel}>Frank's Writing</Text>
         <View style={styles.grid}>
           <DestinationCard
             Icon={FileText}
             label="Blog"
-            onPress={() => Linking.openURL('https://www.quitefrankly.tv/blog')}
+            onPress={() => WebBrowser.openBrowserAsync('https://www.quitefrankly.tv/blog')}
           />
           <DestinationCard
             Icon={Mail}
             label="Newsletter Archive"
-            onPress={() => Linking.openURL('https://www.quitefrankly.tv/newsletter-archives')}
+            onPress={() => WebBrowser.openBrowserAsync('https://www.quitefrankly.tv/newsletter-archives')}
           />
         </View>
 
@@ -42,6 +44,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.lg,
     gap: spacing.md,
+  },
+  sectionLabel: {
+    color: colors.inkPrimary,
+    fontFamily: fontFamily.semiBold,
+    fontSize: fontSize.md,
   },
   grid: {
     flexDirection: 'row',

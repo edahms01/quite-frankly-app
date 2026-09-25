@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 import Papa from 'papaparse';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ShoppingBag } from 'lucide-react-native';
@@ -97,12 +98,12 @@ export default function Shop({ navigation }) {
                   key={s.label}
                   Icon={ShoppingBag}
                   label={s.label}
-                  onPress={() => Linking.openURL(s.url)}
+                  onPress={() => WebBrowser.openBrowserAsync(s.url)}
                 />
               ))}
             </View>
 
-            <Text style={[styles.sectionLabel, styles.affiliatesLabel]}>AFFILIATES</Text>
+            <Text style={[styles.sectionLabel, styles.affiliatesLabel]}>AFFILIATES & DISCOUNTS</Text>
             <View style={styles.list}>
               {data.affiliates.map((a) => (
                 <ExternalRow
@@ -111,6 +112,7 @@ export default function Shop({ navigation }) {
                   subtitle={a.subtitle}
                   badge={a.badge}
                   url={a.url}
+                  inAppBrowser
                 />
               ))}
             </View>

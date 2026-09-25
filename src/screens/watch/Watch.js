@@ -1,6 +1,7 @@
 import { Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CirclePlay } from 'lucide-react-native';
+import { CirclePlay, ChevronLeft } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
 import { useYouTubeFeed } from '../../context/YouTubeFeedContext';
 import { useLiveStatus } from '../../hooks/useLiveStatus';
@@ -13,7 +14,8 @@ const PLATFORMS = [
   { label: 'YouTube', url: 'https://www.youtube.com/channel/UCtB5nbKHYsX8EGIk9cOevaQ' },
   { label: 'Rumble', url: 'https://rumble.com/c/QuiteFrankly' },
   { label: 'Twitch', url: 'https://www.twitch.tv/quitefranklylive' },
-  { label: 'Pilled', url: 'https://pilled.net/foxhole/27724/iframe?theme=black' },
+  // No dedicated Pilled app — opens in-app rather than kicking out to Safari.
+  { label: 'Pilled', url: 'https://pilled.net/foxhole/27724/iframe?theme=black', inAppBrowser: true },
 ];
 
 export default function Watch({ navigation }) {
@@ -24,6 +26,13 @@ export default function Watch({ navigation }) {
     <SafeAreaView style={styles.container} edges={['top']}>
     <ScrollView>
       <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => navigation.getParent()?.navigate('Home')}
+          style={styles.backButton}
+          hitSlop={12}
+        >
+          <ChevronLeft color={colors.inkPrimary} size={24} />
+        </TouchableOpacity>
         <Text style={styles.title}>Watch</Text>
       </View>
 
@@ -45,7 +54,7 @@ export default function Watch({ navigation }) {
           <TouchableOpacity
             key={p.label}
             style={styles.platformPill}
-            onPress={() => Linking.openURL(p.url)}
+            onPress={() => (p.inAppBrowser ? WebBrowser.openBrowserAsync(p.url) : Linking.openURL(p.url))}
           >
             <Text style={styles.platformText}>{p.label}</Text>
           </TouchableOpacity>
@@ -90,7 +99,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceGround,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
     padding: spacing.md,
+  },
+  backButton: {
+    padding: spacing.xs,
+    marginLeft: -spacing.xs,
   },
   title: {
     color: colors.inkPrimary,
