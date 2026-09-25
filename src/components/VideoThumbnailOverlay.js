@@ -22,6 +22,11 @@ export default function VideoThumbnailOverlay({ thumbnailUrl }) {
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
+    // Explicit percentage sizing, not just inset:0 — the latter alone left
+    // this collapse to fit only its non-absolute child (playButton) here,
+    // shrinking the absolutely-positioned Image along with it.
+    width: '100%',
+    height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
   },
