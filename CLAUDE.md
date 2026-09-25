@@ -69,6 +69,7 @@ Full detail, including idempotency requirements for the write-only sheet tabs, i
 - **EAS project linkage** — not yet done (`app.json` has no `extra.eas.projectId`, no `eas.json`). Blocks real push tokens (`getExpoPushTokenAsync`) on any platform; everything else in Phase 7 is built and works around this by failing closed. Provider itself is decided: Expo's own push service (`expo-notifications`, already installed), not OneSignal/Firebase.
 - **Member-unlocked states** — every "member" screen currently shows only the non-member view; real membership verification (Squarespace Commerce API lookup) is deprioritized, comes after core app ships.
 - **OTP code-entry screen** — Onboarding collects email; the verification step after it isn't designed yet.
+- **Old-Android network fetches fail despite browser working** — on a real (first-ever real-device test) Android 8.0 device, Watch/Listen showed "Unable to load videos" / no audio, while the same backend URL opened fine in the phone's browser and `curl` from a dev machine confirmed the API itself is healthy. Likely cause: the device's system-level cert trust store (used by the app's own network layer) is frozen at its last security patch, while Chrome/WebView maintain their own independently-updated trust store — a known divergence on old, unpatched Android. Not fixed — treated as a device-age limitation, not a code bug; re-test on a more current Android device before concluding otherwise.
 
 ---
 
