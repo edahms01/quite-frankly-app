@@ -10,6 +10,7 @@ import VideoThumbnailOverlay from '../../components/VideoThumbnailOverlay';
 import { useYouTubeFeed } from '../../context/YouTubeFeedContext';
 import { useLiveStatus } from '../../hooks/useLiveStatus';
 import { useVideoActiveSource } from '../../hooks/useVideoActiveSource';
+import { useAccountEmail } from '../../hooks/useAccountEmail';
 import { relativeTime } from '../../utils/relativeTime';
 import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
@@ -38,6 +39,7 @@ export default function Home({ navigation }) {
   const { isLive } = useLiveStatus();
   const [embedVisible, setEmbedVisible] = useState(false);
   const { claim } = useVideoActiveSource({ onForcedStop: () => setEmbedVisible(false) });
+  const { avatarInitial } = useAccountEmail();
 
   const goTo = (route) => {
     if (route === 'MembersOnlyTab') {
@@ -60,7 +62,7 @@ export default function Home({ navigation }) {
           <View style={[styles.onAirBadge, isLive && styles.onAirBadgeLive]}>
             <Text style={[styles.onAirText, isLive && styles.onAirTextLive]}>ON AIR</Text>
           </View>
-          <AvatarButton onPress={() => navigation.navigate('AccountStack')} />
+          <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
         </View>
       </View>
 

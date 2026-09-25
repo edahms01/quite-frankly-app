@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ChevronRight, Eye, EyeOff } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
+import { useAccountEmail } from '../../hooks/useAccountEmail';
 
 const ROWS = [
   { label: 'Become a Sponsor', route: 'Subscription' },
@@ -11,14 +11,9 @@ const ROWS = [
 ];
 
 export default function Account({ navigation }) {
-  const [email, setEmail] = useState(null);
+  const { email, avatarInitial } = useAccountEmail();
   const [emailVisible, setEmailVisible] = useState(false);
 
-  useEffect(() => {
-    AsyncStorage.getItem('onboarding_email').then(setEmail);
-  }, []);
-
-  const avatarInitial = email ? email[0].toUpperCase() : 'E';
   const emailDisplay = email ?? 'No email on file';
 
   return (
