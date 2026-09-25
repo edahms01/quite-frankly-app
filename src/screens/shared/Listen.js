@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   RefreshControl,
@@ -28,6 +28,19 @@ export default function Listen() {
   const [error, setError] = useState(null);
   const [loadMoreError, setLoadMoreError] = useState(null);
 
+  // Shared across every call site that can outlive the component (initial
+  // mount fetch AND pull-to-refresh, both go through loadInitial) — a
+  // per-call `cancelled` local (like Shop.js's load()) only guards the
+  // call it was declared in, so a manual onRefresh invocation wouldn't be
+  // covered by the mount effect's cleanup. A ref flipped once on unmount
+  // covers every caller.
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
   const fetchPage = async (offset) => {
     const response = await fetch(
       `${API_BASE_URL}/.netlify/functions/get-soundcloud-episodes?offset=${offset}&limit=${PAGE_SIZE}`
@@ -41,23 +54,23 @@ export default function Listen() {
   const loadInitial = useCallback(async () => {
     try {
       const data = await fetchPage(0);
-      setEpisodes(data.episodes);
-      setHasMore(data.hasMore);
-      setError(null);
+      if (mountedRef.current) {
+        setEpisodes(data.episodes);
+        setHasMore(data.hasMore);
+        setError(null);
+      }
     } catch (err) {
-      setError(err.message);
+      if (mountedRef.current) {
+        setError(err.message);
+      }
     }
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
     (async () => {
       await loadInitial();
-      if (!cancelled) setLoading(false);
+      if (mountedRef.current) setLoading(false);
     })();
-    return () => {
-      cancelled = true;
-    };
   }, [loadInitial]);
 
   const onRefresh = async () => {
