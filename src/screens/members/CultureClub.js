@@ -53,6 +53,11 @@ export default function CultureClub({ navigation }) {
             </View>
           </TouchableOpacity>
         ))}
+        <Text style={styles.calendarNote}>
+          If you'd like to see a show calendar, message Frank and ask him
+          to start using a digital calendar for show times. And we can
+          link it in the app.
+        </Text>
       </View>
     </ScrollView>
     </SafeAreaView>
@@ -152,6 +157,12 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.regular,
     fontSize: fontSize.sm,
     marginTop: 2,
+  },
+  calendarNote: {
+    color: colors.inkMuted,
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.sm,
+    marginTop: spacing.sm,
   },
   membersBadge: {
     borderWidth: 1,
