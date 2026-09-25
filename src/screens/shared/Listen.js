@@ -27,6 +27,7 @@ export default function Listen() {
   const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState(null);
   const [loadMoreError, setLoadMoreError] = useState(null);
+  const [refreshError, setRefreshError] = useState(null);
 
   // Shared across every call site that can outlive the component (initial
   // mount fetch AND pull-to-refresh, both go through loadInitial) — a
@@ -50,18 +51,31 @@ export default function Listen() {
   };
 
   // Shared by the initial mount fetch and pull-to-refresh, so both go
-  // through the same success/error handling.
-  const loadInitial = useCallback(async () => {
+  // through the same success/error handling. `isRefreshOfLoaded` tells it
+  // whether this call is refreshing a list that already has episodes on
+  // screen — on failure in that case we must not blow away what's already
+  // loaded with the full-screen `error` state (same bug class as loadMore
+  // blanking the list). The true initial load always passes false/omits
+  // it, since there's nothing loaded yet to preserve.
+  const loadInitial = useCallback(async (isRefreshOfLoaded = false) => {
     try {
       const data = await fetchPage(0);
       if (mountedRef.current) {
         setEpisodes(data.episodes);
         setHasMore(data.hasMore);
         setError(null);
+        // Clear any stale inline error notices so they don't linger under
+        // freshly-reloaded content.
+        setLoadMoreError(null);
+        setRefreshError(null);
       }
     } catch (err) {
       if (mountedRef.current) {
-        setError(err.message);
+        if (isRefreshOfLoaded) {
+          setRefreshError(err.message);
+        } else {
+          setError(err.message);
+        }
       }
     }
   }, []);
@@ -74,9 +88,9 @@ export default function Listen() {
   }, [loadInitial]);
 
   const onRefresh = async () => {
-    setRefreshing(true);
-    await loadInitial();
-    setRefreshing(false);
+    if (mountedRef.current) setRefreshing(true);
+    await loadInitial(episodes.length > 0);
+    if (mountedRef.current) setRefreshing(false);
   };
 
   const loadMore = async () => {
@@ -118,6 +132,12 @@ export default function Listen() {
           />
         ) : (
           <>
+            {refreshError ? (
+              <ErrorState
+                message="Couldn't refresh episodes. Pull down and try again."
+                style={styles.refreshError}
+              />
+            ) : null}
             {episodes.map((ep, i) => {
               const isCurrent = currentTrack?.guid === ep.guid;
               const isPlaying = isCurrent && playbackState === 'playing';
@@ -191,6 +211,10 @@ const styles = StyleSheet.create({
   },
   loadMoreError: {
     marginTop: spacing.sm,
+  },
+  refreshError: {
+    marginTop: spacing.xs,
+    marginBottom: spacing.sm,
   },
   row: {
     flexDirection: 'row',

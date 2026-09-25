@@ -54,11 +54,11 @@ export default function Watch({ navigation }) {
 
       <View style={styles.grid}>
         {loading ? (
-          <LoadingState message="Loading videos…" />
+          <LoadingState message="Loading videos…" style={styles.stateFullWidth} />
         ) : error ? (
-          <ErrorState message="Unable to load videos" />
+          <ErrorState message="Unable to load videos" style={styles.stateFullWidth} />
         ) : gridItems.length === 0 ? (
-          <EmptyState message="No videos yet — check back soon." />
+          <EmptyState message="No videos yet — check back soon." style={styles.stateFullWidth} />
         ) : (
           gridItems.map((video) => (
             <TouchableOpacity
@@ -142,6 +142,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.lg,
+  },
+  stateFullWidth: {
+    width: '100%',
   },
   videoCard: {
     width: '47%',

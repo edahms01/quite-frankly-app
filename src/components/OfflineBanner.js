@@ -14,7 +14,7 @@ export default function OfflineBanner() {
   if (isConnected) return null;
 
   return (
-    <View style={[styles.banner, { paddingTop: insets.top + spacing.xs }]}>
+    <View pointerEvents="none" style={[styles.banner, { paddingTop: insets.top + spacing.xs }]}>
       <Text style={styles.text}>No internet connection</Text>
     </View>
   );

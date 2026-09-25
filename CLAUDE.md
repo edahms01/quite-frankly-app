@@ -59,7 +59,7 @@ Full detail, including idempotency requirements for the write-only sheet tabs, i
 4. **Backend functions** (Netlify) — Bug Report writer, video-polling job (writes `youtube rss`, triggers Home/Watch refresh), SoundCloud polling/caching job (powers Listen, writes `audio history`).
 5. **Audio player** — `expo-audio` wired to Listen's episode list, persistent mini-player, background playback and lock-screen controls.
 6. **Subscription flow** — native checkout modal, Patreon/SubscribeStar external opens.
-7. **Notifications** ✅ — Expo push service (register-push-device.js, `qf-push-tokens` Blobs store), real toggle persistence in NotificationsSettings.js, live-alert and new-video-alert triggers wired to twitch-webhook.js/poll-youtube.js. Culture Club Reminders has preference storage only, no trigger (no data source yet). Blocked on Eric linking an EAS project (`extra.eas.projectId`) for real device tokens/testing.
+7. **Notifications** ✅ — Expo push service (register-push-device.js, `qf-push-tokens` Blobs store), real toggle persistence in NotificationsSettings.js, live-alert and new-video-alert triggers wired to twitch-webhook.js/poll-youtube.js. Culture Club Reminders has preference storage only, no trigger (no data source yet).
 8. **Polish** — icon/splash asset replacement, shared loading/error/empty state components + app-wide offline detection (screen-level gap fixes across Home/Watch/Listen/Shop), CLAUDE.md cleanup.
 
 ---
