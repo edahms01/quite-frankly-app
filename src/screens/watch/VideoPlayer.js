@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View, Share } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { WebView } from 'react-native-webview';
 import { ChevronLeft } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import { relativeTime } from '../../utils/relativeTime';
-import LoadingState from '../../components/LoadingState';
+import VideoEmbed from '../../components/VideoEmbed';
+import VideoThumbnailOverlay from '../../components/VideoThumbnailOverlay';
+import { useVideoActiveSource } from '../../hooks/useVideoActiveSource';
 
 export default function VideoPlayer({ navigation, route }) {
   const video = route?.params?.video;
@@ -13,22 +14,34 @@ export default function VideoPlayer({ navigation, route }) {
   const youtubeUrl = video?.id
     ? `https://www.youtube.com/watch?v=${video.id}`
     : 'https://www.youtube.com/channel/UCtB5nbKHYsX8EGIk9cOevaQ';
-  const [loading, setLoading] = useState(true);
   const insets = useSafeAreaInsets();
+  // Arriving on this screen is itself the "play" action (matches today's
+  // behavior, where the embed loads immediately on mount) — a podcast
+  // starting stops it back to a tap-to-resume thumbnail.
+  const [embedVisible, setEmbedVisible] = useState(true);
+  const { claim } = useVideoActiveSource({ onForcedStop: () => setEmbedVisible(false) });
+
+  useEffect(() => {
+    claim();
+  }, [claim]);
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.playerArea}>
-        <WebView
-          source={{
-            uri: `https://www.youtube.com/embed/${video.id}`,
-            headers: { Referer: 'https://www.quitefrankly.tv' },
-          }}
-          style={styles.webview}
-          allowsInlineMediaPlayback
-          onLoadEnd={() => setLoading(false)}
-        />
-        {loading ? <LoadingState message="Loading video…" style={styles.playerLoading} /> : null}
+        {embedVisible ? (
+          <VideoEmbed videoId={video.id} />
+        ) : (
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={0.85}
+            onPress={() => {
+              claim();
+              setEmbedVisible(true);
+            }}
+          >
+            <VideoThumbnailOverlay thumbnailUrl={video?.thumbnailUrl} />
+          </TouchableOpacity>
+        )}
         <TouchableOpacity
           style={[styles.backButton, { top: insets.top + spacing.md }]}
           onPress={() => navigation.goBack()}
@@ -86,16 +99,6 @@ const styles = StyleSheet.create({
     // behind it — same treatment as Home's play button overlay.
     backgroundColor: 'rgba(0,0,0,0.4)',
     borderRadius: radius.md,
-  },
-  webview: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-  playerLoading: {
-    ...StyleSheet.absoluteFillObject,
-    marginTop: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   body: {
     padding: spacing.md,

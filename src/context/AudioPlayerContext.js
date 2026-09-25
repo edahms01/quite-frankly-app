@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Image } from 'react-native';
 import {
   setAudioModeAsync,
@@ -12,10 +12,12 @@ const AudioPlayerContext = createContext({
   position: 0,
   duration: 0,
   error: null,
+  activeSource: null,
   play: () => {},
   pause: () => {},
   togglePlayPause: () => {},
   seekTo: () => {},
+  setVideoActive: () => {},
 });
 
 // No per-episode artwork exists in the feed data — static show logo, resolved
@@ -29,6 +31,9 @@ export function AudioPlayerProvider({ children }) {
   const player = useExpoAudioPlayer();
   const status = useAudioPlayerStatus(player);
   const [currentTrack, setCurrentTrack] = useState(null);
+  // Shared with video screens (see useVideoActiveSource) so podcast and
+  // video playback stay mutually exclusive — 'podcast' | 'video' | null.
+  const [activeSource, setActiveSource] = useState(null);
 
   useEffect(() => {
     // doNotMix is required for setActiveForLockScreen to work (per expo-audio docs).
@@ -42,6 +47,7 @@ export function AudioPlayerProvider({ children }) {
   const play = useCallback(
     (episode) => {
       if (!episode?.audioUrl) return;
+      setActiveSource('podcast');
       if (currentTrack?.guid === episode.guid) {
         player.play();
         return;
@@ -64,6 +70,29 @@ export function AudioPlayerProvider({ children }) {
   const pause = useCallback(() => {
     player.pause();
   }, [player]);
+
+  // setVideoActive must have a stable identity across renders — video
+  // screens re-claim on mount via an effect keyed on it (see
+  // useVideoActiveSource), and if it changed identity every time
+  // status.playing flipped (e.g. right when a podcast resumes), that
+  // effect would re-fire and immediately re-pause the podcast it was
+  // just told to resume. Reading status/pause via refs avoids that.
+  const statusPlayingRef = useRef(status.playing);
+  statusPlayingRef.current = status.playing;
+  const pauseRef = useRef(pause);
+  pauseRef.current = pause;
+
+  const setVideoActive = useCallback((isActive) => {
+    if (isActive) {
+      if (statusPlayingRef.current) pauseRef.current();
+      setActiveSource('video');
+    } else {
+      // Only clear if video still owns the slot — a podcast may have
+      // already reclaimed it (e.g. video's own unmount cleanup firing
+      // after a podcast started), and this must not stomp on that.
+      setActiveSource((prev) => (prev === 'video' ? null : prev));
+    }
+  }, []);
 
   const togglePlayPause = useCallback(() => {
     if (status.playing) {
@@ -96,10 +125,12 @@ export function AudioPlayerProvider({ children }) {
     position: status.currentTime,
     duration: status.duration,
     error: status.error,
+    activeSource,
     play,
     pause,
     togglePlayPause,
     seekTo,
+    setVideoActive,
   };
 
   return <AudioPlayerContext.Provider value={value}>{children}</AudioPlayerContext.Provider>;
