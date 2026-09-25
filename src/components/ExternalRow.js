@@ -1,12 +1,17 @@
 import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 import { ArrowUpRight } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../theme';
 
-export default function ExternalRow({ avatarText, title, subtitle, url, badge, onPress }) {
+// inAppBrowser: pass true for destinations with no dedicated mobile app
+// (opens via expo-web-browser instead of kicking out to Safari/the OS).
+// Default stays OS-level Linking.openURL, for destinations (PayPal,
+// Amazon) that do have a real app and should hand off to it.
+export default function ExternalRow({ avatarText, title, subtitle, url, badge, onPress, inAppBrowser }) {
   return (
     <TouchableOpacity
       style={styles.row}
-      onPress={onPress ?? (() => url && Linking.openURL(url))}
+      onPress={onPress ?? (() => url && (inAppBrowser ? WebBrowser.openBrowserAsync(url) : Linking.openURL(url)))}
       activeOpacity={0.7}
     >
       {avatarText != null && (

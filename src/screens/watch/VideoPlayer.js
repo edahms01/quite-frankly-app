@@ -1,7 +1,11 @@
-import { Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View, Share } from 'react-native';
-import { CirclePlay, ChevronLeft } from 'lucide-react-native';
+import { useState } from 'react';
+import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View, Share } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { WebView } from 'react-native-webview';
+import { ChevronLeft } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import { relativeTime } from '../../utils/relativeTime';
+import LoadingState from '../../components/LoadingState';
 
 export default function VideoPlayer({ navigation, route }) {
   const video = route?.params?.video;
@@ -9,20 +13,28 @@ export default function VideoPlayer({ navigation, route }) {
   const youtubeUrl = video?.id
     ? `https://www.youtube.com/watch?v=${video.id}`
     : 'https://www.youtube.com/channel/UCtB5nbKHYsX8EGIk9cOevaQ';
+  const [loading, setLoading] = useState(true);
+  const insets = useSafeAreaInsets();
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.playerArea}>
-        {video?.thumbnailUrl ? (
-          <Image source={{ uri: video.thumbnailUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-        ) : null}
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <WebView
+          source={{
+            uri: `https://www.youtube.com/embed/${video.id}`,
+            headers: { Referer: 'https://www.quitefrankly.tv' },
+          }}
+          style={styles.webview}
+          allowsInlineMediaPlayback
+          onLoadEnd={() => setLoading(false)}
+        />
+        {loading ? <LoadingState message="Loading video…" style={styles.playerLoading} /> : null}
+        <TouchableOpacity
+          style={[styles.backButton, { top: insets.top + spacing.md }]}
+          onPress={() => navigation.goBack()}
+        >
           <ChevronLeft color={colors.inkPrimary} size={24} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.playButton} activeOpacity={0.8}>
-          <CirclePlay color={colors.inkPrimary} size={56} />
-        </TouchableOpacity>
-        <Text style={styles.illustrative}>IN-APP PLAYER — ILLUSTRATIVE</Text>
       </View>
 
       <View style={styles.body}>
@@ -64,30 +76,26 @@ const styles = StyleSheet.create({
   playerArea: {
     height: 220,
     backgroundColor: '#000',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   backButton: {
     position: 'absolute',
     top: spacing.md,
     left: spacing.md,
     padding: spacing.xs,
+    // Guarantees contrast regardless of what's in the video thumbnail
+    // behind it — same treatment as Home's play button overlay.
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    borderRadius: radius.md,
   },
-  playButton: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: colors.brandRed,
+  webview: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  playerLoading: {
+    ...StyleSheet.absoluteFillObject,
+    marginTop: 0,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  illustrative: {
-    position: 'absolute',
-    bottom: spacing.sm,
-    left: spacing.md,
-    color: colors.inkMuted,
-    fontFamily: fontFamily.regular,
-    fontSize: fontSize.xs,
   },
   body: {
     padding: spacing.md,

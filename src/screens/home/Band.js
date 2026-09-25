@@ -33,10 +33,11 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: spacing.md,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   playerCard: {
     width: '100%',
-    height: 320,
+    height: 400,
     borderRadius: radius.md,
     overflow: 'hidden',
     backgroundColor: colors.surfaceCard,

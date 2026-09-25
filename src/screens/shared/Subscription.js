@@ -1,7 +1,10 @@
-import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
+import { Alert, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { ArrowUpRight } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
+import ExternalRow from '../../components/ExternalRow';
 
 // Patreon/SubscribeStar use OS-level Linking.openURL (not WebView) so
 // Universal Links/App Links can hand off to their native apps — see
@@ -11,10 +14,21 @@ const PLATFORMS = [
   { label: 'SubscribeStar', url: 'https://www.subscribestar.com/quitefrankly' },
 ];
 
+const BTC_ADDRESS = 'bc1q97w5aazjf7pjjl50n42kdmj9pqyn5zndwh3lng';
+const XRP_ADDRESS = 'rnES2vQV6d2jLpavzf7y97XD4AfK1MjePu';
+
+function CopyRow({ avatarText, title, address }) {
+  const copy = async () => {
+    await Clipboard.setStringAsync(address);
+    Alert.alert('Copied', `${title} address copied to clipboard.`);
+  };
+  return <ExternalRow avatarText={avatarText} title={title} subtitle={address} badge="Copy" url={null} onPress={copy} />;
+}
+
 export default function Subscription({ navigation }) {
   return (
     <View style={styles.container}>
-      <BackHeader title="Subscription" navigation={navigation} />
+      <BackHeader title="Become a Sponsor" navigation={navigation} />
       <View style={styles.body}>
         <Text style={styles.subtitle}>Not a member yet. Choose how you'd like to subscribe:</Text>
 
@@ -47,6 +61,31 @@ export default function Subscription({ navigation }) {
             </TouchableOpacity>
           ))}
         </View>
+
+        <View style={styles.divider} />
+        <Text style={styles.sectionLabel}>ONE-TIME SUPPORT</Text>
+        <Text style={styles.subtitle}>
+          Prefer a one-time contribution instead? No subscription required.
+        </Text>
+
+        <ExternalRow
+          avatarText="P"
+          title="PayPal — One-Time Tip"
+          url="http://www.paypal.me/QuiteFranklyLive"
+        />
+        <ExternalRow
+          avatarText="A"
+          title="Amazon Storefront"
+          subtitle="Shop Frank's picks — no extra cost to you"
+          url="https://amazon.com/shop/quitefranklyofficial"
+        />
+        <CopyRow avatarText="₿" title="Bitcoin" address={BTC_ADDRESS} />
+        <CopyRow avatarText="X" title="XRP" address={XRP_ADDRESS} />
+
+        <Text style={styles.mail}>
+          Prefer mail? Send letters, cards, or small gifts to: Quite
+          Frankly, 222 Purchase Street, #105, Rye, NY 10580.
+        </Text>
       </View>
     </View>
   );
@@ -141,5 +180,21 @@ const styles = StyleSheet.create({
     color: colors.inkPrimary,
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.md,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.surfaceLine,
+    marginVertical: spacing.xs,
+  },
+  sectionLabel: {
+    color: colors.inkMuted,
+    fontFamily: fontFamily.semiBold,
+    fontSize: fontSize.base,
+    letterSpacing: 0.5,
+  },
+  mail: {
+    color: colors.inkMuted,
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.sm,
   },
 });

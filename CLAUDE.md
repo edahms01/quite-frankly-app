@@ -18,8 +18,8 @@ Native-feeling iOS/Android mobile app for the *Quite Frankly* podcast (quitefran
 ---
 
 ## Tech stack
-- **React Native**, via **Expo with dev client** (decided in Phase 1) — `react-native-track-player` v4 needs native linking regardless of Expo vs. bare, so Expo+dev-client was chosen for the added `expo-font` and EAS Build path (relevant to Phase 8) at no real cost.
-- **Audio**: `react-native-track-player`, pinned to **v4** (Apache-2.0, free). v5 went commercially licensed — do not upgrade without checking that license first.
+- **React Native**, via **Expo with dev client** (decided in Phase 1) — audio playback requires native linking, so Expo+dev-client was chosen for the added `expo-font` and EAS Build path (relevant to Phase 8) at no real cost.
+- **Audio**: `expo-audio` **~57.0.5** — handles background playback, lock-screen controls, and audio history (see AudioPlayerContext.js).
 - **Navigation**: bottom tab navigator + per-tab stacks + one modal screen (see below).
 - **Styling**: `theme.js` — RN StyleSheet objects, not CSS. Shadows are platform-specific (see file comments); the gold "glow" effect needs a border fallback on Android since `elevation` can't carry color.
 - **Fonts**: Bebas Neue (display/hero only) + Inter (everything else) — not system fonts, loaded via `@expo-google-fonts/bebas-neue` + `@expo-google-fonts/inter` and `expo-font`'s `useFonts` (see `App.js`), not raw bundled `.ttf` files.
@@ -53,23 +53,24 @@ Full detail, including idempotency requirements for the write-only sheet tabs, i
 ---
 
 ## Build phases
-1. **Scaffold** — RN init, core deps (`react-native-track-player` v4, `@react-navigation`, font linking), `theme.js` in place, folder structure.
+1. **Scaffold** — RN init, core deps (`expo-audio`, `@react-navigation`, font linking), `theme.js` in place, folder structure.
 2. **Static shell** — all 20 screens built to match the wireframes exactly, full navigation wired, no real data yet. Gives a clickable app to sanity-check against the canvas before backend complexity starts.
 3. **Read-only data** — wire Home/Watch (YouTube RSS + live polling), Shop (CSV fetch), Onboarding email capture (storage only, no verification yet).
 4. **Backend functions** (Netlify) — Bug Report writer, video-polling job (writes `youtube rss`, triggers Home/Watch refresh), SoundCloud polling/caching job (powers Listen, writes `audio history`).
-5. **Audio player** — `react-native-track-player` wired to Listen's episode list, persistent mini-player, background playback and lock-screen controls.
+5. **Audio player** — `expo-audio` wired to Listen's episode list, persistent mini-player, background playback and lock-screen controls.
 6. **Subscription flow** — native checkout modal, Patreon/SubscribeStar external opens.
-7. **Notifications** ✅ — Expo push service (register-push-device.js, `qf-push-tokens` Blobs store), real toggle persistence in NotificationsSettings.js, live-alert and new-video-alert triggers wired to twitch-webhook.js/poll-youtube.js. Culture Club Reminders has preference storage only, no trigger (no data source yet). Blocked on Eric linking an EAS project (`extra.eas.projectId`) for real device tokens/testing.
-8. **Polish** — empty/error/offline states, loading states, App Store/Play Store submission prep.
+7. **Notifications** ✅ — Expo push service (register-push-device.js, `qf-push-tokens` Blobs store), real toggle persistence in NotificationsSettings.js, live-alert and new-video-alert triggers wired to twitch-webhook.js/poll-youtube.js. Culture Club Reminders has preference storage only, no trigger (no data source yet).
+8. **Polish** — icon/splash asset replacement, shared loading/error/empty state components + app-wide offline detection (screen-level gap fixes across Home/Watch/Listen/Shop), CLAUDE.md cleanup.
 
 ---
 
 ## Known open items
 - **Calendar's real source** — need to ask Frank (ICS-capable calendar vs. manual).
-- **EAS project linkage** — not yet done (`app.json` has no `extra.eas.projectId`, no `eas.json`). Blocks real push tokens (`getExpoPushTokenAsync`) on any platform; everything else in Phase 7 is built and works around this by failing closed. Provider itself is decided: Expo's own push service (`expo-notifications`, already installed), not OneSignal/Firebase.
+- **EAS project linkage** — done (`app.json` has `extra.eas.projectId`, `eas.json` configured with dev/preview/production build profiles + submit config). Unblocks real push tokens (`getExpoPushTokenAsync`) for live device testing. Expo's push service (`expo-notifications`) is integrated.
 - **Member-unlocked states** — every "member" screen currently shows only the non-member view; real membership verification (Squarespace Commerce API lookup) is deprioritized, comes after core app ships.
+- **SubscriptionCheckout has no post-purchase confirmation screen** — `TRUST_ANY_CLOSE_AS_COMPLETE` (the Phase 6 decision to treat any checkout-sheet dismissal as a completed purchase) was reverted — it was falsely claiming success on every dismissal, not just real ones. `SubscriptionConfirmed` screen removed; closing the checkout sheet now just returns to the Subscription screen, no claim of success either way. Checkout provider (Squarespace) still gives no redirect signal to distinguish "completed" from "backed out," so a real confirmation screen needs either Squarespace dashboard access to configure a post-purchase redirect (`quitefrankly://checkout-complete`, already coded as `REDIRECT_URL` in `SubscriptionCheckout.js` but nothing fires it) or real membership verification. Deferred alongside "Member-unlocked states."
 - **OTP code-entry screen** — Onboarding collects email; the verification step after it isn't designed yet.
-- **Old-Android network fetches fail despite browser working** — on a real (first-ever real-device test) Android 8.0 device, Watch/Listen showed "Unable to load videos" / no audio, while the same backend URL opened fine in the phone's browser and `curl` from a dev machine confirmed the API itself is healthy. Likely cause: the device's system-level cert trust store (used by the app's own network layer) is frozen at its last security patch, while Chrome/WebView maintain their own independently-updated trust store — a known divergence on old, unpatched Android. Not fixed — treated as a device-age limitation, not a code bug; re-test on a more current Android device before concluding otherwise.
+- **Old-Android network fetches fail despite browser working** — on a real Android 8.0 device, Watch/Listen showed "Unable to load videos" / no audio, while the same backend URL opened fine in the phone's browser and `curl` confirmed the API is healthy. Cause: the device's system-level cert trust store (used by the app's network layer) is frozen at its last security patch, while Chrome/WebView maintain their own independently-updated trust store — a known divergence on old, unpatched Android. Accepted limitation (will not fix) — treat as a device-age issue, not a code bug. Re-test on current Android device if it resurfaces.
 
 ---
 

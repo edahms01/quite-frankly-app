@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 import Papa from 'papaparse';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ShoppingBag } from 'lucide-react-native';
@@ -7,6 +8,8 @@ import { colors, fontFamily, fontSize, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
 import DestinationCard from '../../components/DestinationCard';
 import ExternalRow from '../../components/ExternalRow';
+import LoadingState from '../../components/LoadingState';
+import ErrorState from '../../components/ErrorState';
 
 const CSV_URL =
   'https://docs.google.com/spreadsheets/d/e/2PACX-1vTPD9jF4yGWK1nP6NTVLWieooQGpWYRO0h2RVK0zBQNIoUYDLAhUmHp7Y23I9bHjWMvvqSjxLrLQl6T/pub?gid=863514589&single=true&output=csv';
@@ -31,9 +34,12 @@ export default function Shop({ navigation }) {
   const [data, setData] = useState({ stores: [], affiliates: [] });
   const [loading, setLoading] = useState(true);
   const [usingCache, setUsingCache] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
 
-  useEffect(() => {
+  const load = useCallback(() => {
     let cancelled = false;
+    setLoading(true);
+    setLoadFailed(false);
     (async () => {
       try {
         const response = await fetch(CSV_URL);
@@ -53,6 +59,11 @@ export default function Shop({ navigation }) {
           if (cached) {
             setData(JSON.parse(cached));
             setUsingCache(true);
+          } else {
+            // No cache to fall back to and the fetch failed — nothing to
+            // render, so surface an explicit error instead of a silent
+            // empty grid.
+            setLoadFailed(true);
           }
           setLoading(false);
         }
@@ -63,6 +74,8 @@ export default function Shop({ navigation }) {
     };
   }, []);
 
+  useEffect(() => load(), [load]);
+
   return (
     <ScrollView style={styles.container}>
       <BackHeader title="Shop" navigation={navigation} />
@@ -71,32 +84,42 @@ export default function Shop({ navigation }) {
           <Text style={styles.cacheNotice}>Showing last saved version — couldn't refresh.</Text>
         ) : null}
 
-        <Text style={styles.sectionLabel}>SHOP</Text>
-        <View style={styles.grid}>
-          {data.stores.map((s) => (
-            <DestinationCard
-              key={s.label}
-              Icon={ShoppingBag}
-              label={s.label}
-              onPress={() => Linking.openURL(s.url)}
-            />
-          ))}
-        </View>
+        {loadFailed ? (
+          <ErrorState
+            message="Couldn't load the shop. Check your connection and try again."
+            onRetry={load}
+          />
+        ) : (
+          <>
+            <Text style={styles.sectionLabel}>SHOP</Text>
+            <View style={styles.grid}>
+              {data.stores.map((s) => (
+                <DestinationCard
+                  key={s.label}
+                  Icon={ShoppingBag}
+                  label={s.label}
+                  onPress={() => WebBrowser.openBrowserAsync(s.url)}
+                />
+              ))}
+            </View>
 
-        <Text style={[styles.sectionLabel, styles.affiliatesLabel]}>AFFILIATES</Text>
-        <View style={styles.list}>
-          {data.affiliates.map((a) => (
-            <ExternalRow
-              key={a.title}
-              title={a.title}
-              subtitle={a.subtitle}
-              badge={a.badge}
-              url={a.url}
-            />
-          ))}
-        </View>
+            <Text style={[styles.sectionLabel, styles.affiliatesLabel]}>AFFILIATES & DISCOUNTS</Text>
+            <View style={styles.list}>
+              {data.affiliates.map((a) => (
+                <ExternalRow
+                  key={a.title}
+                  title={a.title}
+                  subtitle={a.subtitle}
+                  badge={a.badge}
+                  url={a.url}
+                  inAppBrowser
+                />
+              ))}
+            </View>
+          </>
+        )}
 
-        {loading ? <Text style={styles.sectionLabel}>Loading…</Text> : null}
+        {loading ? <LoadingState message="Loading…" /> : null}
       </View>
     </ScrollView>
   );

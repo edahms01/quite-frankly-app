@@ -14,14 +14,14 @@ export default function SubscriptionCheckout({ navigation }) {
   const handleContinue = async () => {
     setLaunchFailed(false);
     try {
-      // No admin access to Frank's Squarespace dashboard to check for a
-      // configurable post-purchase redirect (see plan's open question) —
-      // assuming the standard-plan default of none. Session closing for
-      // any reason is the only signal available, so advance regardless
-      // rather than stranding the user with no way to tell completed
-      // from backed-out apart.
+      // No admin access to Frank's Squarespace dashboard to configure a
+      // post-purchase redirect (see plan's open question), so there's no
+      // reliable signal to tell a completed purchase from the user just
+      // closing the sheet — session closing resolves the same way either
+      // way. Rather than falsely claiming success on every dismissal (the
+      // prior behavior), just return to this screen; no confirmation
+      // screen until real redirect detection exists.
       await WebBrowser.openAuthSessionAsync(CHECKOUT_URL, REDIRECT_URL);
-      navigation.navigate('SubscriptionConfirmed');
     } catch (e) {
       // Launch failure (no browser/Custom Tabs available) is not the user
       // backing out — they never saw a checkout page, so don't advance.
@@ -37,7 +37,7 @@ export default function SubscriptionCheckout({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.title}>Become a sponsor</Text>
+      <Text style={styles.title}>Become a Sponsor</Text>
       <Text style={styles.subtitle}>Plans start at $5/month.</Text>
 
       {launchFailed && (

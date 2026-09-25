@@ -31,7 +31,7 @@ export default function MainTabNavigator() {
         name="MembersOnly"
         component={MembersOnlyStackNavigator}
         options={{
-          title: 'Members Only',
+          title: 'Culture Club',
           tabBarIcon: ({ color, size }) => <Crown color={color} size={size} />,
         }}
       />
