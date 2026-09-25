@@ -1,11 +1,15 @@
+import { useState } from 'react';
 import { Image, Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2 } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
 import DestinationCard from '../../components/DestinationCard';
 import AvatarButton from '../../components/AvatarButton';
+import VideoEmbed from '../../components/VideoEmbed';
+import VideoThumbnailOverlay from '../../components/VideoThumbnailOverlay';
 import { useYouTubeFeed } from '../../context/YouTubeFeedContext';
 import { useLiveStatus } from '../../hooks/useLiveStatus';
+import { useVideoActiveSource } from '../../hooks/useVideoActiveSource';
 import { relativeTime } from '../../utils/relativeTime';
 import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
@@ -32,6 +36,8 @@ const DESTINATIONS = [
 export default function Home({ navigation }) {
   const { mostRecent, loading, error } = useYouTubeFeed();
   const { isLive } = useLiveStatus();
+  const [embedVisible, setEmbedVisible] = useState(false);
+  const { claim } = useVideoActiveSource({ onForcedStop: () => setEmbedVisible(false) });
 
   const goTo = (route) => {
     if (route === 'MembersOnlyTab') {
@@ -64,22 +70,26 @@ export default function Home({ navigation }) {
           if (isLive) {
             Linking.openURL(LIVE_URL);
           } else if (mostRecent) {
-            navigation.navigate('VideoPlayer', { video: mostRecent });
+            claim();
+            setEmbedVisible(true);
           }
         }}
         activeOpacity={0.85}
-        disabled={!isLive && !mostRecent}
+        // Once the embed is visible, the card itself must stop intercepting
+        // touches so taps reach the WebView (tap-to-play inside the iframe).
+        disabled={embedVisible || (!isLive && !mostRecent)}
       >
-        <View style={[styles.badge, isLive && styles.badgeLive]}>
-          <Text style={styles.badgeText}>{isLive ? 'LIVE NOW' : 'MOST RECENT'}</Text>
-        </View>
-        <View style={styles.thumbnail}>
-          {mostRecent?.thumbnailUrl ? (
-            <Image source={{ uri: mostRecent.thumbnailUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-          ) : null}
-          <View style={styles.playButton}>
-            <CirclePlay color={colors.inkPrimary} size={28} />
+        {embedVisible ? null : (
+          <View style={[styles.badge, isLive && styles.badgeLive]}>
+            <Text style={styles.badgeText}>{isLive ? 'LIVE NOW' : 'MOST RECENT'}</Text>
           </View>
+        )}
+        <View style={styles.thumbnail}>
+          {embedVisible ? (
+            <VideoEmbed videoId={mostRecent.id} style={StyleSheet.absoluteFill} />
+          ) : (
+            <VideoThumbnailOverlay thumbnailUrl={mostRecent?.thumbnailUrl} />
+          )}
         </View>
         <View style={styles.mostRecentInfo}>
           {loading ? (
@@ -222,14 +232,6 @@ const styles = StyleSheet.create({
   thumbnail: {
     height: 160,
     backgroundColor: colors.surfaceLive,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  playButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: 'rgba(0,0,0,0.4)',
     alignItems: 'center',
     justifyContent: 'center',
   },
