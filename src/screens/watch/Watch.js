@@ -3,6 +3,8 @@ import * as WebBrowser from 'expo-web-browser';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CirclePlay, ChevronLeft } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
+import AvatarButton from '../../components/AvatarButton';
+import { useAccountEmail } from '../../hooks/useAccountEmail';
 import { useYouTubeFeed } from '../../context/YouTubeFeedContext';
 import { useLiveStatus } from '../../hooks/useLiveStatus';
 import { relativeTime } from '../../utils/relativeTime';
@@ -21,19 +23,23 @@ const PLATFORMS = [
 export default function Watch({ navigation }) {
   const { gridItems, loading, error } = useYouTubeFeed();
   const liveStatus = useLiveStatus();
+  const { avatarInitial } = useAccountEmail();
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
     <ScrollView>
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.getParent()?.navigate('Home')}
-          style={styles.backButton}
-          hitSlop={12}
-        >
-          <ChevronLeft color={colors.inkPrimary} size={24} />
-        </TouchableOpacity>
-        <Text style={styles.title}>Watch</Text>
+        <View style={styles.titleRow}>
+          <TouchableOpacity
+            onPress={() => navigation.getParent()?.navigate('Home')}
+            style={styles.backButton}
+            hitSlop={12}
+          >
+            <ChevronLeft color={colors.inkPrimary} size={24} />
+          </TouchableOpacity>
+          <Text style={styles.title}>Watch</Text>
+        </View>
+        <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
       </View>
 
       <View style={styles.statusCard}>
@@ -100,9 +106,14 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    padding: spacing.md,
+  },
+  titleRow: {
+    flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    padding: spacing.md,
   },
   backButton: {
     padding: spacing.xs,

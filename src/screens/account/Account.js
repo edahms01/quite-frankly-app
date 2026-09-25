@@ -18,7 +18,7 @@ export default function Account({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <BackHeader title="Account" navigation={navigation} />
+      <BackHeader title="Account" navigation={navigation} hideAvatar />
       <View style={styles.body}>
         <View style={styles.profileRow}>
           <View style={styles.avatar}>
