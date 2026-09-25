@@ -8,19 +8,22 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { CirclePlay, Pause } from 'lucide-react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { CirclePlay, Pause, ChevronLeft } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import { relativeTime } from '../../utils/relativeTime';
 import { useAudioPlayer } from '../../context/AudioPlayerContext';
+import { useAccountEmail } from '../../hooks/useAccountEmail';
 import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
-import BackHeader from '../../components/BackHeader';
+import AvatarButton from '../../components/AvatarButton';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 const PAGE_SIZE = 20;
 
 export default function Listen({ navigation }) {
   const { currentTrack, playbackState, play, togglePlayPause } = useAudioPlayer();
+  const { avatarInitial } = useAccountEmail();
   const [episodes, setEpisodes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -111,7 +114,7 @@ export default function Listen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView
         contentContainerStyle={currentTrack && styles.listWithMiniPlayer}
         refreshControl={
@@ -122,7 +125,19 @@ export default function Listen({ navigation }) {
           />
         }
       >
-        <BackHeader title="Listen" navigation={navigation} />
+        <View style={styles.header}>
+          <View style={styles.titleRow}>
+            <TouchableOpacity
+              onPress={() => navigation.getParent()?.navigate('Home')}
+              style={styles.backButton}
+              hitSlop={12}
+            >
+              <ChevronLeft color={colors.inkPrimary} size={24} />
+            </TouchableOpacity>
+            <Text style={styles.title}>Listen</Text>
+          </View>
+          <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
+        </View>
 
         <View style={styles.list}>
           {loading ? (
@@ -185,7 +200,7 @@ export default function Listen({ navigation }) {
           )}
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -193,6 +208,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surfaceGround,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    padding: spacing.md,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  backButton: {
+    padding: spacing.xs,
+    marginLeft: -spacing.xs,
+  },
+  title: {
+    color: colors.inkPrimary,
+    fontFamily: fontFamily.bold,
+    fontSize: fontSize.xxl,
   },
   list: {
     padding: spacing.md,
