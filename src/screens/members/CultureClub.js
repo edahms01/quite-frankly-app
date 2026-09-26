@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Lock, ChevronLeft } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
 import AvatarButton from '../../components/AvatarButton';
+import { useAccountEmail } from '../../hooks/useAccountEmail';
 
 const EVENTS = [
   { title: 'Book Club: [title]', when: 'Thu · 7:30 PM ET' },
@@ -13,6 +14,8 @@ const EVENTS = [
 const LOGIN_URL = 'https://www.quitefrankly.tv/account/login';
 
 export default function CultureClub({ navigation }) {
+  const { avatarInitial } = useAccountEmail();
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
     <ScrollView>
@@ -27,7 +30,7 @@ export default function CultureClub({ navigation }) {
           </TouchableOpacity>
           <Text style={styles.title}>Culture Club</Text>
         </View>
-        <AvatarButton onPress={() => navigation.navigate('AccountStack')} />
+        <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
       </View>
 
       <View style={styles.body}>

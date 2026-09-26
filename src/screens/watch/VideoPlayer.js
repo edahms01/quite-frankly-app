@@ -6,7 +6,9 @@ import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import { relativeTime } from '../../utils/relativeTime';
 import VideoEmbed from '../../components/VideoEmbed';
 import VideoThumbnailOverlay from '../../components/VideoThumbnailOverlay';
+import AvatarButton from '../../components/AvatarButton';
 import { useVideoActiveSource } from '../../hooks/useVideoActiveSource';
+import { useAccountEmail } from '../../hooks/useAccountEmail';
 
 export default function VideoPlayer({ navigation, route }) {
   const video = route?.params?.video;
@@ -15,6 +17,7 @@ export default function VideoPlayer({ navigation, route }) {
     ? `https://www.youtube.com/watch?v=${video.id}`
     : 'https://www.youtube.com/channel/UCtB5nbKHYsX8EGIk9cOevaQ';
   const insets = useSafeAreaInsets();
+  const { avatarInitial } = useAccountEmail();
   // Arriving on this screen is itself the "play" action (matches today's
   // behavior, where the embed loads immediately on mount) — a podcast
   // starting stops it back to a tap-to-resume thumbnail.
@@ -48,6 +51,9 @@ export default function VideoPlayer({ navigation, route }) {
         >
           <ChevronLeft color={colors.inkPrimary} size={24} />
         </TouchableOpacity>
+        <View style={[styles.avatarOverlay, { top: insets.top + spacing.md }]}>
+          <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
+        </View>
       </View>
 
       <View style={styles.body}>
@@ -99,6 +105,10 @@ const styles = StyleSheet.create({
     // behind it — same treatment as Home's play button overlay.
     backgroundColor: 'rgba(0,0,0,0.4)',
     borderRadius: radius.md,
+  },
+  avatarOverlay: {
+    position: 'absolute',
+    right: spacing.md,
   },
   body: {
     padding: spacing.md,
