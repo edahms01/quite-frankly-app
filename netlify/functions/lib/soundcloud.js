@@ -27,7 +27,7 @@ export function truncateDescription(summary) {
 // difference.
 export function normalizeEntry(item) {
   const guid = typeof item.guid === 'object' ? item.guid['#text'] : item.guid;
-  const durationSeconds = parseTimestampToSeconds(item.duration); // raw itunes:duration text, parsed once, here
+  const durationSeconds = item.duration ? parseTimestampToSeconds(item.duration) : null;
   return {
     guid,
     title: item.title,
@@ -35,7 +35,7 @@ export function normalizeEntry(item) {
     audioUrl: item.enclosure?.url ?? null,
     description: truncateDescription(item.summary),
     descriptionFull: item.summary,
-    duration: formatDuration(durationSeconds),
+    duration: durationSeconds != null ? formatDuration(durationSeconds) : null,
     durationSeconds,
   };
 }
