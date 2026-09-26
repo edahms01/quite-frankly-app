@@ -25,3 +25,15 @@ async function isShort(videoId) {
   const res = await fetch(`https://www.youtube.com/shorts/${videoId}`, { method: 'HEAD', redirect: 'manual' });
   return res.status === 200; // 3xx = redirected to /watch = not actually a Short
 }
+
+// Same guid-keyed merge pattern as lib/soundcloud.js's mergeEpisodesByGuid,
+// but keyed on video id and applied to the YouTube archive shape.
+export function mergeVideosById(existing, incoming) {
+  const existingById = new Map(existing.map((v) => [v.id, v]));
+  for (const item of incoming) {
+    existingById.set(item.id, item);
+  }
+  return Array.from(existingById.values()).sort(
+    (a, b) => new Date(b.publishedAt) - new Date(a.publishedAt)
+  );
+}

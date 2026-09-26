@@ -1,9 +1,9 @@
 import { XMLParser } from 'fast-xml-parser';
-import { setJSON } from './lib/blobs.js';
+import { getJSON, setJSON } from './lib/blobs.js';
 import { appendRow, getColumn } from './lib/sheets.js';
 import { filterNewByKey } from './lib/idempotency.js';
 import { getTokensForPreference, sendExpoPushBatch } from './lib/push.js';
-import { CHANNEL_ID, classifyVideo, parseISO8601Duration } from './lib/youtube.js';
+import { CHANNEL_ID, classifyVideo, mergeVideosById, parseISO8601Duration } from './lib/youtube.js';
 import { secondsToTimestamp } from './lib/duration.js';
 
 export const config = { schedule: '*/15 * * * *' };
@@ -67,6 +67,7 @@ export default async () => {
     console.warn('YOUTUBE_LIVE_STATUS_API_KEY not set; falling back to default classification for new videos');
   }
 
+  const newArchiveItems = [];
   for (const item of newItems) {
     const video = enrichedById.get(item.id);
     let contentType = 'video';
@@ -88,9 +89,11 @@ export default async () => {
         // contentType stays at its 'video' default — durationSeconds/description are unaffected.
       }
     }
+    const url = `https://www.youtube.com/watch?v=${item.id}`;
+    const lastSyncedAt = new Date().toISOString();
     await appendRow('youtube rss', [
       item.title,
-      `https://www.youtube.com/watch?v=${item.id}`,
+      url,
       item.id,
       contentType,
       item.publishedAt,
@@ -98,8 +101,26 @@ export default async () => {
       secondsToTimestamp(durationSeconds),
       description,
       item.thumbnailUrl,
-      new Date().toISOString(),
+      lastSyncedAt,
     ]);
+    newArchiveItems.push({
+      id: item.id,
+      title: item.title,
+      url,
+      contentType,
+      publishedAt: item.publishedAt,
+      durationSeconds,
+      durationTimestamp: secondsToTimestamp(durationSeconds),
+      description,
+      thumbnailUrl: item.thumbnailUrl,
+      lastSyncedAt,
+    });
+  }
+
+  if (newArchiveItems.length > 0) {
+    const existingArchive = await getJSON('qf-youtube-archive', 'episodes', []);
+    const mergedArchive = mergeVideosById(existingArchive, newArchiveItems);
+    await setJSON('qf-youtube-archive', 'episodes', mergedArchive);
   }
 
   if (newItems.length > 0) {
