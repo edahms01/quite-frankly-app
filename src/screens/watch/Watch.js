@@ -1,4 +1,5 @@
-import { Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Image, Linking, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CirclePlay, ChevronLeft } from 'lucide-react-native';
@@ -13,6 +14,9 @@ import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
 import EmptyState from '../../components/EmptyState';
 
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+const PAGE_SIZE = 20;
+
 const PLATFORMS = [
   { label: 'YouTube', url: 'https://www.youtube.com/channel/UCtB5nbKHYsX8EGIk9cOevaQ' },
   { label: 'Rumble', url: 'https://rumble.com/c/QuiteFrankly' },
@@ -26,9 +30,99 @@ export default function Watch({ navigation }) {
   const liveStatus = useLiveStatus();
   const { avatarInitial } = useAccountEmail();
 
+  const [historyEpisodes, setHistoryEpisodes] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [historyRefreshing, setHistoryRefreshing] = useState(false);
+  const [historyLoadingMore, setHistoryLoadingMore] = useState(false);
+  const [historyHasMore, setHistoryHasMore] = useState(false);
+  const [historyError, setHistoryError] = useState(null);
+  const [historyLoadMoreError, setHistoryLoadMoreError] = useState(null);
+  const [historyRefreshError, setHistoryRefreshError] = useState(null);
+
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  const hasFetchedHistoryRef = useRef(false);
+
+  const fetchHistoryPage = async (offset) => {
+    const response = await fetch(
+      `${API_BASE_URL}/.netlify/functions/get-youtube-episodes?offset=${offset}&limit=${PAGE_SIZE}`
+    );
+    if (!response.ok) throw new Error(`Episodes request failed: ${response.status}`);
+    return response.json();
+  };
+
+  // startOffset defaults to gridItems.length so the history section's first
+  // page doesn't re-show the videos already shown in the top grid above.
+  const loadHistoryInitial = useCallback(async (isRefreshOfLoaded = false, startOffset = gridItems.length) => {
+    try {
+      const data = await fetchHistoryPage(startOffset);
+      if (mountedRef.current) {
+        setHistoryEpisodes(data.episodes);
+        setHistoryHasMore(data.hasMore);
+        setHistoryError(null);
+        setHistoryLoadMoreError(null);
+        setHistoryRefreshError(null);
+      }
+    } catch (err) {
+      if (mountedRef.current) {
+        if (isRefreshOfLoaded) {
+          setHistoryRefreshError(err.message);
+        } else {
+          setHistoryError(err.message);
+        }
+      }
+    }
+  }, [gridItems.length]);
+
+  // Gated on the top grid's own `loading` so the first fetch's offset is
+  // computed only after gridItems has settled — firing unconditionally on
+  // mount would compute offset=0 before the context resolves, re-showing
+  // the top grid's videos in the history section on a cold start.
+  useEffect(() => {
+    if (loading || hasFetchedHistoryRef.current) return;
+    hasFetchedHistoryRef.current = true;
+    (async () => {
+      await loadHistoryInitial();
+      if (mountedRef.current) setHistoryLoading(false);
+    })();
+  }, [loading, loadHistoryInitial]);
+
+  const onHistoryRefresh = async () => {
+    if (mountedRef.current) setHistoryRefreshing(true);
+    await loadHistoryInitial(historyEpisodes.length > 0);
+    if (mountedRef.current) setHistoryRefreshing(false);
+  };
+
+  const loadHistoryMore = async () => {
+    setHistoryLoadingMore(true);
+    setHistoryLoadMoreError(null);
+    try {
+      const data = await fetchHistoryPage(gridItems.length + historyEpisodes.length);
+      setHistoryEpisodes((prev) => [...prev, ...data.episodes]);
+      setHistoryHasMore(data.hasMore);
+    } catch (err) {
+      setHistoryLoadMoreError(err.message);
+    } finally {
+      setHistoryLoadingMore(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-    <ScrollView>
+    <ScrollView
+      refreshControl={
+        <RefreshControl
+          refreshing={historyRefreshing}
+          onRefresh={onHistoryRefresh}
+          tintColor={colors.accentGold}
+        />
+      }
+    >
       <View style={styles.header}>
         <View style={styles.titleRow}>
           <TouchableOpacity
@@ -98,6 +192,51 @@ export default function Watch({ navigation }) {
           ))
         )}
       </View>
+
+      <Text style={[styles.title, styles.historyHeading]}>More Videos</Text>
+
+      <View style={styles.grid}>
+        {historyLoading ? (
+          <LoadingState message="Loading more videos…" style={styles.stateFullWidth} />
+        ) : historyError ? (
+          <ErrorState message="Unable to load more videos" style={styles.stateFullWidth} />
+        ) : (
+          <>
+            {historyRefreshError ? (
+              <ErrorState message="Couldn't refresh videos. Pull down and try again." style={styles.stateFullWidth} />
+            ) : null}
+            {historyEpisodes.map((video) => (
+              <TouchableOpacity
+                key={video.id}
+                style={styles.videoCard}
+                onPress={() => navigation.navigate('VideoPlayer', { video })}
+              >
+                <View style={styles.thumbnail}>
+                  {video.thumbnailUrl ? (
+                    <Image source={{ uri: video.thumbnailUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+                  ) : (
+                    <CirclePlay color={colors.inkPrimary} size={28} />
+                  )}
+                </View>
+                <Text style={styles.videoTitle} numberOfLines={2}>{video.title}</Text>
+                <Text style={styles.videoMeta}>{relativeTime(video.publishedAt)}</Text>
+              </TouchableOpacity>
+            ))}
+          </>
+        )}
+      </View>
+      {historyHasMore ? (
+        <TouchableOpacity style={styles.loadMore} onPress={loadHistoryMore} disabled={historyLoadingMore}>
+          {historyLoadingMore ? (
+            <ActivityIndicator color={colors.accentGold} />
+          ) : (
+            <Text style={styles.loadMoreText}>Load More</Text>
+          )}
+        </TouchableOpacity>
+      ) : null}
+      {historyLoadMoreError ? (
+        <ErrorState message="Couldn't load more videos." onRetry={loadHistoryMore} style={styles.stateFullWidth} />
+      ) : null}
     </ScrollView>
     </SafeAreaView>
   );
@@ -208,5 +347,18 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     marginHorizontal: spacing.sm,
     marginBottom: spacing.sm,
+  },
+  historyHeading: {
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+  },
+  loadMore: {
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+  },
+  loadMoreText: {
+    color: colors.accentGold,
+    fontFamily: fontFamily.semiBold,
+    fontSize: fontSize.md,
   },
 });
