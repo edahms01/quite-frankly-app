@@ -74,14 +74,19 @@ export default async () => {
     let description = '';
     if (video) {
       durationSeconds = parseISO8601Duration(video.contentDetails.duration);
-      const hasLiveStreamingDetails = 'liveStreamingDetails' in video;
-      contentType = await classifyVideo({
-        videoId: item.id,
-        durationSeconds,
-        liveBroadcastContent: video.snippet.liveBroadcastContent,
-        hasLiveStreamingDetails,
-      });
       description = video.snippet.description ?? '';
+      const hasLiveStreamingDetails = 'liveStreamingDetails' in video;
+      try {
+        contentType = await classifyVideo({
+          videoId: item.id,
+          durationSeconds,
+          liveBroadcastContent: video.snippet.liveBroadcastContent,
+          hasLiveStreamingDetails,
+        });
+      } catch (err) {
+        console.error(`classifyVideo failed for ${item.id}, defaulting to 'video':`, err.message);
+        // contentType stays at its 'video' default — durationSeconds/description are unaffected.
+      }
     }
     await appendRow('youtube rss', [
       item.title,
