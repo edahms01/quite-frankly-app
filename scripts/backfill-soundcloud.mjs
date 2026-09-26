@@ -181,18 +181,17 @@ async function main() {
     };
   });
 
-  if (DRY_RUN) {
-    printDryRunReport(allItems, unparseableGuidCount);
-    console.log('Dry run complete. No Sheet or Blob writes were made.');
-    process.exit(0);
-    return;
-  }
-
   // NOT a plain upsert keyed on the new track-ID column F — F is empty on
   // every pre-existing row today, so an F-keyed upsert would treat every
   // existing row as brand new and duplicate the whole sheet. Column C
   // (audioUrl, the OLD key) is used ONLY for this one migration pass to
   // distinguish "already in the sheet" from "brand new".
+  //
+  // This read+partition is read-only (no writes happen until appendRows/
+  // updateRows below), so it runs before the dry-run exit — the dry-run
+  // report is the main way a human checks the insert/update split (and
+  // therefore whether the C-keyed migration risk below is actually present)
+  // before approving a live write.
   console.log(`Reading existing "${SHEET_TAB}" rows (column C, the pre-existing audioUrl key) for migration...`);
   const existingByUrl = await getColumnWithRows(SHEET_TAB, 'C');
 
@@ -200,6 +199,14 @@ async function main() {
   console.log(
     `Upsert plan: ${toInsert.length} new row(s) to insert, ${toUpdate.length} existing row(s) to update (keyed on column C / audioUrl for this one migration pass).`
   );
+
+  if (DRY_RUN) {
+    printDryRunReport(allItems, unparseableGuidCount);
+    console.log(`Would insert: ${toInsert.length} new rows, update: ${toUpdate.length} existing rows.`);
+    console.log('Dry run complete. No Sheet or Blob writes were made.');
+    process.exit(0);
+    return;
+  }
 
   console.log('Appending new rows...');
   await appendRows(SHEET_TAB, toInsert);

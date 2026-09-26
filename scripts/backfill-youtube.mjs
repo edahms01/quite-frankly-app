@@ -202,6 +202,16 @@ async function main() {
     console.warn(`⚠️ QUOTA CHECK: total quota units = ${quotaUnits}`);
   }
 
+  // This read+partition is read-only (no writes happen until appendRows/
+  // updateRows below), so it runs before the dry-run exit — the dry-run
+  // report is the main way a human checks the insert/update split before
+  // approving a live write.
+  console.log(`Reading existing "${SHEET_TAB}" rows (column C) for upsert...`);
+  const existingRows = await getColumnWithRows(SHEET_TAB, 'C');
+
+  const { toInsert, toUpdate } = partitionForUpsert(existingRows, allVideos, (v) => v.id, toYoutubeRow);
+  console.log(`Upsert plan: ${toInsert.length} new row(s) to insert, ${toUpdate.length} existing row(s) to update.`);
+
   if (DRY_RUN) {
     const oldest = allVideos[allVideos.length - 1];
     const newest = allVideos[0];
@@ -214,16 +224,11 @@ async function main() {
     console.log(`Newest video: ${newest ? `"${newest.title}" (${newest.publishedAt}, ${newest.id})` : 'none found'}`);
     console.log(`First 'short': ${firstShort ? `"${firstShort.title}" (${firstShort.id})` : 'none found'}`);
     console.log(`First 'live': ${firstLive ? `"${firstLive.title}" (${firstLive.id})` : 'none found'}`);
+    console.log(`Would insert: ${toInsert.length} new rows, update: ${toUpdate.length} existing rows.`);
     console.log('Dry run complete. No Sheet or Blob writes were made.');
     process.exit(0);
     return;
   }
-
-  console.log(`Reading existing "${SHEET_TAB}" rows (column C) for upsert...`);
-  const existingRows = await getColumnWithRows(SHEET_TAB, 'C');
-
-  const { toInsert, toUpdate } = partitionForUpsert(existingRows, allVideos, (v) => v.id, toYoutubeRow);
-  console.log(`Upsert plan: ${toInsert.length} new row(s) to insert, ${toUpdate.length} existing row(s) to update.`);
 
   console.log('Appending new rows...');
   await appendRows(SHEET_TAB, toInsert);
