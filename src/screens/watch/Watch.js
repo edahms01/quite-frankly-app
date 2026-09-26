@@ -26,7 +26,14 @@ const PLATFORMS = [
 ];
 
 export default function Watch({ navigation }) {
-  const { gridItems, loading, error } = useYouTubeFeed();
+  const { mostRecent, gridItems, loading, error } = useYouTubeFeed();
+  // gridItems deliberately excludes the most recent video (poll-youtube.js
+  // slices it off since Home shows it separately) — the top grid here
+  // needs it added back in so Watch also shows the newest upload. The
+  // History section's offset math below still starts at gridItems.length
+  // + 1 (not allItems.length) since that's the same number of archive
+  // items already shown on this screen either way.
+  const allItems = mostRecent ? [mostRecent, ...gridItems] : gridItems;
   const liveStatus = useLiveStatus();
   const { avatarInitial } = useAccountEmail();
 
@@ -57,9 +64,9 @@ export default function Watch({ navigation }) {
   };
 
   // startOffset defaults to gridItems.length + 1 so the history section's first
-  // page doesn't re-show the videos already shown in the top grid above. Archive
-  // index 0 ("mostRecent") is never in gridItems (only Home shows it), so the
-  // first archive item not shown anywhere on Watch is gridItems.length + 1.
+  // page doesn't re-show the videos already shown in the top grid above. The
+  // top grid shows mostRecent (archive index 0) plus gridItems, so the first
+  // archive item not shown there yet is gridItems.length + 1.
   const loadHistoryInitial = useCallback(async (isRefreshOfLoaded = false, startOffset = gridItems.length + 1) => {
     try {
       const data = await fetchHistoryPage(startOffset);
@@ -172,10 +179,10 @@ export default function Watch({ navigation }) {
           <LoadingState message="Loading videos…" style={styles.stateFullWidth} />
         ) : error ? (
           <ErrorState message="Unable to load videos" style={styles.stateFullWidth} />
-        ) : gridItems.length === 0 ? (
+        ) : allItems.length === 0 ? (
           <EmptyState message="No videos yet — check back soon." style={styles.stateFullWidth} />
         ) : (
-          gridItems.map((video) => (
+          allItems.map((video) => (
             <TouchableOpacity
               key={video.id}
               style={styles.videoCard}
