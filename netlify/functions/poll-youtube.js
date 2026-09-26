@@ -41,12 +41,6 @@ export default async () => {
   const entries = parsed.feed?.entry ?? [];
   const items = (Array.isArray(entries) ? entries : [entries]).map(normalizeEntry);
 
-  await setJSON('qf-youtube-cache', 'feed', {
-    mostRecent: items[0] ?? null,
-    gridItems: items.slice(1, 15),
-    updatedAt: new Date().toISOString(),
-  });
-
   const existingIds = await getColumn('youtube rss', 'C');
   const newItems = filterNewByKey(existingIds, items, (item) => item.id);
 
@@ -117,11 +111,27 @@ export default async () => {
     });
   }
 
+  // Loaded unconditionally (not just when there are new videos) so the
+  // feed cache below can pull each RSS item's description from the
+  // archive — the RSS feed itself never carries descriptions, only the
+  // enriched/backfilled archive does.
+  const existingArchive = await getJSON('qf-youtube-archive', 'episodes', []);
+  const mergedArchive = newArchiveItems.length > 0
+    ? mergeVideosById(existingArchive, newArchiveItems)
+    : existingArchive;
   if (newArchiveItems.length > 0) {
-    const existingArchive = await getJSON('qf-youtube-archive', 'episodes', []);
-    const mergedArchive = mergeVideosById(existingArchive, newArchiveItems);
     await setJSON('qf-youtube-archive', 'episodes', mergedArchive);
   }
+
+  const archiveById = new Map(mergedArchive.map((e) => [e.id, e]));
+  await setJSON('qf-youtube-cache', 'feed', {
+    mostRecent: items[0] ? { ...items[0], description: archiveById.get(items[0].id)?.description ?? '' } : null,
+    gridItems: items.slice(1, 15).map((item) => ({
+      ...item,
+      description: archiveById.get(item.id)?.description ?? '',
+    })),
+    updatedAt: new Date().toISOString(),
+  });
 
   if (newItems.length > 0) {
     try {

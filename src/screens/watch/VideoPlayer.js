@@ -85,11 +85,12 @@ export default function VideoPlayer({ navigation, route }) {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.divider} />
-        <Text style={styles.description}>
-          [Video description placeholder — episode summary, timestamps,
-          links pulled from the YouTube description field.]
-        </Text>
+        {video?.description ? (
+          <>
+            <View style={styles.divider} />
+            <Text style={styles.description}>{video.description}</Text>
+          </>
+        ) : null}
       </View>
     </ScrollView>
   );
@@ -160,6 +161,5 @@ const styles = StyleSheet.create({
     color: colors.inkMuted,
     fontFamily: fontFamily.regular,
     fontSize: fontSize.sm,
-    fontStyle: 'italic',
   },
 });
