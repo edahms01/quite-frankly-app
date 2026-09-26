@@ -138,7 +138,7 @@ export async function batchUpdateRanges(updates /* [{range, values}] */) {
 // rows per call as a defensive measure against payload-size limits if the
 // channel history turns out much larger than expected.
 export async function updateRows(tab, rowUpdates /* [{row, values}] */) {
-  if (rowUpdates.length === 0) return { totalUpdatedRows: 0 };
+  if (rowUpdates.length === 0) return [];
   const CHUNK_SIZE = 500;
   const results = [];
   for (let i = 0; i < rowUpdates.length; i += CHUNK_SIZE) {
