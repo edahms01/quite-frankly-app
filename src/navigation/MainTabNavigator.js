@@ -1,7 +1,8 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { House as HomeIcon, CirclePlay, Crown } from 'lucide-react-native';
+import { House as HomeIcon, CirclePlay, Headphones, Crown } from 'lucide-react-native';
 import HomeStackNavigator from './HomeStackNavigator';
 import WatchStackNavigator from './WatchStackNavigator';
+import ListenStackNavigator from './ListenStackNavigator';
 import MembersOnlyStackNavigator from './MembersOnlyStackNavigator';
 import { colors } from '../theme';
 
@@ -26,6 +27,11 @@ export default function MainTabNavigator() {
         name="Watch"
         component={WatchStackNavigator}
         options={{ tabBarIcon: ({ color, size }) => <CirclePlay color={color} size={size} /> }}
+      />
+      <Tab.Screen
+        name="Listen"
+        component={ListenStackNavigator}
+        options={{ tabBarIcon: ({ color, size }) => <Headphones color={color} size={size} /> }}
       />
       <Tab.Screen
         name="MembersOnly"
