@@ -19,7 +19,7 @@
 // The live run only happens after a human has reviewed the dry-run report.
 
 import { XMLParser } from 'fast-xml-parser';
-import { appendRows, getColumn, getColumnWithRows, updateRows } from '../netlify/functions/lib/sheets.js';
+import { appendRows, formatColumnsAsText, getColumn, getColumnWithRows, updateRows } from '../netlify/functions/lib/sheets.js';
 import { partitionForUpsert } from '../netlify/functions/lib/idempotency.js';
 import { normalizeEntry, extractTrackId, resolveEpisodeUrl, mergeEpisodesByGuid } from '../netlify/functions/lib/soundcloud.js';
 import { secondsToTimestamp } from '../netlify/functions/lib/duration.js';
@@ -218,6 +218,9 @@ async function main() {
     row: 1,
     values: ['Episode Title', 'Published Date', 'Audio File URL (Published)', 'Resolved URL', 'Description', 'SoundCloud Track ID', 'Duration Seconds', 'Duration', 'Full Description', 'Matched YouTube Video ID', 'Match Confidence', 'Last Synced At'],
   }]);
+
+  console.log('Setting SoundCloud Track ID / Duration Seconds / Duration columns to TEXT format...');
+  await formatColumnsAsText(SHEET_TAB, ['F', 'G', 'H']);
 
   console.log('Appending new rows...');
   await appendRows(SHEET_TAB, toInsert);

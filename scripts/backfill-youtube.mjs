@@ -12,7 +12,7 @@
 //
 // The live run only happens after a human has reviewed the dry-run report.
 
-import { appendRows, getColumn, getColumnWithRows, updateRows } from '../netlify/functions/lib/sheets.js';
+import { appendRows, formatColumnsAsText, getColumn, getColumnWithRows, updateRows } from '../netlify/functions/lib/sheets.js';
 import { partitionForUpsert } from '../netlify/functions/lib/idempotency.js';
 import { CHANNEL_ID, classifyVideo, parseISO8601Duration } from '../netlify/functions/lib/youtube.js';
 import { secondsToTimestamp } from '../netlify/functions/lib/duration.js';
@@ -238,6 +238,9 @@ async function main() {
     row: 1,
     values: ['Episode Title', 'YouTube URL', 'ID', 'Type', 'Published Date', 'Duration Seconds', 'Duration', 'Description', 'Thumbnail URL', 'Last Synced At'],
   }]);
+
+  console.log('Setting Duration Seconds / Duration columns to TEXT format (prevents the apostrophe indicator on numeric-looking values)...');
+  await formatColumnsAsText(SHEET_TAB, ['F', 'G']);
 
   console.log('Appending new rows...');
   await appendRows(SHEET_TAB, toInsert);

@@ -151,3 +151,55 @@ export async function updateRows(tab, rowUpdates /* [{row, values}] */) {
   }
   return results;
 }
+
+// Resolves the numeric sheetId for a tab name. The spreadsheet-level
+// :batchUpdate endpoint (structural/formatting requests) addresses tabs
+// via GridRange.sheetId, not A1-notation tab names like the values
+// endpoints use.
+export async function getSheetId(tab) {
+  const token = await getAccessToken();
+  const response = await fetch(sheetsUrl('?fields=sheets.properties(sheetId,title)'), {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) {
+    throw new Error(`Sheets metadata fetch failed: ${response.status} ${await response.text()}`);
+  }
+  const data = await response.json();
+  const sheet = (data.sheets || []).find((s) => s.properties.title === tab);
+  if (!sheet) {
+    throw new Error(`Sheets metadata fetch: no tab named "${tab}" found`);
+  }
+  return sheet.properties.sheetId;
+}
+
+// Sets whole columns' number format to TEXT so Sheets stops flagging
+// numeric-/time-looking TEXT-typed cells (written with valueInputOption:
+// 'RAW') with its "this is explicitly text" apostrophe indicator. Pure
+// formatting -- never touches cell values. Safe to call on every run
+// (idempotent) and safe against columns that already hold thousands of
+// written rows. Unbounded GridRange (no start/endRowIndex) covers the
+// whole column, including rows the live pollers append later.
+export async function formatColumnsAsText(tab, columnLetters) {
+  if (columnLetters.length === 0) return { replies: [] };
+  const sheetId = await getSheetId(tab);
+  const token = await getAccessToken();
+  const requests = columnLetters.map((letter) => {
+    const columnIndex = letter.toUpperCase().charCodeAt(0) - 65; // A=0, B=1, ...
+    return {
+      repeatCell: {
+        range: { sheetId, startColumnIndex: columnIndex, endColumnIndex: columnIndex + 1 },
+        cell: { userEnteredFormat: { numberFormat: { type: 'TEXT' } } },
+        fields: 'userEnteredFormat.numberFormat',
+      },
+    };
+  });
+  const response = await fetch(sheetsUrl(':batchUpdate'), {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ requests }),
+  });
+  if (!response.ok) {
+    throw new Error(`Sheets column format update for "${tab}" failed: ${response.status} ${await response.text()}`);
+  }
+  return response.json();
+}
