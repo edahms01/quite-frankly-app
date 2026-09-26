@@ -230,6 +230,15 @@ async function main() {
     return;
   }
 
+  // Idempotent: safe to write on every live run, including re-runs. Preserves
+  // the sheet's pre-existing A-D header text exactly (confirmed against the
+  // live sheet) -- only names the columns this backfill added.
+  console.log('Writing header row (adds labels for the new columns)...');
+  await updateRows(SHEET_TAB, [{
+    row: 1,
+    values: ['Episode Title', 'YouTube URL', 'ID', 'Type', 'Published Date', 'Duration Seconds', 'Duration', 'Description', 'Thumbnail URL', 'Last Synced At'],
+  }]);
+
   console.log('Appending new rows...');
   await appendRows(SHEET_TAB, toInsert);
 

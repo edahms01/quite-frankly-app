@@ -208,6 +208,17 @@ async function main() {
     return;
   }
 
+  // Idempotent: safe to write on every live run, including re-runs. Preserves
+  // the sheet's pre-existing A, B, C, E header text exactly (confirmed against
+  // the live sheet) -- renames D from "Feed URL" (no longer accurate now that
+  // this backfill fixes it to hold the real resolved URL) and names the columns
+  // this backfill added.
+  console.log('Writing header row (adds labels for the new columns)...');
+  await updateRows(SHEET_TAB, [{
+    row: 1,
+    values: ['Episode Title', 'Published Date', 'Audio File URL (Published)', 'Resolved URL', 'Description', 'SoundCloud Track ID', 'Duration Seconds', 'Duration', 'Full Description', 'Matched YouTube Video ID', 'Match Confidence', 'Last Synced At'],
+  }]);
+
   console.log('Appending new rows...');
   await appendRows(SHEET_TAB, toInsert);
 
