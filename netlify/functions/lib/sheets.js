@@ -102,3 +102,52 @@ export async function getColumn(tab, columnLetter) {
   const data = await response.json();
   return (data.values || []).flat();
 }
+
+// Column values WITH 1-based sheet row numbers (reuses the existing GET —
+// no extra API call). No assumption about a header row: row 1 is included
+// like any other row. If it's a header, it simply never matches a real
+// dedupe key during upsert, so it's harmless to include.
+export async function getColumnWithRows(tab, columnLetter) {
+  const values = await getColumn(tab, columnLetter);
+  return values.map((value, i) => ({ row: i + 1, value }));
+}
+
+// One HTTP call (spreadsheets.values:batchUpdate) for many discontiguous
+// row updates — avoids N calls for N rows when backfilling hundreds of
+// existing rows. Each entry overwrites the FULL range given, so callers
+// must pass complete rows (A..last column), not partial patches.
+export async function batchUpdateRanges(updates /* [{range, values}] */) {
+  if (updates.length === 0) return { totalUpdatedRows: 0 };
+  const token = await getAccessToken();
+  const response = await fetch(sheetsUrl('/values:batchUpdate'), {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      valueInputOption: 'RAW',
+      data: updates.map((u) => ({ range: u.range, values: u.values })),
+    }),
+  });
+  if (!response.ok) {
+    throw new Error(`Sheets batchUpdate failed: ${response.status} ${await response.text()}`);
+  }
+  return response.json();
+}
+
+// Ergonomic wrapper: builds 'tab'!A{row}:{lastCol}{row} ranges from
+// [{row, values}] and calls batchUpdateRanges. Chunks into groups of 500
+// rows per call as a defensive measure against payload-size limits if the
+// channel history turns out much larger than expected.
+export async function updateRows(tab, rowUpdates /* [{row, values}] */) {
+  if (rowUpdates.length === 0) return [];
+  const CHUNK_SIZE = 500;
+  const results = [];
+  for (let i = 0; i < rowUpdates.length; i += CHUNK_SIZE) {
+    const chunk = rowUpdates.slice(i, i + CHUNK_SIZE);
+    const updates = chunk.map(({ row, values }) => {
+      const lastCol = String.fromCharCode(64 + values.length); // A=1..Z=26 — plenty for our row widths (max 12 cols)
+      return { range: `'${tab}'!A${row}:${lastCol}${row}`, values: [values] };
+    });
+    results.push(await batchUpdateRanges(updates));
+  }
+  return results;
+}
