@@ -8,7 +8,6 @@ import AvatarButton from '../../components/AvatarButton';
 import OnAirBadge from '../../components/OnAirBadge';
 import { useAccountEmail } from '../../hooks/useAccountEmail';
 import { useYouTubeFeed } from '../../context/YouTubeFeedContext';
-import { useLiveStatus } from '../../hooks/useLiveStatus';
 import { relativeTime } from '../../utils/relativeTime';
 import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
@@ -25,6 +24,22 @@ const PLATFORMS = [
   { label: 'Pilled', url: 'https://pilled.net/foxhole/27724/iframe?theme=black', inAppBrowser: true },
 ];
 
+function VideoCard({ video, onPress }) {
+  return (
+    <TouchableOpacity style={styles.videoCard} onPress={onPress}>
+      <View style={styles.thumbnail}>
+        {video.thumbnailUrl ? (
+          <Image source={{ uri: video.thumbnailUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+        ) : (
+          <CirclePlay color={colors.inkPrimary} size={28} />
+        )}
+      </View>
+      <Text style={styles.videoTitle} numberOfLines={2}>{video.title}</Text>
+      <Text style={styles.videoMeta}>{relativeTime(video.publishedAt)}</Text>
+    </TouchableOpacity>
+  );
+}
+
 export default function Watch({ navigation }) {
   const { mostRecent, gridItems, loading, error } = useYouTubeFeed();
   // gridItems deliberately excludes the most recent video (poll-youtube.js
@@ -34,7 +49,6 @@ export default function Watch({ navigation }) {
   // + 1 (not allItems.length) since that's the same number of archive
   // items already shown on this screen either way.
   const allItems = mostRecent ? [mostRecent, ...gridItems] : gridItems;
-  const liveStatus = useLiveStatus();
   const { avatarInitial } = useAccountEmail();
 
   const [historyEpisodes, setHistoryEpisodes] = useState([]);
@@ -101,6 +115,11 @@ export default function Watch({ navigation }) {
     })();
   }, [loading, loadHistoryInitial]);
 
+  // The top-grid/history split is a data-fetching detail (RSS feed vs. the
+  // paginated archive) — visually it's one continuous grid that keeps
+  // filling in as more loads, not two separate sections.
+  const combinedItems = [...allItems, ...historyEpisodes];
+
   const onHistoryRefresh = async () => {
     if (mountedRef.current) setHistoryRefreshing(true);
     await loadHistoryInitial(historyEpisodes.length > 0);
@@ -133,34 +152,30 @@ export default function Watch({ navigation }) {
       }
     >
       <View style={styles.header}>
-        <View style={styles.titleRow}>
-          <TouchableOpacity
-            onPress={() => navigation.getParent()?.navigate('Home')}
-            style={styles.backButton}
-            hitSlop={12}
-          >
-            <ChevronLeft color={colors.inkPrimary} size={24} />
-          </TouchableOpacity>
-          <Text style={styles.title}>Watch</Text>
+        <View style={styles.headerTopRow}>
+          <View style={styles.titleRow}>
+            <TouchableOpacity
+              onPress={() => navigation.getParent()?.navigate('Home')}
+              style={styles.backButton}
+              hitSlop={12}
+            >
+              <ChevronLeft color={colors.inkPrimary} size={24} />
+            </TouchableOpacity>
+            <Text style={styles.title}>Watch</Text>
+          </View>
+          <View style={styles.headerRight}>
+            <OnAirBadge />
+            <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
+          </View>
         </View>
-        <View style={styles.headerRight}>
-          <OnAirBadge />
-          <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
-        </View>
-      </View>
 
-      <View style={styles.statusCard}>
-        <Text style={styles.statusText}>
-          {liveStatus.loading ? 'Checking live status…' : liveStatus.isLive ? 'LIVE NOW' : 'Not live right now'}
-        </Text>
+        <TouchableOpacity
+          style={styles.sponsorButton}
+          onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })}
+        >
+          <Text style={styles.sponsorButtonText}>Become a Sponsor</Text>
+        </TouchableOpacity>
       </View>
-
-      <TouchableOpacity
-        style={styles.listenInsteadRow}
-        onPress={() => navigation.navigate('Listen')}
-      >
-        <Text style={styles.listenInsteadText}>Listen instead →</Text>
-      </TouchableOpacity>
 
       <View style={styles.platformRow}>
         {PLATFORMS.map((p) => (
@@ -179,61 +194,28 @@ export default function Watch({ navigation }) {
           <LoadingState message="Loading videos…" style={styles.stateFullWidth} />
         ) : error ? (
           <ErrorState message="Unable to load videos" style={styles.stateFullWidth} />
-        ) : allItems.length === 0 ? (
+        ) : combinedItems.length === 0 && !historyLoading ? (
           <EmptyState message="No videos yet — check back soon." style={styles.stateFullWidth} />
         ) : (
-          allItems.map((video) => (
-            <TouchableOpacity
-              key={video.id}
-              style={styles.videoCard}
-              onPress={() => navigation.navigate('VideoPlayer', { video })}
-            >
-              <View style={styles.thumbnail}>
-                {video.thumbnailUrl ? (
-                  <Image source={{ uri: video.thumbnailUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-                ) : (
-                  <CirclePlay color={colors.inkPrimary} size={28} />
-                )}
-              </View>
-              <Text style={styles.videoTitle} numberOfLines={2}>{video.title}</Text>
-              <Text style={styles.videoMeta}>{relativeTime(video.publishedAt)}</Text>
-            </TouchableOpacity>
+          combinedItems.map((video) => (
+            <VideoCard key={video.id} video={video} onPress={() => navigation.navigate('VideoPlayer', { video })} />
           ))
         )}
       </View>
 
-      <Text style={[styles.title, styles.historyHeading]}>More Videos</Text>
-
-      <View style={styles.grid}>
-        {historyLoading ? (
-          <LoadingState message="Loading more videos…" style={styles.stateFullWidth} />
-        ) : historyError ? (
-          <ErrorState message="Unable to load more videos" style={styles.stateFullWidth} />
-        ) : (
-          <>
-            {historyRefreshError ? (
-              <ErrorState message="Couldn't refresh videos. Pull down and try again." style={styles.stateFullWidth} />
-            ) : null}
-            {historyEpisodes.map((video) => (
-              <TouchableOpacity
-                key={video.id}
-                style={styles.videoCard}
-                onPress={() => navigation.navigate('VideoPlayer', { video })}
-              >
-                <View style={styles.thumbnail}>
-                  {video.thumbnailUrl ? (
-                    <Image source={{ uri: video.thumbnailUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-                  ) : (
-                    <CirclePlay color={colors.inkPrimary} size={28} />
-                  )}
-                </View>
-                <Text style={styles.videoTitle} numberOfLines={2}>{video.title}</Text>
-                <Text style={styles.videoMeta}>{relativeTime(video.publishedAt)}</Text>
-              </TouchableOpacity>
-            ))}
-          </>
-        )}
-      </View>
+      {!loading && !error && historyLoading ? (
+        <LoadingState message="Loading more videos…" style={styles.stateFullWidth} />
+      ) : null}
+      {historyRefreshError ? (
+        <ErrorState message="Couldn't refresh videos. Pull down and try again." style={styles.stateFullWidth} />
+      ) : null}
+      {historyError ? (
+        <ErrorState
+          message="Unable to load more videos"
+          onRetry={() => loadHistoryInitial()}
+          style={styles.stateFullWidth}
+        />
+      ) : null}
       {historyHasMore ? (
         <TouchableOpacity style={styles.loadMore} onPress={loadHistoryMore} disabled={historyLoadingMore}>
           {historyLoadingMore ? (
@@ -257,10 +239,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceGround,
   },
   header: {
+    padding: spacing.md,
+    gap: spacing.md,
+  },
+  headerTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    padding: spacing.md,
   },
   titleRow: {
     flexDirection: 'row',
@@ -281,26 +266,20 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.bold,
     fontSize: fontSize.xxl,
   },
-  statusCard: {
-    marginHorizontal: spacing.md,
+  // Matches Home.js's sponsorButton exactly (full-width, gold-bordered,
+  // centered label) for visual consistency across screens.
+  sponsorButton: {
     backgroundColor: colors.surfaceCard,
+    borderWidth: 1,
+    borderColor: colors.accentGold,
     borderRadius: radius.md,
-    padding: spacing.md,
-    marginBottom: spacing.md,
+    paddingVertical: spacing.sm,
+    alignItems: 'center',
   },
-  statusText: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.medium,
-    fontSize: fontSize.md,
-  },
-  listenInsteadRow: {
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.md,
-  },
-  listenInsteadText: {
+  sponsorButtonText: {
     color: colors.accentGold,
     fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.base,
+    fontSize: fontSize.md,
   },
   platformRow: {
     flexDirection: 'row',
@@ -356,10 +335,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     marginHorizontal: spacing.sm,
     marginBottom: spacing.sm,
-  },
-  historyHeading: {
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.md,
   },
   loadMore: {
     alignItems: 'center',

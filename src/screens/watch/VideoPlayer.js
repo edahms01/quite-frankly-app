@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View, Share } from 'react-native';
+import { Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
@@ -38,13 +38,29 @@ export default function VideoPlayer({ navigation, route }) {
     <SafeAreaView style={styles.container} edges={['top']}>
     <ScrollView>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <ChevronLeft color={colors.inkPrimary} size={24} />
-        </TouchableOpacity>
-        <View style={styles.headerRight}>
-          <OnAirBadge />
-          <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
+        <View style={styles.headerTopRow}>
+          <View style={styles.headerLeft}>
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+              <ChevronLeft color={colors.inkPrimary} size={24} />
+            </TouchableOpacity>
+            <Image
+              source={require('../../assets/images/quite-frankly-logo-final.png')}
+              style={styles.wordmark}
+              resizeMode="contain"
+            />
+          </View>
+          <View style={styles.headerRight}>
+            <OnAirBadge />
+            <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
+          </View>
         </View>
+
+        <TouchableOpacity
+          style={styles.sponsorButton}
+          onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })}
+        >
+          <Text style={styles.sponsorButtonText}>Become a Sponsor</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.playerArea}>
@@ -103,11 +119,22 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceGround,
   },
   header: {
+    padding: spacing.md,
+    gap: spacing.md,
+  },
+  headerTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.sm,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  wordmark: {
+    width: 172,
+    height: 40,
   },
   backButton: {
     padding: spacing.xs,
@@ -117,6 +144,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
+  },
+  // Matches Home.js's sponsorButton exactly (full-width, gold-bordered,
+  // centered label) for visual consistency across screens.
+  sponsorButton: {
+    backgroundColor: colors.surfaceCard,
+    borderWidth: 1,
+    borderColor: colors.accentGold,
+    borderRadius: radius.md,
+    paddingVertical: spacing.sm,
+    alignItems: 'center',
+  },
+  sponsorButtonText: {
+    color: colors.accentGold,
+    fontFamily: fontFamily.semiBold,
+    fontSize: fontSize.md,
   },
   playerArea: {
     height: PLAYER_HEIGHT,

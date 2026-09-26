@@ -127,20 +127,29 @@ export default function Listen({ navigation }) {
         }
       >
         <View style={styles.header}>
-          <View style={styles.titleRow}>
-            <TouchableOpacity
-              onPress={() => navigation.getParent()?.navigate('Home')}
-              style={styles.backButton}
-              hitSlop={12}
-            >
-              <ChevronLeft color={colors.inkPrimary} size={24} />
-            </TouchableOpacity>
-            <Text style={styles.title}>Listen</Text>
+          <View style={styles.headerTopRow}>
+            <View style={styles.titleRow}>
+              <TouchableOpacity
+                onPress={() => navigation.getParent()?.navigate('Home')}
+                style={styles.backButton}
+                hitSlop={12}
+              >
+                <ChevronLeft color={colors.inkPrimary} size={24} />
+              </TouchableOpacity>
+              <Text style={styles.title}>Listen</Text>
+            </View>
+            <View style={styles.headerRight}>
+              <OnAirBadge />
+              <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
+            </View>
           </View>
-          <View style={styles.headerRight}>
-            <OnAirBadge />
-            <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
-          </View>
+
+          <TouchableOpacity
+            style={styles.sponsorButton}
+            onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })}
+          >
+            <Text style={styles.sponsorButtonText}>Become a Sponsor</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.list}>
@@ -214,10 +223,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceGround,
   },
   header: {
+    padding: spacing.md,
+    gap: spacing.md,
+  },
+  headerTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    padding: spacing.md,
   },
   titleRow: {
     flexDirection: 'row',
@@ -237,6 +249,21 @@ const styles = StyleSheet.create({
     color: colors.inkPrimary,
     fontFamily: fontFamily.bold,
     fontSize: fontSize.xxl,
+  },
+  // Matches Home.js's sponsorButton exactly (full-width, gold-bordered,
+  // centered label) for visual consistency across screens.
+  sponsorButton: {
+    backgroundColor: colors.surfaceCard,
+    borderWidth: 1,
+    borderColor: colors.accentGold,
+    borderRadius: radius.md,
+    paddingVertical: spacing.sm,
+    alignItems: 'center',
+  },
+  sponsorButtonText: {
+    color: colors.accentGold,
+    fontFamily: fontFamily.semiBold,
+    fontSize: fontSize.md,
   },
   list: {
     padding: spacing.md,

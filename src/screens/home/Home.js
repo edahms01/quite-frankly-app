@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2 } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
@@ -17,12 +17,13 @@ import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
 import EmptyState from '../../components/EmptyState';
 
-// Frank multistreams to all platforms at once — one "live" signal is a
-// proxy for "live everywhere" (see plan doc, Culture Club section). No
-// per-platform live video ID exists anywhere in the data model (only a
-// Twitch-webhook-driven isLive boolean), so Twitch is the concrete
-// destination when live, matching Watch.js's platform row.
-const LIVE_URL = 'https://www.twitch.tv/quitefranklylive';
+// Frank multistreams to YouTube/Twitch/Rumble/etc. simultaneously — isLive
+// is a Twitch-webhook-driven signal (fast, no polling-limit delay), used
+// purely to flip this card's badge/label. Playback itself is always the
+// YouTube embed below: mostRecent already points at the live broadcast's
+// own video ID once it starts (YouTube's RSS feed lists it as the newest
+// entry), and the YouTube iframe player embeds a live stream the same way
+// it embeds a VOD, so no separate live-specific embed path is needed.
 // Matches VideoPlayer.js's playerArea — needed for the actual YouTube
 // embed (not just our own thumbnail/play-button visuals) to render its UI
 // within the visible area; at 160 the iframe's own play button rendered
@@ -75,9 +76,7 @@ export default function Home({ navigation }) {
       <TouchableOpacity
         style={styles.mostRecentCard}
         onPress={() => {
-          if (isLive) {
-            Linking.openURL(LIVE_URL);
-          } else if (mostRecent) {
+          if (mostRecent) {
             claim();
             setEmbedVisible(true);
           }
@@ -85,7 +84,7 @@ export default function Home({ navigation }) {
         activeOpacity={0.85}
         // Once the embed is visible, the card itself must stop intercepting
         // touches so taps reach the WebView (tap-to-play inside the iframe).
-        disabled={embedVisible || (!isLive && !mostRecent)}
+        disabled={embedVisible || !mostRecent}
       >
         {embedVisible ? null : (
           <View style={[styles.badge, isLive && styles.badgeLive]}>
