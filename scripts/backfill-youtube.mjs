@@ -239,8 +239,12 @@ async function main() {
     values: ['Episode Title', 'YouTube URL', 'ID', 'Type', 'Published Date', 'Duration Seconds', 'Duration', 'Description', 'Thumbnail URL', 'Last Synced At'],
   }]);
 
-  console.log('Setting Duration Seconds / Duration columns to TEXT format (prevents the apostrophe indicator on numeric-looking values)...');
-  await formatColumnsAsText(SHEET_TAB, ['F', 'G']);
+  // Duration Seconds (F) is a plain short integer -- Sheets auto-types it as
+  // a real NUMBER regardless of valueInputOption/format, so it never shows
+  // the apostrophe indicator and doesn't need this. Only G (the H:MM:SS
+  // string, which Sheets can't parse as a number) is actually affected.
+  console.log('Setting Duration column to TEXT format (prevents the apostrophe indicator on the H:MM:SS value)...');
+  await formatColumnsAsText(SHEET_TAB, ['G']);
 
   console.log('Appending new rows...');
   await appendRows(SHEET_TAB, toInsert);

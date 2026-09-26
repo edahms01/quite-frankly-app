@@ -219,8 +219,13 @@ async function main() {
     values: ['Episode Title', 'Published Date', 'Audio File URL (Published)', 'Resolved URL', 'Description', 'SoundCloud Track ID', 'Duration Seconds', 'Duration', 'Full Description', 'Matched YouTube Video ID', 'Match Confidence', 'Last Synced At'],
   }]);
 
-  console.log('Setting SoundCloud Track ID / Duration Seconds / Duration columns to TEXT format...');
-  await formatColumnsAsText(SHEET_TAB, ['F', 'G', 'H']);
+  // Duration Seconds (G) is a plain short integer -- Sheets auto-types it as
+  // a real NUMBER regardless of valueInputOption/format, so it never shows
+  // the apostrophe indicator and doesn't need this. F (a 10-digit track ID
+  // Sheets treats as text to avoid precision loss) and H (the H:MM:SS
+  // string) are the two actually affected.
+  console.log('Setting SoundCloud Track ID / Duration columns to TEXT format...');
+  await formatColumnsAsText(SHEET_TAB, ['F', 'H']);
 
   console.log('Appending new rows...');
   await appendRows(SHEET_TAB, toInsert);
