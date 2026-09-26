@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import LoadingState from './LoadingState';
 
@@ -26,6 +26,23 @@ export default function VideoEmbed({ videoId, width, height, onLoadEnd }) {
     onLoadEnd?.();
   };
 
+  // Without this, tapping things inside the embed (the video's own title/
+  // channel link, an end-of-video suggestion, an ad clickthrough) lets the
+  // WebView navigate its whole top frame away from the embed to a full
+  // youtube.com page, which then fills this small embed-sized box —
+  // looking "stuck" on that page since there's no way back to the video
+  // grid from inside it. Only the iframe's internal (non-top-frame)
+  // navigations are needed for actual playback to work; anything that
+  // tries to navigate the top frame itself away from the embed is handed
+  // to the OS instead.
+  const handleShouldStartLoad = (request) => {
+    if (!request.isTopFrame || request.url.startsWith('https://www.youtube.com/embed/')) {
+      return true;
+    }
+    Linking.openURL(request.url);
+    return false;
+  };
+
   return (
     <View style={{ width, height }}>
       <WebView
@@ -36,6 +53,7 @@ export default function VideoEmbed({ videoId, width, height, onLoadEnd }) {
         style={{ width, height, backgroundColor: 'transparent' }}
         allowsInlineMediaPlayback
         onLoadEnd={handleLoadEnd}
+        onShouldStartLoadWithRequest={handleShouldStartLoad}
       />
       {loading ? <LoadingState message="Loading video…" style={styles.loading} /> : null}
     </View>
