@@ -2,6 +2,15 @@ import { XMLParser } from 'fast-xml-parser';
 import { setJSON, getJSON } from './lib/blobs.js';
 import { appendRows, getColumn } from './lib/sheets.js';
 import { filterNewByKey } from './lib/idempotency.js';
+import {
+  formatDuration,
+  truncateDescription,
+  normalizeEntry,
+  resolveEpisodeUrl,
+  extractTrackId,
+  mergeEpisodesByGuid,
+} from './lib/soundcloud.js';
+import { secondsToTimestamp } from './lib/duration.js';
 
 export const config = { schedule: '*/15 * * * *' };
 
@@ -10,41 +19,6 @@ const parser = new XMLParser({
   attributeNamePrefix: '',
   removeNSPrefix: true,
 });
-
-function formatDuration(itunesDuration) {
-  if (!itunesDuration) return null;
-  const parts = String(itunesDuration).split(':').map(Number);
-  let hours = 0;
-  let minutes = 0;
-  let seconds = 0;
-  if (parts.length === 3) [hours, minutes, seconds] = parts;
-  else if (parts.length === 2) [minutes, seconds] = parts;
-  else if (parts.length === 1) [seconds] = parts;
-  const totalMinutes = hours * 60 + minutes + (seconds >= 30 ? 1 : 0);
-  const h = Math.floor(totalMinutes / 60);
-  const m = totalMinutes % 60;
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
-
-function truncateDescription(summary) {
-  if (!summary) return '';
-  const firstParagraph = summary.split(/\n\s*\n/)[0].trim();
-  const text = firstParagraph.length > 0 ? firstParagraph : summary.trim();
-  if (text.length <= 280) return text;
-  return `${text.slice(0, 277)}...`;
-}
-
-function normalizeEntry(item) {
-  const guid = typeof item.guid === 'object' ? item.guid['#text'] : item.guid;
-  return {
-    guid,
-    title: item.title,
-    publishedAt: new Date(item.pubDate).toISOString(),
-    audioUrl: item.enclosure?.url ?? null,
-    description: truncateDescription(item.summary),
-    duration: formatDuration(item.duration),
-  };
-}
 
 export default async () => {
   const feedUrl = process.env.SOUNDCLOUD_RSS_URL;
@@ -71,24 +45,34 @@ export default async () => {
     .filter((item) => item.audioUrl);
 
   const existing = await getJSON('qf-soundcloud-cache', 'episodes', []);
-  const existingByGuid = new Map(existing.map((ep) => [ep.guid, ep]));
-  for (const item of items) {
-    existingByGuid.set(item.guid, item);
-  }
-  const merged = Array.from(existingByGuid.values()).sort(
-    (a, b) => new Date(b.publishedAt) - new Date(a.publishedAt)
-  );
+  const merged = mergeEpisodesByGuid(existing, items);
   await setJSON('qf-soundcloud-cache', 'episodes', merged);
 
-  const existingAudioUrls = await getColumn('audio history', 'C');
-  const newItems = filterNewByKey(existingAudioUrls, items, (item) => item.audioUrl);
-  const rows = newItems.map((item) => [
-    item.title,
-    item.publishedAt,
-    item.audioUrl,
-    feedUrl,
-    item.description,
-  ]);
+  const existingTrackIds = await getColumn('audio history', 'F');
+  const newItems = filterNewByKey(
+    existingTrackIds,
+    items.map((item) => ({ ...item, trackId: extractTrackId(item.guid) })),
+    (item) => item.trackId
+  );
+
+  const rows = [];
+  for (const item of newItems) {
+    const resolvedUrl = await resolveEpisodeUrl(item.audioUrl);
+    rows.push([
+      item.title,
+      item.publishedAt,
+      item.audioUrl,
+      resolvedUrl,
+      item.description,
+      item.trackId ?? resolvedUrl,
+      item.durationSeconds ?? 0,
+      secondsToTimestamp(item.durationSeconds ?? 0),
+      item.descriptionFull,
+      '',
+      '',
+      new Date().toISOString(),
+    ]);
+  }
   await appendRows('audio history', rows);
 
   return new Response(
