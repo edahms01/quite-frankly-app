@@ -7,6 +7,7 @@ import { relativeTime } from '../../utils/relativeTime';
 import VideoEmbed from '../../components/VideoEmbed';
 import VideoThumbnailOverlay from '../../components/VideoThumbnailOverlay';
 import AvatarButton from '../../components/AvatarButton';
+import OnAirBadge from '../../components/OnAirBadge';
 import { useVideoActiveSource } from '../../hooks/useVideoActiveSource';
 import { useAccountEmail } from '../../hooks/useAccountEmail';
 
@@ -58,6 +59,7 @@ export default function VideoPlayer({ navigation, route }) {
           <ChevronLeft color={colors.inkPrimary} size={24} />
         </TouchableOpacity>
         <View style={[styles.avatarOverlay, { top: insets.top + spacing.md }]}>
+          <OnAirBadge />
           <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
         </View>
       </View>
@@ -115,6 +117,9 @@ const styles = StyleSheet.create({
   avatarOverlay: {
     position: 'absolute',
     right: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   body: {
     padding: spacing.md,

@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Image, Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2 } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
 import DestinationCard from '../../components/DestinationCard';
 import AvatarButton from '../../components/AvatarButton';
+import OnAirBadge from '../../components/OnAirBadge';
 import VideoEmbed from '../../components/VideoEmbed';
 import VideoThumbnailOverlay from '../../components/VideoThumbnailOverlay';
 import { useYouTubeFeed } from '../../context/YouTubeFeedContext';
@@ -66,9 +67,7 @@ export default function Home({ navigation }) {
           resizeMode="contain"
         />
         <View style={styles.headerRight}>
-          <View style={[styles.onAirBadge, isLive && styles.onAirBadgeLive]}>
-            <Text style={[styles.onAirText, isLive && styles.onAirTextLive]}>ON AIR</Text>
-          </View>
+          <OnAirBadge />
           <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
         </View>
       </View>
@@ -132,6 +131,10 @@ export default function Home({ navigation }) {
             onPress={() => goTo(d.route)}
           />
         ))}
+        <View style={styles.teaserCard}>
+          <Text style={styles.teaserLabel}>AskFrankie AI</Text>
+          <Text style={styles.teaserSubtext}>Coming Soon</Text>
+        </View>
       </View>
     </ScrollView>
     </SafeAreaView>
@@ -153,6 +156,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   sponsorButton: {
+    backgroundColor: colors.surfaceCard,
     borderWidth: 1,
     borderColor: colors.accentGold,
     borderRadius: radius.md,
@@ -172,47 +176,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-  },
-  // Classic studio "ON AIR" sign — dim/unlit border when not live, lit
-  // solid-red with a glow when live. Android can't carry shadow color via
-  // elevation, so the border itself becomes the "lit" cue there instead.
-  onAirBadge: {
-    borderWidth: 1,
-    borderColor: colors.surfaceLine,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 3,
-  },
-  onAirBadgeLive: {
-    // A brighter, more saturated red than the app's usual brandRed —
-    // that deep maroon doesn't read as "lit," it just reads as another
-    // button. This one, with a wide soft-opacity glow behind it, is
-    // closer to an actual neon/bulb "ON AIR" sign.
-    backgroundColor: '#E0332B',
-    borderColor: '#E0332B',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#E0332B',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.95,
-        shadowRadius: 12,
-      },
-      // Elevation can't carry color on Android — a brighter/thicker
-      // border stands in for the glow there instead.
-      android: { elevation: 6, borderWidth: 1.5 },
-    }),
-  },
-  onAirText: {
-    // Dimmer than the usual inkMuted secondary-text color on purpose —
-    // this needs to read as "unlit," not just "quieter," so it can't be
-    // mistaken for the live state at a glance.
-    color: '#5C554E',
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.xs,
-    letterSpacing: 1,
-  },
-  onAirTextLive: {
-    color: colors.inkPrimary,
   },
   mostRecentCard: {
     backgroundColor: colors.surfaceCard,
@@ -265,6 +228,28 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'space-between',
     gap: spacing.md,
+  },
+  teaserCard: {
+    width: '100%',
+    backgroundColor: colors.surfaceCard,
+    borderRadius: radius.md,
+    paddingVertical: spacing.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+    opacity: 0.6,
+    ...shadows.sm,
+  },
+  teaserLabel: {
+    color: colors.inkMuted,
+    fontFamily: fontFamily.semiBold,
+    fontSize: fontSize.md,
+  },
+  teaserSubtext: {
+    color: colors.inkMuted,
+    fontFamily: fontFamily.regularItalic,
+    fontSize: fontSize.sm,
   },
 });

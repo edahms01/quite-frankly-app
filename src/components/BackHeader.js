@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, spacing } from '../theme';
 import AvatarButton from './AvatarButton';
+import OnAirBadge from './OnAirBadge';
 import { useAccountEmail } from '../hooks/useAccountEmail';
 
 // Every screen using this renders it as a plain child (inside a ScrollView
@@ -23,7 +24,10 @@ export default function BackHeader({ title, navigation, hideAvatar = false }) {
       </TouchableOpacity>
       <Text style={styles.title}>{title}</Text>
       {hideAvatar ? null : (
-        <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
+        <View style={styles.headerRight}>
+          <OnAirBadge />
+          <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
+        </View>
       )}
     </View>
   );
@@ -45,5 +49,10 @@ const styles = StyleSheet.create({
     color: colors.inkPrimary,
     fontFamily: fontFamily.bold,
     fontSize: fontSize.xxl,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
 });

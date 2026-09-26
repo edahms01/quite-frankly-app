@@ -47,11 +47,12 @@ export default function VideoEmbed({ videoId, width, height, onLoadEnd }) {
     <View style={{ width, height }}>
       <WebView
         source={{
-          uri: `https://www.youtube.com/embed/${videoId}`,
+          uri: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1`,
           headers: { Referer: 'https://www.quitefrankly.tv' },
         }}
         style={{ width, height, backgroundColor: 'transparent' }}
         allowsInlineMediaPlayback
+        mediaPlaybackRequiresUserAction={false}
         onLoadEnd={handleLoadEnd}
         onShouldStartLoadWithRequest={handleShouldStartLoad}
       />

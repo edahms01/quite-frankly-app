@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Lock, ChevronLeft } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
 import AvatarButton from '../../components/AvatarButton';
+import OnAirBadge from '../../components/OnAirBadge';
 import { useAccountEmail } from '../../hooks/useAccountEmail';
 
 const EVENTS = [
@@ -30,7 +31,10 @@ export default function CultureClub({ navigation }) {
           </TouchableOpacity>
           <Text style={styles.title}>Culture Club</Text>
         </View>
-        <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
+        <View style={styles.headerRight}>
+          <OnAirBadge />
+          <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
+        </View>
       </View>
 
       <View style={styles.body}>
@@ -89,6 +93,11 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,

@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { CirclePlay, ChevronLeft } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
 import AvatarButton from '../../components/AvatarButton';
+import OnAirBadge from '../../components/OnAirBadge';
 import { useAccountEmail } from '../../hooks/useAccountEmail';
 import { useYouTubeFeed } from '../../context/YouTubeFeedContext';
 import { useLiveStatus } from '../../hooks/useLiveStatus';
@@ -39,7 +40,10 @@ export default function Watch({ navigation }) {
           </TouchableOpacity>
           <Text style={styles.title}>Watch</Text>
         </View>
-        <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
+        <View style={styles.headerRight}>
+          <OnAirBadge />
+          <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
+        </View>
       </View>
 
       <View style={styles.statusCard}>
@@ -111,6 +115,11 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,

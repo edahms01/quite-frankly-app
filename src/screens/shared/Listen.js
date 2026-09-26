@@ -17,6 +17,7 @@ import { useAccountEmail } from '../../hooks/useAccountEmail';
 import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
 import AvatarButton from '../../components/AvatarButton';
+import OnAirBadge from '../../components/OnAirBadge';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 const PAGE_SIZE = 20;
@@ -136,7 +137,10 @@ export default function Listen({ navigation }) {
             </TouchableOpacity>
             <Text style={styles.title}>Listen</Text>
           </View>
-          <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
+          <View style={styles.headerRight}>
+            <OnAirBadge />
+            <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
+          </View>
         </View>
 
         <View style={styles.list}>
@@ -216,6 +220,11 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
