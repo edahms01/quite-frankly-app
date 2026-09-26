@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View, Share } from 'react-native';
+import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View, Share } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
@@ -10,6 +10,11 @@ import AvatarButton from '../../components/AvatarButton';
 import { useVideoActiveSource } from '../../hooks/useVideoActiveSource';
 import { useAccountEmail } from '../../hooks/useAccountEmail';
 
+// Matches Home.js's mostRecentCard video area, and playerArea's own height
+// below — kept as one constant so VideoEmbed's explicit numeric height
+// prop can't drift out of sync with the box it's rendered inside.
+const PLAYER_HEIGHT = 220;
+
 export default function VideoPlayer({ navigation, route }) {
   const video = route?.params?.video;
   const title = video?.title ?? '[Video title]';
@@ -18,6 +23,7 @@ export default function VideoPlayer({ navigation, route }) {
     : 'https://www.youtube.com/channel/UCtB5nbKHYsX8EGIk9cOevaQ';
   const insets = useSafeAreaInsets();
   const { avatarInitial } = useAccountEmail();
+  const { width: windowWidth } = useWindowDimensions();
   // Arriving on this screen is itself the "play" action (matches today's
   // behavior, where the embed loads immediately on mount) — a podcast
   // starting stops it back to a tap-to-resume thumbnail.
@@ -32,7 +38,7 @@ export default function VideoPlayer({ navigation, route }) {
     <ScrollView style={styles.container}>
       <View style={styles.playerArea}>
         {embedVisible ? (
-          <VideoEmbed videoId={video.id} />
+          <VideoEmbed videoId={video.id} width={windowWidth} height={PLAYER_HEIGHT} />
         ) : (
           <TouchableOpacity
             style={StyleSheet.absoluteFill}
@@ -93,7 +99,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceGround,
   },
   playerArea: {
-    height: 220,
+    height: PLAYER_HEIGHT,
     backgroundColor: '#000',
   },
   backButton: {
