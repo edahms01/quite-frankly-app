@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Image, Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2 } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
@@ -22,6 +22,11 @@ import EmptyState from '../../components/EmptyState';
 // Twitch-webhook-driven isLive boolean), so Twitch is the concrete
 // destination when live, matching Watch.js's platform row.
 const LIVE_URL = 'https://www.twitch.tv/quitefranklylive';
+// Matches VideoPlayer.js's playerArea — needed for the actual YouTube
+// embed (not just our own thumbnail/play-button visuals) to render its UI
+// within the visible area; at 160 the iframe's own play button rendered
+// below the clipped bottom edge, making it untappable.
+const VIDEO_HEIGHT = 220;
 
 const DESTINATIONS = [
   { label: 'Watch', Icon: CirclePlay, route: 'Watch' },
@@ -40,6 +45,8 @@ export default function Home({ navigation }) {
   const [embedVisible, setEmbedVisible] = useState(false);
   const { claim } = useVideoActiveSource({ onForcedStop: () => setEmbedVisible(false) });
   const { avatarInitial } = useAccountEmail();
+  const { width: windowWidth } = useWindowDimensions();
+  const cardWidth = windowWidth - 2 * spacing.md;
 
   const goTo = (route) => {
     if (route === 'MembersOnlyTab') {
@@ -88,7 +95,7 @@ export default function Home({ navigation }) {
         )}
         <View style={styles.thumbnail}>
           {embedVisible ? (
-            <VideoEmbed videoId={mostRecent.id} style={StyleSheet.absoluteFill} />
+            <VideoEmbed videoId={mostRecent.id} width={cardWidth} height={VIDEO_HEIGHT} />
           ) : (
             <VideoThumbnailOverlay thumbnailUrl={mostRecent?.thumbnailUrl} />
           )}
@@ -232,7 +239,7 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xs,
   },
   thumbnail: {
-    height: 160,
+    height: VIDEO_HEIGHT,
     backgroundColor: colors.surfaceLive,
     alignItems: 'center',
     justifyContent: 'center',
