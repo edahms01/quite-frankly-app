@@ -1,10 +1,9 @@
-import { useState } from 'react';
-import { Alert, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import * as Clipboard from 'expo-clipboard';
+import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ArrowUpRight } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
 import ExternalRow from '../../components/ExternalRow';
+import CryptoCard, { CryptoCardGrid } from '../../components/CryptoCard';
 
 // Patreon/SubscribeStar use OS-level Linking.openURL (not WebView) so
 // Universal Links/App Links can hand off to their native apps — see
@@ -16,14 +15,6 @@ const PLATFORMS = [
 
 const BTC_ADDRESS = 'bc1q97w5aazjf7pjjl50n42kdmj9pqyn5zndwh3lng';
 const XRP_ADDRESS = 'rnES2vQV6d2jLpavzf7y97XD4AfK1MjePu';
-
-function CopyRow({ avatarText, title, address }) {
-  const copy = async () => {
-    await Clipboard.setStringAsync(address);
-    Alert.alert('Copied', `${title} address copied to clipboard.`);
-  };
-  return <ExternalRow avatarText={avatarText} title={title} subtitle={address} badge="Copy" url={null} onPress={copy} />;
-}
 
 export default function Subscription({ navigation }) {
   return (
@@ -79,8 +70,10 @@ export default function Subscription({ navigation }) {
           subtitle="Shop Frank's picks — no extra cost to you"
           url="https://amazon.com/shop/quitefranklyofficial"
         />
-        <CopyRow avatarText="₿" title="Bitcoin" address={BTC_ADDRESS} />
-        <CopyRow avatarText="X" title="XRP" address={XRP_ADDRESS} />
+        <CryptoCardGrid>
+          <CryptoCard title="BTC" fields={[{ value: BTC_ADDRESS }]} />
+          <CryptoCard title="XRP" fields={[{ value: XRP_ADDRESS }]} />
+        </CryptoCardGrid>
 
         <Text style={styles.mail}>
           Prefer mail? Send letters, cards, or small gifts to: Quite

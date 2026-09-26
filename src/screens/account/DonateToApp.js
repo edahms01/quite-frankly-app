@@ -1,41 +1,37 @@
-import { Alert, Linking, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import * as Clipboard from 'expo-clipboard';
+import { Linking, ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
-import ExternalRow from '../../components/ExternalRow';
+import CryptoCard, { CryptoCardGrid } from '../../components/CryptoCard';
 
 // TODO(Eric): swap these for your real payment links before shipping.
-// All three have real mobile apps, so OS-level Linking.openURL (not an
-// in-app browser) matches the pattern already used for Patreon/
-// SubscribeStar/PayPal elsewhere in the app.
-const TIP_APPS_ROW_1 = [
-  { label: 'Cash App', url: 'https://cash.app/$yourname' },
-  { label: 'Venmo', url: 'https://venmo.com/u/yourname' },
-];
-const TIP_APPS_ROW_2 = [
-  { label: 'Revolut', url: 'https://revolut.me/yourname' },
-  { label: 'Monzo', url: 'https://monzo.me/yourname' },
-  { label: 'Wise', url: 'https://wise.com/pay/me/yourname' },
+// All have real mobile apps, so OS-level Linking.openURL (not an in-app
+// browser) matches the pattern already used for Patreon/SubscribeStar/
+// PayPal elsewhere in the app.
+const TIP_APPS = [
+  { label: 'Cash App', url: 'https://cash.app/$edahms33' },
+  { label: 'Revolut', url: 'https://revolut.me/edahms' },
+  { label: 'Monzo', url: 'https://monzo.me/ericdahms7?h=zFzxf2&account_type=personal' },
+  { label: 'Wise', url: 'https://wise.com/pay/me/ericd1472' },
 ];
 
-// TODO(Eric): swap these for your real wallet addresses before shipping.
-const CRYPTO_ADDRESSES = [
-  { avatarText: '₿', title: 'Bitcoin', address: 'bc1q_placeholder_btc_address' },
-  { avatarText: 'X', title: 'XRP', address: 'r_placeholder_xrp_address' },
-  { avatarText: 'S', title: 'Solana', address: 'placeholder_sol_address' },
+const ETH_ADDRESS = '0xaE388a30907dB33e22BAbAf2f01B4c1a8cFa88E8';
+const SOL_ADDRESS = '2nLqfxfa1USEv7u3oRXhtUmS77bva56KvUvhN2rVabLD';
+
+// Single-field entries render without a label line (just the value) so
+// they read as compact cards, not miniature copies of the multi-field ones.
+const SIMPLE_ADDRESSES = [
+  { title: 'BTC', address: 'bc1q70cx4pn8fe5lyyu2h7h5pyaud4mwenx9neyukq' },
+  { title: 'SOL', address: SOL_ADDRESS },
+  { title: 'ETH', address: ETH_ADDRESS },
+  { title: 'DOGE', address: 'DFqiz4ATSJ54EWJhMktXLNVo1JX3HzdHPP' },
 ];
 
-function CopyRow({ avatarText, title, address }) {
-  const copy = async () => {
-    await Clipboard.setStringAsync(address);
-    Alert.alert('Copied', `${title} address copied to clipboard.`);
-  };
-  return <ExternalRow avatarText={avatarText} title={title} subtitle={address} badge="Copy" url={null} onPress={copy} />;
-}
+const XRP_ADDRESS = 'rpvijHi2nVY9WWAJhojsAX5tJmHdmLtFhq';
+const XRP_DESTINATION_TAG = '3462488927';
 
 export default function DonateToApp({ navigation }) {
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <BackHeader title="Donate to App" navigation={navigation} />
       <View style={styles.body}>
         <Text style={styles.blurb}>
@@ -46,19 +42,8 @@ export default function DonateToApp({ navigation }) {
         </Text>
 
         <Text style={styles.sectionLabel}>SEND A TIP</Text>
-        <View style={styles.tipRow}>
-          {TIP_APPS_ROW_1.map((app) => (
-            <TouchableOpacity
-              key={app.label}
-              style={styles.tipCard}
-              onPress={() => Linking.openURL(app.url)}
-            >
-              <Text style={styles.tipLabel}>{app.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-        <View style={styles.tipRow}>
-          {TIP_APPS_ROW_2.map((app) => (
+        <View style={styles.tipGrid}>
+          {TIP_APPS.map((app) => (
             <TouchableOpacity
               key={app.label}
               style={styles.tipCard}
@@ -70,11 +55,34 @@ export default function DonateToApp({ navigation }) {
         </View>
 
         <Text style={styles.sectionLabel}>CRYPTO</Text>
-        {CRYPTO_ADDRESSES.map((c) => (
-          <CopyRow key={c.title} avatarText={c.avatarText} title={c.title} address={c.address} />
-        ))}
+        <CryptoCardGrid>
+          {SIMPLE_ADDRESSES.map((c) => (
+            <CryptoCard key={c.title} title={c.title} fields={[{ value: c.address }]} />
+          ))}
+          <CryptoCard
+            title="XRP"
+            fields={[
+              { label: 'Address', value: XRP_ADDRESS },
+              { label: 'Destination Tag', value: XRP_DESTINATION_TAG, truncate: false },
+            ]}
+          />
+          <CryptoCard
+            title="USDT"
+            fields={[
+              { label: 'Ethereum', value: ETH_ADDRESS },
+              { label: 'Solana', value: SOL_ADDRESS },
+            ]}
+          />
+          <CryptoCard
+            title="USDC"
+            fields={[
+              { label: 'Ethereum', value: ETH_ADDRESS },
+              { label: 'Solana', value: SOL_ADDRESS },
+            ]}
+          />
+        </CryptoCardGrid>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -99,12 +107,14 @@ const styles = StyleSheet.create({
     fontSize: fontSize.base,
     letterSpacing: 0.5,
   },
-  tipRow: {
+  tipGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     gap: spacing.sm,
   },
   tipCard: {
-    flex: 1,
+    width: '47%',
     backgroundColor: colors.surfaceCard,
     borderRadius: radius.md,
     paddingVertical: spacing.md,

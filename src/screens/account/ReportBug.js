@@ -46,7 +46,7 @@ export default function ReportBug({ navigation }) {
   const handleSubmit = async () => {
     if (!description.trim()) {
       setStatus('error');
-      setErrorMessage('Describe what happened before submitting.');
+      setErrorMessage('Describe the bug or feature before submitting.');
       return;
     }
 
@@ -81,16 +81,16 @@ export default function ReportBug({ navigation }) {
 
   return (
     <ScrollView style={styles.container}>
-      <BackHeader title="Report a Bug" navigation={navigation} />
+      <BackHeader title="Bugs / Features" navigation={navigation} />
       <View style={styles.body}>
         <Text style={styles.blurb}>
-          This form is fan-run, not Frank's own support line — reports
-          help us fix the app, not the show.
+          This app is fan-built and managed. It is not run by Frank.
+          Reports help us fix the app and shape what we build next.
         </Text>
 
         <TextInput
           style={styles.input}
-          placeholder="Describe what happened..."
+          placeholder="Describe the bug or feature you'd like to see..."
           placeholderTextColor={colors.inkMuted}
           multiline
           numberOfLines={5}

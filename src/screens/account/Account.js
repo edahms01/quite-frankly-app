@@ -57,7 +57,7 @@ export default function Account({ navigation }) {
           style={styles.row}
           onPress={() => navigation.navigate('ReportBug')}
         >
-          <Text style={styles.rowLabel}>Report a Bug</Text>
+          <Text style={styles.rowLabel}>Report a Bug / Request Features</Text>
           <ChevronRight color={colors.inkMuted} size={18} />
         </TouchableOpacity>
 
