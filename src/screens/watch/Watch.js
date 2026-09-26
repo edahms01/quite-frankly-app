@@ -56,9 +56,11 @@ export default function Watch({ navigation }) {
     return response.json();
   };
 
-  // startOffset defaults to gridItems.length so the history section's first
-  // page doesn't re-show the videos already shown in the top grid above.
-  const loadHistoryInitial = useCallback(async (isRefreshOfLoaded = false, startOffset = gridItems.length) => {
+  // startOffset defaults to gridItems.length + 1 so the history section's first
+  // page doesn't re-show the videos already shown in the top grid above. Archive
+  // index 0 ("mostRecent") is never in gridItems (only Home shows it), so the
+  // first archive item not shown anywhere on Watch is gridItems.length + 1.
+  const loadHistoryInitial = useCallback(async (isRefreshOfLoaded = false, startOffset = gridItems.length + 1) => {
     try {
       const data = await fetchHistoryPage(startOffset);
       if (mountedRef.current) {
@@ -102,7 +104,7 @@ export default function Watch({ navigation }) {
     setHistoryLoadingMore(true);
     setHistoryLoadMoreError(null);
     try {
-      const data = await fetchHistoryPage(gridItems.length + historyEpisodes.length);
+      const data = await fetchHistoryPage(gridItems.length + 1 + historyEpisodes.length);
       setHistoryEpisodes((prev) => [...prev, ...data.episodes]);
       setHistoryHasMore(data.hasMore);
     } catch (err) {
