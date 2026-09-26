@@ -15,12 +15,12 @@ export default function Writing({ navigation }) {
           <DestinationCard
             Icon={FileText}
             label="Blog"
-            onPress={() => WebBrowser.openBrowserAsync('https://www.quitefrankly.tv/blog')}
+            onPress={() => WebBrowser.openBrowserAsync('https://www.quitefrankly.tv/blog', { dismissButtonStyle: 'close' })}
           />
           <DestinationCard
             Icon={Mail}
             label="Newsletter Archive"
-            onPress={() => WebBrowser.openBrowserAsync('https://www.quitefrankly.tv/newsletter-archives')}
+            onPress={() => WebBrowser.openBrowserAsync('https://www.quitefrankly.tv/newsletter-archives', { dismissButtonStyle: 'close' })}
           />
         </View>
 

@@ -11,7 +11,7 @@ export default function ExternalRow({ avatarText, title, subtitle, url, badge, o
   return (
     <TouchableOpacity
       style={styles.row}
-      onPress={onPress ?? (() => url && (inAppBrowser ? WebBrowser.openBrowserAsync(url) : Linking.openURL(url)))}
+      onPress={onPress ?? (() => url && (inAppBrowser ? WebBrowser.openBrowserAsync(url, { dismissButtonStyle: 'close' }) : Linking.openURL(url)))}
       activeOpacity={0.7}
     >
       {avatarText != null && (

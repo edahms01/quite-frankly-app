@@ -21,7 +21,7 @@ function IconTile({ label, Icon, url, inAppBrowser }) {
   return (
     <TouchableOpacity
       style={styles.tile}
-      onPress={() => (inAppBrowser ? WebBrowser.openBrowserAsync(url) : Linking.openURL(url))}
+      onPress={() => (inAppBrowser ? WebBrowser.openBrowserAsync(url, { dismissButtonStyle: 'close' }) : Linking.openURL(url))}
       activeOpacity={0.7}
     >
       <Icon color={colors.inkPrimary} size={22} />
@@ -52,7 +52,7 @@ export default function Community({ navigation }) {
         <Text style={styles.sectionLabel}>EVENTS</Text>
         <TouchableOpacity
           style={styles.eventRow}
-          onPress={() => WebBrowser.openBrowserAsync('https://www.quitefrankly.tv/the-quite-frankly-live-events')}
+          onPress={() => WebBrowser.openBrowserAsync('https://www.quitefrankly.tv/the-quite-frankly-live-events', { dismissButtonStyle: 'close' })}
         >
           <Text style={styles.eventText}>Main Event · Oct 23, 2027</Text>
           <ChevronRight color={colors.inkMuted} size={18} />

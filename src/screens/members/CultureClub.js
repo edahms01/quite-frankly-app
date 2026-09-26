@@ -48,7 +48,7 @@ export default function CultureClub({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.loginRow} onPress={() => WebBrowser.openBrowserAsync(LOGIN_URL)}>
+        <TouchableOpacity style={styles.loginRow} onPress={() => WebBrowser.openBrowserAsync(LOGIN_URL, { dismissButtonStyle: 'close' })}>
           <Lock color={colors.inkMuted} size={16} />
           <Text style={styles.loginText}>Already a Sponsor? Log in on quitefrankly.tv</Text>
         </TouchableOpacity>
@@ -58,7 +58,7 @@ export default function CultureClub({ navigation }) {
           <TouchableOpacity
             key={e.title}
             style={styles.eventRow}
-            onPress={() => WebBrowser.openBrowserAsync(LOGIN_URL)}
+            onPress={() => WebBrowser.openBrowserAsync(LOGIN_URL, { dismissButtonStyle: 'close' })}
           >
             <Lock color={colors.inkMuted} size={16} />
             <View style={styles.eventTextBlock}>

@@ -98,7 +98,7 @@ export default function Shop({ navigation }) {
                   key={s.label}
                   Icon={ShoppingBag}
                   label={s.label}
-                  onPress={() => WebBrowser.openBrowserAsync(s.url)}
+                  onPress={() => WebBrowser.openBrowserAsync(s.url, { dismissButtonStyle: 'close' })}
                 />
               ))}
             </View>

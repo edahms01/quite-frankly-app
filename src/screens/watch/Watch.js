@@ -64,7 +64,7 @@ export default function Watch({ navigation }) {
           <TouchableOpacity
             key={p.label}
             style={styles.platformPill}
-            onPress={() => (p.inAppBrowser ? WebBrowser.openBrowserAsync(p.url) : Linking.openURL(p.url))}
+            onPress={() => (p.inAppBrowser ? WebBrowser.openBrowserAsync(p.url, { dismissButtonStyle: 'close' }) : Linking.openURL(p.url))}
           >
             <Text style={styles.platformText}>{p.label}</Text>
           </TouchableOpacity>
