@@ -50,17 +50,20 @@ export default function VideoPlayer({ navigation, route }) {
   const [activeGame, setActiveGame] = useState(null);
   const [trayVisible, setTrayVisible] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
-  // The game layer's real measured height — the screen sits above the tab
-  // bar, so windowHeight - headerHeight alone would let the window be
-  // dragged down underneath it. Falls back to that estimate until measured.
-  const [gameLayerHeight, setGameLayerHeight] = useState(null);
+  // The ScrollView's own visible height — the screen sits above the tab
+  // bar, so windowHeight alone would let the window be dragged down
+  // underneath it. Falls back to windowHeight until measured.
+  const [viewportHeight, setViewportHeight] = useState(null);
+  // Only drives the window's *bottom* clamp. The game layer's *top* is not
+  // derived from this (or any) React state — see gameAnchor below.
+  const gameLayerHeight = (viewportHeight ?? windowHeight) - headerHeight;
   const isLandscape = windowWidth > windowHeight;
   const hidden = isLandscape || isFullscreen;
 
   const handleSelectGame = (id) => {
     const game = GAMES.find((g) => g.id === id);
-    // The window's avoid zone assumes the video sits right under the
-    // header (scroll offset 0); scrolling is then locked while it's open.
+    // Bring the video (and the window anchored just below it) into view;
+    // scrolling is then locked while a game is open.
     scrollViewRef.current?.scrollTo({ y: 0, animated: false });
     setActiveGame(game);
     setTrayVisible(false);
@@ -68,7 +71,12 @@ export default function VideoPlayer({ navigation, route }) {
 
   return (
     <View style={styles.container}>
-      <ScrollView ref={scrollViewRef} style={styles.container} scrollEnabled={!activeGame}>
+      <ScrollView
+        ref={scrollViewRef}
+        style={styles.container}
+        scrollEnabled={!activeGame}
+        onLayout={(e) => setViewportHeight(e.nativeEvent.layout.height)}
+      >
         <View onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}>
           <BackHeader
             navigation={navigation}
@@ -82,102 +90,113 @@ export default function VideoPlayer({ navigation, route }) {
           />
         </View>
 
-        <View style={styles.playerArea}>
-          {embedVisible ? (
-            <VideoEmbed
-              videoId={video.id}
-              width={windowWidth}
-              height={PLAYER_HEIGHT}
-              onFullscreenChange={setIsFullscreen}
-            />
-          ) : (
-            <TouchableOpacity
-              style={StyleSheet.absoluteFill}
-              activeOpacity={0.85}
-              onPress={() => {
-                claim();
-                setEmbedVisible(true);
-              }}
-            >
-              <VideoThumbnailOverlay thumbnailUrl={video?.thumbnailUrl} />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        <View style={styles.body}>
-          <Text style={styles.title}>{title}</Text>
-          {video?.publishedAt ? (
-            <Text style={styles.meta}>Quite Frankly · {relativeTime(video.publishedAt)}</Text>
-          ) : null}
-
-          <View style={styles.actionsRow}>
-            <VideoTypePill
-              type={video?.contentType}
-              style={styles.typePill}
-              textStyle={styles.typePillText}
-            />
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => Linking.openURL(youtubeUrl)}
-            >
-              <Text style={styles.actionText}>Watch on YouTube</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => Share.share({ message: title, url: youtubeUrl })}
-            >
-              <Text style={styles.actionText}>Share</Text>
-            </TouchableOpacity>
+        {/* gameAnchor: the game layer is an absolute child of this wrapper,
+            whose top edge IS playerArea's top edge. Yoga positions the layer
+            in the same native layout pass that positions the video, so when
+            the header's height changes (e.g. status-bar inset shrinking/
+            growing across a fullscreen transition), the layer moves with
+            the video in the same frame — there's no React-state round trip
+            that could leave it one render behind. Combined with
+            GameWindow's top clamp at avoidRect.height (= PLAYER_HEIGHT, a
+            constant), the window can never sit above the video's bottom
+            edge, regardless of event ordering. Scroll offset is irrelevant
+            too: the layer scrolls with the video. minHeight keeps the
+            wrapper tall enough that the whole layer stays inside its
+            parent's bounds (Android only delivers touches within them). */}
+        <View style={activeGame ? { minHeight: gameLayerHeight } : null}>
+          <View style={styles.playerArea}>
+            {embedVisible ? (
+              <VideoEmbed
+                videoId={video.id}
+                width={windowWidth}
+                height={PLAYER_HEIGHT}
+                onFullscreenChange={setIsFullscreen}
+              />
+            ) : (
+              <TouchableOpacity
+                style={StyleSheet.absoluteFill}
+                activeOpacity={0.85}
+                onPress={() => {
+                  claim();
+                  setEmbedVisible(true);
+                }}
+              >
+                <VideoThumbnailOverlay thumbnailUrl={video?.thumbnailUrl} />
+              </TouchableOpacity>
+            )}
           </View>
 
-          <TouchableOpacity
-            style={styles.sponsorButton}
-            onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })}
-          >
-            <Text style={styles.sponsorButtonText}>Become a Sponsor</Text>
-          </TouchableOpacity>
+          <View style={styles.body}>
+            <Text style={styles.title}>{title}</Text>
+            {video?.publishedAt ? (
+              <Text style={styles.meta}>Quite Frankly · {relativeTime(video.publishedAt)}</Text>
+            ) : null}
 
-          {video?.description ? (
-            <>
-              <View style={styles.divider} />
-              <Text style={styles.description}>{video.description}</Text>
-            </>
+            <View style={styles.actionsRow}>
+              <VideoTypePill
+                type={video?.contentType}
+                style={styles.typePill}
+                textStyle={styles.typePillText}
+              />
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => Linking.openURL(youtubeUrl)}
+              >
+                <Text style={styles.actionText}>Watch on YouTube</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => Share.share({ message: title, url: youtubeUrl })}
+              >
+                <Text style={styles.actionText}>Share</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              style={styles.sponsorButton}
+              onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })}
+            >
+              <Text style={styles.sponsorButtonText}>Become a Sponsor</Text>
+            </TouchableOpacity>
+
+            {video?.description ? (
+              <>
+                <View style={styles.divider} />
+                <Text style={styles.description}>{video.description}</Text>
+              </>
+            ) : null}
+          </View>
+
+          {activeGame ? (
+            // Layout frame only, box-none so this transparent container never
+            // intercepts touches on the video (or the page) — only GameWindow
+            // itself is touchable.
+            <View pointerEvents="box-none" style={[styles.gameLayer, { height: gameLayerHeight }]}>
+              <GameWindow
+                game={activeGame}
+                screenBounds={{ width: windowWidth, height: gameLayerHeight }}
+                avoidRect={{ top: 0, left: 0, width: windowWidth, height: PLAYER_HEIGHT }}
+                hidden={hidden}
+                onClose={() => setActiveGame(null)}
+              />
+            </View>
           ) : null}
         </View>
       </ScrollView>
 
-      {activeGame ? (
-        // Layout frame only: starts exactly where playerArea starts, and
-        // box-none so this transparent container never intercepts touches
-        // on the video (or the page) — only GameWindow itself is touchable.
-        // GameWindow clamps its top to below avoidRect (the video banner),
-        // so the window itself can never overlap the player.
-        <View
-          pointerEvents="box-none"
-          style={[styles.gameLayer, { top: headerHeight }]}
-          onLayout={(e) => setGameLayerHeight(e.nativeEvent.layout.height)}
+      {/* Hidden while a game is open: the window now lives inside the
+          ScrollView, so this later sibling would paint over it wherever
+          they overlap. The window's own Close is the way out. */}
+      {activeGame ? null : (
+        <TouchableOpacity
+          style={styles.fab}
+          activeOpacity={0.85}
+          onPress={() => setTrayVisible(true)}
+          accessibilityLabel="Play a game"
         >
-          <GameWindow
-            game={activeGame}
-            screenBounds={{
-              width: windowWidth,
-              height: gameLayerHeight ?? windowHeight - headerHeight,
-            }}
-            avoidRect={{ top: 0, left: 0, width: windowWidth, height: PLAYER_HEIGHT }}
-            hidden={hidden}
-            onClose={() => setActiveGame(null)}
-          />
-        </View>
-      ) : null}
-
-      <TouchableOpacity
-        style={styles.fab}
-        activeOpacity={0.85}
-        onPress={() => setTrayVisible(true)}
-        accessibilityLabel="Play a game"
-      >
-        <Gamepad2 color={colors.surfaceGround} size={26} />
-      </TouchableOpacity>
+          <Gamepad2 color={colors.surfaceGround} size={26} />
+        </TouchableOpacity>
+      )}
 
       <GameTray
         visible={trayVisible}
@@ -195,9 +214,9 @@ const styles = StyleSheet.create({
   },
   gameLayer: {
     position: 'absolute',
+    top: 0,
     left: 0,
     right: 0,
-    bottom: 0,
   },
   fab: {
     position: 'absolute',
