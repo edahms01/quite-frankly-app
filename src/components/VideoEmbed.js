@@ -52,6 +52,7 @@ export default function VideoEmbed({ videoId, width, height, onLoadEnd }) {
         }}
         style={{ width, height, backgroundColor: 'transparent' }}
         allowsInlineMediaPlayback
+        allowsFullscreenVideo
         mediaPlaybackRequiresUserAction={false}
         onLoadEnd={handleLoadEnd}
         onShouldStartLoadWithRequest={handleShouldStartLoad}
