@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Linking,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -18,6 +19,14 @@ import BackHeader from '../../components/BackHeader';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 const PAGE_SIZE = 20;
+
+const PLATFORMS = [
+  { label: 'Apple', url: 'https://podcasts.apple.com/us/podcast/quite-frankly/id1043194697' },
+  { label: 'Spotify', url: 'https://open.spotify.com/show/1sYwIt24MveakVEEJHWmys' },
+  { label: 'SoundCloud', url: 'https://soundcloud.com/quite-frankly-podcast' },
+  { label: 'Deezer', url: 'https://www.deezer.com/en/show/12825' },
+  { label: 'Audible', url: 'https://www.audible.com/podcast/Quite-Frankly/B08K568X1Q' },
+];
 
 export default function Listen({ navigation }) {
   const { currentTrack, playbackState, play, togglePlayPause } = useAudioPlayer();
@@ -135,6 +144,18 @@ export default function Listen({ navigation }) {
         </TouchableOpacity>
       </BackHeader>
 
+      <View style={styles.platformRow}>
+        {PLATFORMS.map((p) => (
+          <TouchableOpacity
+            key={p.label}
+            style={styles.platformPill}
+            onPress={() => Linking.openURL(p.url)}
+          >
+            <Text style={styles.platformText} numberOfLines={1}>{p.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       <View style={styles.list}>
           {loading ? (
             <LoadingState style={styles.stateIndicator} />
@@ -218,6 +239,29 @@ const styles = StyleSheet.create({
     color: colors.accentGold,
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.md,
+  },
+  // Matches Watch.js's platformRow/platformPill exactly (the app's one
+  // Pill family — radius.lg, no shadow, fontSize.base) for consistency
+  // between the two link-out rows.
+  platformRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: spacing.xs,
+    marginTop: spacing.md,
+    marginBottom: spacing.xl,
+    paddingHorizontal: spacing.sm,
+  },
+  platformPill: {
+    flexShrink: 1,
+    backgroundColor: colors.surfaceCard,
+    borderRadius: radius.lg,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+  },
+  platformText: {
+    color: colors.inkPrimary,
+    fontFamily: fontFamily.semiBold,
+    fontSize: fontSize.base,
   },
   list: {
     paddingHorizontal: spacing.md,
