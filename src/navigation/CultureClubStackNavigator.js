@@ -4,7 +4,7 @@ import Subscription from '../screens/shared/Subscription';
 
 const Stack = createNativeStackNavigator();
 
-export default function MembersOnlyStackNavigator() {
+export default function CultureClubStackNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="CultureClub" component={CultureClub} options={{ headerShown: false }} />

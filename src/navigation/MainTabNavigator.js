@@ -3,7 +3,7 @@ import { House as HomeIcon, CirclePlay, Headphones, Crown } from 'lucide-react-n
 import HomeStackNavigator from './HomeStackNavigator';
 import WatchStackNavigator from './WatchStackNavigator';
 import ListenStackNavigator from './ListenStackNavigator';
-import MembersOnlyStackNavigator from './MembersOnlyStackNavigator';
+import CultureClubStackNavigator from './CultureClubStackNavigator';
 import { resetTabStackOnBlur } from './resetStackOnBlur';
 import { colors } from '../theme';
 
@@ -39,8 +39,8 @@ export default function MainTabNavigator() {
         options={{ tabBarIcon: ({ color, size }) => <Headphones color={color} size={size} /> }}
       />
       <Tab.Screen
-        name="MembersOnly"
-        component={MembersOnlyStackNavigator}
+        name="CultureClub"
+        component={CultureClubStackNavigator}
         options={{
           title: 'Culture Club',
           tabBarIcon: ({ color, size }) => <Crown color={color} size={size} />,

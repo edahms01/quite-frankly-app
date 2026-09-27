@@ -28,10 +28,10 @@ Native-feeling iOS/Android mobile app for the *Quite Frankly* podcast (quitefran
 
 ## Navigation architecture
 - **Root**: Onboarding stack (first-launch only, skippable) → Main App, never returns after first completion.
-- **Main App**: Bottom tabs — Home, Watch, Members Only.
+- **Main App**: Bottom tabs — Home, Watch, Culture Club.
   - Home stack: Home → Shop, Community, Writing, Band, Calendar, Listen
   - Watch stack: Watch → Video Player, Listen
-  - Members Only stack: Culture Club → Subscription
+  - Culture Club stack: Culture Club → Subscription
 - **Global stack** (reached via avatar icon from any tab): Account → Subscription, Notifications, Donation, Report a Bug
 - **Modal**: Subscription Checkout (system-browser sheet, not a push)
 - **Persistent overlay**: Listen mini-player, docks above tab bar app-wide once playing, lives outside the nav stack

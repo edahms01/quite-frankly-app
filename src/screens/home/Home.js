@@ -32,7 +32,7 @@ const VIDEO_HEIGHT = 220;
 const DESTINATIONS = [
   { label: 'Watch', Icon: CirclePlay, route: 'Watch' },
   { label: 'Listen', Icon: Headphones, route: 'Listen' },
-  { label: 'Culture Club', Icon: Crown, route: 'MembersOnlyTab' },
+  { label: 'Culture Club', Icon: Crown, route: 'CultureClubTab' },
   { label: 'Community', Icon: MessageSquare, route: 'Community' },
   { label: 'Shop', Icon: ShoppingBag, route: 'Shop' },
   { label: 'Calendar', Icon: CalendarIcon, route: 'Calendar' },
@@ -49,8 +49,8 @@ export default function Home({ navigation }) {
   const cardWidth = windowWidth - 2 * spacing.md;
 
   const goTo = (route) => {
-    if (route === 'MembersOnlyTab') {
-      navigation.getParent()?.navigate('MembersOnly');
+    if (route === 'CultureClubTab') {
+      navigation.getParent()?.navigate('CultureClub');
     } else {
       navigation.navigate(route);
     }
