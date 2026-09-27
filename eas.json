@@ -6,13 +6,16 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "prebuildCommand": "expo prebuild && node scripts/fix-splash-screen.js"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "prebuildCommand": "expo prebuild && node scripts/fix-splash-screen.js"
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "prebuildCommand": "expo prebuild && node scripts/fix-splash-screen.js"
     }
   },
   "submit": {

@@ -1,7 +1,8 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fontFamily, fontSize, spacing, radius } from '../../theme';
 import OnboardingDots from '../../components/OnboardingDots';
+import Wordmark from '../../components/Wordmark';
 
 export default function Welcome({ navigation }) {
   const insets = useSafeAreaInsets();
@@ -16,11 +17,7 @@ export default function Welcome({ navigation }) {
 
       <View style={styles.content}>
         <OnboardingDots total={4} activeIndex={0} />
-        <Image
-          source={require('../../assets/images/quite-frankly-logo-final.png')}
-          style={styles.wordmark}
-          resizeMode="contain"
-        />
+        <Wordmark style={styles.wordmark} />
         <Text style={styles.subtitle}>Live weeknights · 7:00 PM ET</Text>
         <Text style={styles.body}>
           The Quite Frankly Universe. All in one place.
@@ -57,8 +54,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   wordmark: {
-    width: 280,
-    height: 280 * (404 / 1720),
     alignSelf: 'center',
   },
   subtitle: {
