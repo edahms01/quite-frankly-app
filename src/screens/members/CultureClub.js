@@ -2,14 +2,13 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import * as WebBrowser from 'expo-web-browser';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Lock, ChevronLeft } from 'lucide-react-native';
-import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
+import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import AvatarButton from '../../components/AvatarButton';
 import OnAirBadge from '../../components/OnAirBadge';
+import ScheduleTeaser from '../../components/ScheduleTeaser';
+import { WEEK } from '../../data/mockSchedule';
 
-const EVENTS = [
-  { title: 'Book Club: [title]', when: 'Thu · 7:30 PM ET' },
-  { title: 'Film Club: [title]', when: 'Sat · 8:00 PM ET' },
-];
+const CLUB_DAYS = WEEK.filter((day) => day.club);
 
 const LOGIN_URL = 'https://www.quitefrankly.tv/account/login';
 
@@ -51,22 +50,7 @@ export default function CultureClub({ navigation }) {
         </TouchableOpacity>
 
         <Text style={styles.sectionLabel}>CULTURE CLUB CALENDAR</Text>
-        {EVENTS.map((e) => (
-          <TouchableOpacity
-            key={e.title}
-            style={styles.eventRow}
-            onPress={() => WebBrowser.openBrowserAsync(LOGIN_URL, { dismissButtonStyle: 'close' })}
-          >
-            <Lock color={colors.inkMuted} size={16} />
-            <View style={styles.eventTextBlock}>
-              <Text style={styles.eventTitle}>{e.title}</Text>
-              <Text style={styles.eventWhen}>{e.when}</Text>
-            </View>
-            <View style={styles.membersBadge}>
-              <Text style={styles.membersBadgeText}>MEMBERS</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+        <ScheduleTeaser items={CLUB_DAYS} showLegend={false} />
         <Text style={styles.calendarNote}>
           If you'd like to see a show calendar, message Frank and ask him
           to start using a digital calendar for show times. And we can
@@ -158,50 +142,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginTop: spacing.sm,
   },
-  eventRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    // Culture Club highlight — theme.js's glow shadow. iOS gets the real
-    // colored glow; Android's elevation can't carry color, so this also
-    // needs the explicit gold border fallback per theme.js's own comment.
-    ...shadows.glow,
-    borderWidth: 1,
-    borderColor: colors.accentGold,
-  },
-  eventTextBlock: {
-    flex: 1,
-  },
-  eventTitle: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.md,
-  },
-  eventWhen: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.regular,
-    fontSize: fontSize.sm,
-    marginTop: 2,
-  },
   calendarNote: {
     color: colors.inkMuted,
     fontFamily: fontFamily.regular,
     fontSize: fontSize.sm,
     marginTop: spacing.sm,
-  },
-  membersBadge: {
-    borderWidth: 1,
-    borderColor: colors.accentGold,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-  },
-  membersBadgeText: {
-    color: colors.accentGold,
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.xs,
   },
 });
