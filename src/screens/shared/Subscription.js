@@ -77,11 +77,11 @@ export default function Subscription({ navigation }) {
             <Text style={styles.gridCardTitle}>Amazon</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.gridCard}
+            style={[styles.gridCard, styles.gridCardRow]}
             onPress={() => copyToClipboard(BTC_ADDRESS, 'BTC')}
           >
             <Text style={styles.gridCardTitle}>BTC</Text>
-            <Text style={styles.gridCardValue} numberOfLines={1}>
+            <Text style={[styles.gridCardValue, styles.gridCardValueInline]} numberOfLines={1}>
               {truncateAddress(BTC_ADDRESS)}
             </Text>
             <View style={styles.gridCardBadge}>
@@ -89,11 +89,11 @@ export default function Subscription({ navigation }) {
             </View>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.gridCard}
+            style={[styles.gridCard, styles.gridCardRow]}
             onPress={() => copyToClipboard(XRP_ADDRESS, 'XRP')}
           >
             <Text style={styles.gridCardTitle}>XRP</Text>
-            <Text style={styles.gridCardValue} numberOfLines={1}>
+            <Text style={[styles.gridCardValue, styles.gridCardValueInline]} numberOfLines={1}>
               {truncateAddress(XRP_ADDRESS)}
             </Text>
             <View style={styles.gridCardBadge}>
@@ -210,6 +210,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.xs,
   },
+  gridCardRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
   gridCardTitle: {
     color: colors.inkPrimary,
     fontFamily: fontFamily.semiBold,
@@ -219,6 +223,9 @@ const styles = StyleSheet.create({
     color: colors.inkMuted,
     fontFamily: fontFamily.regular,
     fontSize: fontSize.xs,
+  },
+  gridCardValueInline: {
+    flexShrink: 1,
   },
   gridCardBadge: {
     backgroundColor: colors.surfaceLine,
