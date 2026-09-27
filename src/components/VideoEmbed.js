@@ -18,7 +18,21 @@ import LoadingState from './LoadingState';
 // ScrollView > View). A literal number requires no resolution step at
 // all, sidestepping that native measurement race entirely. Callers
 // compute these from useWindowDimensions.
-export default function VideoEmbed({ videoId, width, height, onLoadEnd }) {
+// Bridges the embed's own fullscreen state (the player's fullscreen button)
+// back to React Native so callers can react to it — VideoPlayer.js hides its
+// floating game window while the video is fullscreen. Best-effort: if the
+// page never fires these events, onFullscreenChange simply never gets called.
+const injectedJavaScript = `
+  document.addEventListener('fullscreenchange', function () {
+    window.ReactNativeWebView.postMessage(document.fullscreenElement ? 'fullscreen:enter' : 'fullscreen:exit');
+  });
+  document.addEventListener('webkitfullscreenchange', function () {
+    window.ReactNativeWebView.postMessage(document.webkitFullscreenElement ? 'fullscreen:enter' : 'fullscreen:exit');
+  });
+  true;
+`;
+
+export default function VideoEmbed({ videoId, width, height, onLoadEnd, onFullscreenChange }) {
   const [loading, setLoading] = useState(true);
 
   const handleLoadEnd = () => {
@@ -43,6 +57,13 @@ export default function VideoEmbed({ videoId, width, height, onLoadEnd }) {
     return false;
   };
 
+  const handleMessage = (event) => {
+    const message = event.nativeEvent.data;
+    if (message === 'fullscreen:enter' || message === 'fullscreen:exit') {
+      onFullscreenChange?.(message === 'fullscreen:enter');
+    }
+  };
+
   return (
     <View style={{ width, height }}>
       <WebView
@@ -56,6 +77,8 @@ export default function VideoEmbed({ videoId, width, height, onLoadEnd }) {
         mediaPlaybackRequiresUserAction={false}
         onLoadEnd={handleLoadEnd}
         onShouldStartLoadWithRequest={handleShouldStartLoad}
+        injectedJavaScript={injectedJavaScript}
+        onMessage={handleMessage}
       />
       {loading ? <LoadingState message="Loading video…" style={styles.loading} /> : null}
     </View>

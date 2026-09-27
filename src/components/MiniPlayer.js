@@ -11,6 +11,15 @@ import { isOnMainTabs, navigateToFullPlayer, navigationRef } from '../navigation
 // (e.g. via useBottomTabBarHeight()). Tune on-device if it looks off.
 const TAB_BAR_HEIGHT = Platform.OS === 'ios' ? 49 : 56;
 
+// MiniPlayer's own rendered height (progressTrack + bar, both below) — kept
+// as one exported constant so screens that need to avoid covering it (e.g.
+// the games feature's floating GameWindow/FAB) don't have to guess or
+// duplicate this number. progressTrack (3) + bar's vertical padding
+// (spacing.sm * 2 = 16) + bar's tallest content (iconCircle, 36) = 55.
+const PROGRESS_HEIGHT = 3;
+const BAR_CONTENT_HEIGHT = 36;
+export const MINI_PLAYER_HEIGHT = PROGRESS_HEIGHT + spacing.sm * 2 + BAR_CONTENT_HEIGHT;
+
 export default function MiniPlayer() {
   const { currentTrack, playbackState, position, duration, togglePlayPause } = useAudioPlayer();
   const insets = useSafeAreaInsets();
@@ -61,11 +70,11 @@ const styles = StyleSheet.create({
     zIndex: 20,
   },
   progressTrack: {
-    height: 3,
+    height: PROGRESS_HEIGHT,
     backgroundColor: colors.surfaceLine,
   },
   progressFill: {
-    height: 3,
+    height: PROGRESS_HEIGHT,
     backgroundColor: colors.accentGold,
   },
   bar: {
