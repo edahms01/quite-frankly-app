@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { KeyRound } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, spacing, radius } from '../../theme';
@@ -9,6 +10,7 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 const INITIAL_COOLDOWN_SECONDS = 60;
 
 export default function CodeEntry({ navigation, route }) {
+  const insets = useSafeAreaInsets();
   const email = route.params?.email ?? '';
   const [code, setCode] = useState('');
   const [status, setStatus] = useState('idle'); // idle | verifying | error
@@ -106,7 +108,10 @@ export default function CodeEntry({ navigation, route }) {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.skip} onPress={skipOnboarding}>
+      <TouchableOpacity
+        style={[styles.skip, { top: insets.top + spacing.sm }]}
+        onPress={skipOnboarding}
+      >
         <Text style={styles.skipText}>Skip</Text>
       </TouchableOpacity>
 
@@ -165,7 +170,6 @@ const styles = StyleSheet.create({
   },
   skip: {
     position: 'absolute',
-    top: spacing.lg,
     right: spacing.lg,
     padding: spacing.xs,
   },

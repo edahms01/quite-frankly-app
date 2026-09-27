@@ -1,12 +1,14 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fontFamily, fontSize, spacing, radius } from '../../theme';
 import OnboardingDots from '../../components/OnboardingDots';
 
 export default function Welcome({ navigation }) {
+  const insets = useSafeAreaInsets();
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        style={styles.skip}
+        style={[styles.skip, { top: insets.top + spacing.sm }]}
         onPress={() => navigation.navigate('MainTabs')}
       >
         <Text style={styles.skipText}>Skip</Text>
@@ -41,7 +43,6 @@ const styles = StyleSheet.create({
   },
   skip: {
     position: 'absolute',
-    top: spacing.lg,
     right: spacing.lg,
     padding: spacing.xs,
   },

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Mail } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, spacing, radius } from '../../theme';
@@ -8,6 +9,7 @@ import OnboardingDots from '../../components/OnboardingDots';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 export default function Email({ navigation }) {
+  const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
   const [sending, setSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -51,7 +53,10 @@ export default function Email({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.skip} onPress={skipOnboarding}>
+      <TouchableOpacity
+        style={[styles.skip, { top: insets.top + spacing.sm }]}
+        onPress={skipOnboarding}
+      >
         <Text style={styles.skipText}>Skip</Text>
       </TouchableOpacity>
 
@@ -105,7 +110,6 @@ const styles = StyleSheet.create({
   },
   skip: {
     position: 'absolute',
-    top: spacing.lg,
     right: spacing.lg,
     padding: spacing.xs,
   },

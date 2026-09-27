@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
 import { Bell } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, spacing, radius } from '../../theme';
@@ -7,6 +8,7 @@ import OnboardingDots from '../../components/OnboardingDots';
 import { registerForPushNotifications, DEFAULT_PREFERENCES } from '../../lib/pushNotifications';
 
 export default function NotificationsPermission({ navigation }) {
+  const insets = useSafeAreaInsets();
   const [requesting, setRequesting] = useState(false);
 
   const goNext = () => navigation.navigate('Email');
@@ -26,7 +28,10 @@ export default function NotificationsPermission({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.skip} onPress={goNext}>
+      <TouchableOpacity
+        style={[styles.skip, { top: insets.top + spacing.sm }]}
+        onPress={goNext}
+      >
         <Text style={styles.skipText}>Skip</Text>
       </TouchableOpacity>
 
@@ -63,7 +68,6 @@ const styles = StyleSheet.create({
   },
   skip: {
     position: 'absolute',
-    top: spacing.lg,
     right: spacing.lg,
     padding: spacing.xs,
   },
