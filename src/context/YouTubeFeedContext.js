@@ -2,15 +2,17 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
+// gridItems isn't part of this state — Watch.js reads straight from the
+// archive (get-youtube-episodes.js), not this RSS-poll cache; mostRecent
+// stays here because Home.js's "Most Recent" card still needs it.
 const YouTubeFeedContext = createContext({
   mostRecent: null,
-  gridItems: [],
   loading: true,
   error: null,
 });
 
 export function YouTubeFeedProvider({ children }) {
-  const [state, setState] = useState({ mostRecent: null, gridItems: [], loading: true, error: null });
+  const [state, setState] = useState({ mostRecent: null, loading: true, error: null });
 
   useEffect(() => {
     let cancelled = false;
@@ -22,7 +24,6 @@ export function YouTubeFeedProvider({ children }) {
         if (!cancelled) {
           setState({
             mostRecent: feed.mostRecent,
-            gridItems: feed.gridItems,
             loading: false,
             error: null,
           });

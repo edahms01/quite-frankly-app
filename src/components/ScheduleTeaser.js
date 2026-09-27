@@ -96,14 +96,14 @@ const styles = StyleSheet.create({
   comingSoonBadge: {
     alignSelf: 'center',
     borderWidth: 1,
-    borderColor: colors.accentGold,
+    borderColor: colors.inkPrimary,
     borderRadius: radius.sm,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     marginBottom: spacing.md,
   },
   comingSoonText: {
-    color: colors.accentGold,
+    color: colors.inkPrimary,
     fontFamily: fontFamily.bold,
     fontSize: fontSize.sm,
     letterSpacing: 0.5,

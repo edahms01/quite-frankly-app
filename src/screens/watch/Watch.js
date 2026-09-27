@@ -4,7 +4,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { CirclePlay } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
 import BackHeader from '../../components/BackHeader';
-import { useYouTubeFeed } from '../../context/YouTubeFeedContext';
+import VideoTypePill from '../../components/VideoTypePill';
 import { relativeTime } from '../../utils/relativeTime';
 import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
@@ -32,29 +32,28 @@ function VideoCard({ video, onPress }) {
         )}
       </View>
       <Text style={styles.videoTitle} numberOfLines={2}>{video.title}</Text>
-      <Text style={styles.videoMeta}>{relativeTime(video.publishedAt)}</Text>
+      <View style={styles.metaRow}>
+        <Text style={styles.videoMeta}>{relativeTime(video.publishedAt)}</Text>
+        <VideoTypePill type={video.contentType} />
+      </View>
     </TouchableOpacity>
   );
 }
 
 export default function Watch({ navigation }) {
-  const { mostRecent, gridItems, loading, error } = useYouTubeFeed();
-  // gridItems deliberately excludes the most recent video (poll-youtube.js
-  // slices it off since Home shows it separately) — the top grid here
-  // needs it added back in so Watch also shows the newest upload. The
-  // History section's offset math below still starts at gridItems.length
-  // + 1 (not allItems.length) since that's the same number of archive
-  // items already shown on this screen either way.
-  const allItems = mostRecent ? [mostRecent, ...gridItems] : gridItems;
-
-  const [historyEpisodes, setHistoryEpisodes] = useState([]);
-  const [historyLoading, setHistoryLoading] = useState(true);
-  const [historyRefreshing, setHistoryRefreshing] = useState(false);
-  const [historyLoadingMore, setHistoryLoadingMore] = useState(false);
-  const [historyHasMore, setHistoryHasMore] = useState(false);
-  const [historyError, setHistoryError] = useState(null);
-  const [historyLoadMoreError, setHistoryLoadMoreError] = useState(null);
-  const [historyRefreshError, setHistoryRefreshError] = useState(null);
+  // Reads straight from the archive (paginated, freshest-first — see
+  // mergeVideosById in netlify/functions/lib/youtube.js), not the RSS-poll
+  // cache. The RSS poll's only job is discovering brand-new videos to add
+  // to the archive; once a video is archived, Watch always loads it from
+  // there. This mirrors Listen.js's single-source pattern.
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [error, setError] = useState(null);
+  const [loadMoreError, setLoadMoreError] = useState(null);
+  const [refreshError, setRefreshError] = useState(null);
 
   const mountedRef = useRef(true);
   useEffect(() => {
@@ -63,9 +62,7 @@ export default function Watch({ navigation }) {
     };
   }, []);
 
-  const hasFetchedHistoryRef = useRef(false);
-
-  const fetchHistoryPage = async (offset) => {
+  const fetchPage = async (offset) => {
     const response = await fetch(
       `${API_BASE_URL}/.netlify/functions/get-youtube-episodes?offset=${offset}&limit=${PAGE_SIZE}`
     );
@@ -73,66 +70,51 @@ export default function Watch({ navigation }) {
     return response.json();
   };
 
-  // startOffset defaults to gridItems.length + 1 so the history section's first
-  // page doesn't re-show the videos already shown in the top grid above. The
-  // top grid shows mostRecent (archive index 0) plus gridItems, so the first
-  // archive item not shown there yet is gridItems.length + 1.
-  const loadHistoryInitial = useCallback(async (isRefreshOfLoaded = false, startOffset = gridItems.length + 1) => {
+  const loadInitial = useCallback(async (isRefreshOfLoaded = false) => {
     try {
-      const data = await fetchHistoryPage(startOffset);
+      const data = await fetchPage(0);
       if (mountedRef.current) {
-        setHistoryEpisodes(data.episodes);
-        setHistoryHasMore(data.hasMore);
-        setHistoryError(null);
-        setHistoryLoadMoreError(null);
-        setHistoryRefreshError(null);
+        setVideos(data.episodes);
+        setHasMore(data.hasMore);
+        setError(null);
+        setLoadMoreError(null);
+        setRefreshError(null);
       }
     } catch (err) {
       if (mountedRef.current) {
         if (isRefreshOfLoaded) {
-          setHistoryRefreshError(err.message);
+          setRefreshError(err.message);
         } else {
-          setHistoryError(err.message);
+          setError(err.message);
         }
       }
     }
-  }, [gridItems.length]);
+  }, []);
 
-  // Gated on the top grid's own `loading` so the first fetch's offset is
-  // computed only after gridItems has settled — firing unconditionally on
-  // mount would compute offset=0 before the context resolves, re-showing
-  // the top grid's videos in the history section on a cold start.
   useEffect(() => {
-    if (loading || hasFetchedHistoryRef.current) return;
-    hasFetchedHistoryRef.current = true;
     (async () => {
-      await loadHistoryInitial();
-      if (mountedRef.current) setHistoryLoading(false);
+      await loadInitial();
+      if (mountedRef.current) setLoading(false);
     })();
-  }, [loading, loadHistoryInitial]);
+  }, [loadInitial]);
 
-  // The top-grid/history split is a data-fetching detail (RSS feed vs. the
-  // paginated archive) — visually it's one continuous grid that keeps
-  // filling in as more loads, not two separate sections.
-  const combinedItems = [...allItems, ...historyEpisodes];
-
-  const onHistoryRefresh = async () => {
-    if (mountedRef.current) setHistoryRefreshing(true);
-    await loadHistoryInitial(historyEpisodes.length > 0);
-    if (mountedRef.current) setHistoryRefreshing(false);
+  const onRefresh = async () => {
+    if (mountedRef.current) setRefreshing(true);
+    await loadInitial(videos.length > 0);
+    if (mountedRef.current) setRefreshing(false);
   };
 
-  const loadHistoryMore = async () => {
-    setHistoryLoadingMore(true);
-    setHistoryLoadMoreError(null);
+  const loadMore = async () => {
+    setLoadingMore(true);
+    setLoadMoreError(null);
     try {
-      const data = await fetchHistoryPage(gridItems.length + 1 + historyEpisodes.length);
-      setHistoryEpisodes((prev) => [...prev, ...data.episodes]);
-      setHistoryHasMore(data.hasMore);
+      const data = await fetchPage(videos.length);
+      setVideos((prev) => [...prev, ...data.episodes]);
+      setHasMore(data.hasMore);
     } catch (err) {
-      setHistoryLoadMoreError(err.message);
+      setLoadMoreError(err.message);
     } finally {
-      setHistoryLoadingMore(false);
+      setLoadingMore(false);
     }
   };
 
@@ -141,8 +123,8 @@ export default function Watch({ navigation }) {
       style={styles.container}
       refreshControl={
         <RefreshControl
-          refreshing={historyRefreshing}
-          onRefresh={onHistoryRefresh}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
           tintColor={colors.accentGold}
         />
       }
@@ -178,39 +160,29 @@ export default function Watch({ navigation }) {
             <LoadingState message="Loading videos…" style={styles.stateFullWidth} />
           ) : error ? (
             <ErrorState message="Unable to load videos" style={styles.stateFullWidth} />
-          ) : combinedItems.length === 0 && !historyLoading ? (
+          ) : videos.length === 0 ? (
             <EmptyState message="No videos yet — check back soon." style={styles.stateFullWidth} />
           ) : (
-            combinedItems.map((video) => (
+            videos.map((video) => (
               <VideoCard key={video.id} video={video} onPress={() => navigation.navigate('VideoPlayer', { video })} />
             ))
           )}
         </View>
 
-        {!loading && !error && historyLoading ? (
-          <LoadingState message="Loading more videos…" style={styles.stateFullWidth} />
-        ) : null}
-        {historyRefreshError ? (
+        {refreshError ? (
           <ErrorState message="Couldn't refresh videos. Pull down and try again." style={styles.stateFullWidth} />
         ) : null}
-        {historyError ? (
-          <ErrorState
-            message="Unable to load more videos"
-            onRetry={() => loadHistoryInitial()}
-            style={styles.stateFullWidth}
-          />
-        ) : null}
-        {historyHasMore ? (
-          <TouchableOpacity style={styles.loadMore} onPress={loadHistoryMore} disabled={historyLoadingMore}>
-            {historyLoadingMore ? (
+        {hasMore ? (
+          <TouchableOpacity style={styles.loadMore} onPress={loadMore} disabled={loadingMore}>
+            {loadingMore ? (
               <ActivityIndicator color={colors.accentGold} />
             ) : (
               <Text style={styles.loadMoreText}>Load More</Text>
             )}
           </TouchableOpacity>
         ) : null}
-        {historyLoadMoreError ? (
-          <ErrorState message="Couldn't load more videos." onRetry={loadHistoryMore} style={styles.stateFullWidth} />
+        {loadMoreError ? (
+          <ErrorState message="Couldn't load more videos." onRetry={loadMore} style={styles.stateFullWidth} />
         ) : null}
       </View>
     </ScrollView>
@@ -242,10 +214,15 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
     gap: spacing.xl,
   },
+  // marginTop tops up the gap above this row to match the gap below it
+  // (body's spacing.xl) — without it, the only space above comes from
+  // BackHeader's own paddingBottom (spacing.md), half as much.
   platformRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'center',
     gap: spacing.sm,
+    marginTop: spacing.md,
   },
   platformPill: {
     backgroundColor: colors.surfaceCard,
@@ -279,19 +256,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // lineHeight + a fixed height (exactly 2 lines) instead of letting the
+  // Text size itself to 1 or 2 lines of actual content — a 1-line title
+  // just leaves its own second line blank, so the meta row below always
+  // starts at the same spot and every card is the same height, instead of
+  // adding reserved space *after* a variable-height title.
   videoTitle: {
     color: colors.inkPrimary,
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.base,
+    lineHeight: 16,
+    height: 32,
     marginTop: spacing.xs,
     marginHorizontal: spacing.sm,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginHorizontal: spacing.sm,
+    marginBottom: spacing.sm,
   },
   videoMeta: {
     color: colors.inkMuted,
     fontFamily: fontFamily.regular,
     fontSize: fontSize.sm,
-    marginHorizontal: spacing.sm,
-    marginBottom: spacing.sm,
   },
   loadMore: {
     alignItems: 'center',

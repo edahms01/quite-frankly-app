@@ -14,6 +14,11 @@ export const colors = {
   surfaceLive: '#2A1012',   // live-state background accent
   inkPrimary: '#F3EEE4',    // primary text
   inkMuted: '#A69C93',      // secondary text
+  // Video type pills (Watch grid + Video Player) — deliberately distinct
+  // from brandRed/accentGold, which already carry meaning elsewhere.
+  typeShort: '#8B6FC9',  // muted violet
+  typeVideo: '#5B8DC9',  // muted blue
+  typeStream: '#5FA76E', // muted green
 };
 
 export const spacing = {

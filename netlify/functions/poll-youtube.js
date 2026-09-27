@@ -123,13 +123,20 @@ export default async () => {
     await setJSON('qf-youtube-archive', 'episodes', mergedArchive);
   }
 
+  // Only mostRecent is cached here now — it's the one thing Home.js's
+  // "Most Recent" card still needs from the raw RSS poll. Watch.js reads
+  // its whole list from the archive (get-youtube-episodes.js) instead of
+  // a parallel gridItems cache, so this poll's only other job is
+  // discovering brand-new videos to classify and archive above.
   const archiveById = new Map(mergedArchive.map((e) => [e.id, e]));
   await setJSON('qf-youtube-cache', 'feed', {
-    mostRecent: items[0] ? { ...items[0], description: archiveById.get(items[0].id)?.description ?? '' } : null,
-    gridItems: items.slice(1, 15).map((item) => ({
-      ...item,
-      description: archiveById.get(item.id)?.description ?? '',
-    })),
+    mostRecent: items[0]
+      ? {
+          ...items[0],
+          description: archiveById.get(items[0].id)?.description ?? '',
+          contentType: archiveById.get(items[0].id)?.contentType,
+        }
+      : null,
     updatedAt: new Date().toISOString(),
   });
 

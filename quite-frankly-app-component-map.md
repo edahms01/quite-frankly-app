@@ -6,8 +6,9 @@ Companion to `quite-frankly-app-plan.md` (decisions/reasoning) — this doc is t
 
 | Code | Source | Notes |
 |---|---|---|
-| `YT-RSS` | YouTube RSS feed | Free, no API key, caps at 15 items. Powers Home's "Most Recent" and Watch's grid (14 shown). |
-| `YT-API` | YouTube Data API | Metered/quota'd — live-detection polling only, not used for anything else. |
+| `YT-RSS` | YouTube RSS feed | Free, no API key, caps at 15 items. Polled every 15 min to discover brand-new videos (classified + archived into `YT-ARCHIVE`) and to keep Home's "Most Recent" card fresh — no longer powers Watch's grid directly. |
+| `YT-API` | YouTube Data API | Metered/quota'd — live-detection polling, plus one classification call (`short`/`video`/`live`) per newly-discovered video. |
+| `YT-ARCHIVE` | Netlify Blobs, `qf-youtube-archive` | Every video ever discovered by the `YT-RSS` poll, kept sorted freshest-first (`mergeVideosById`). Paginated by `get-youtube-episodes.js`. Powers Watch's entire video grid — a video already in the archive always loads from here, never re-fetched from RSS. |
 | `SC-RSS` | SoundCloud RSS feed | No native pagination — backend caches/parses it, app paginates against the cache. Powers Listen. |
 | `SHEET-AUDIO` | Shared Google Sheet, "audio history" tab | Long-term archive, not read by the app — for future projects (transcription, clip-finding). Two URL columns, published vs. resolved. |
 | `SHEET-SHOP` | Shared Google Sheet, "Shop & Affiliates" tab | Frank/Eric-editable. Powers Shop's two sections. |
@@ -26,8 +27,8 @@ Companion to `quite-frankly-app-plan.md` (decisions/reasoning) — this doc is t
 | **Onboarding — Notifications** | Soft-ask before the real OS permission dialog | Welcome | → Email (either button); triggers native permission prompt on "Enable" | `NONE` | 2 of 3 |
 | **Onboarding — Email** | Light sign-in — email only, no password | Notifications | → Home (either button) | Submits email to backend | 3 of 3. Code-entry step after this isn't built yet. Copy nudges members to use their subscription email for future verification. |
 | **Home** | Launcher hub — status + every destination one tap away | App open (post-onboarding); Home tab | → Watch, Listen, Members Only, Community, Shop, Calendar, Writing, Band, Account (avatar) | `YT-API` (live status), `YT-RSS` (Most Recent card) | Fixed layout, no scroll by design |
-| **Watch** | Live status, platform links, video grid, audio entry | Home card; Watch tab; Home's "Next Show"/Most Recent | → per-video: Video Player; platform pills (external: YouTube/Rumble/Twitch/Pilled); Listen; "View more on YouTube" (external) | `YT-API` (live status), `YT-RSS` (grid, 14 shown) | WebView embeds need explicit Referer header — see plan doc |
-| **Video Player** | In-app playback of a finished YouTube upload | Any video tap on Watch | "Watch on YouTube" (external), Share, back → Watch | `YT-RSS` (video ID/title), video itself via `youtube.com/embed/` | Never used for live streams — VOD only |
+| **Watch** | Live status, platform links, video grid, audio entry | Home card; Watch tab; Home's "Next Show"/Most Recent | → per-video: Video Player; platform pills (external: YouTube/Rumble/Twitch/Pilled); Listen; "View more on YouTube" (external) | `YT-API` (live status), `YT-ARCHIVE` (grid, paginated) | WebView embeds need explicit Referer header — see plan doc |
+| **Video Player** | In-app playback of a finished YouTube upload | Any video tap on Watch | "Watch on YouTube" (external), Share, back → Watch | `YT-ARCHIVE` (video ID/title/contentType, via `route.params.video`), video itself via `youtube.com/embed/` | Never used for live streams — VOD only |
 | **Listen** | Podcast episode list | Home card; Watch's "Listen instead" | Tap episode → plays via persistent mini-player (docks above tab bar app-wide); Load More | `SC-RSS` (backend cache, not `audio history` — see below) | Mini-player is the actual playback surface, not a separate screen |
 | **Members Only** | Culture Club browsing — join CTA, event preview | Home card ("Members Only"); Members Only tab | Join → Subscription; every member-content row → external quitefrankly.tv login | `STATIC` (v1) | No in-app unlock logic yet — everything member-gated routes externally |
 | **Community** | Social links + events | Home card | External: Discord, Telegram, X, Instagram, Tumblr, Forum; Main Event row | `STATIC` | |
@@ -58,7 +59,7 @@ Schema (columns, tabs) was defined above; this is the missing piece — how read
 - Flow: user submits Report a Bug → app calls a Netlify serverless function (server-side, holds the credential) → function appends one row via the Sheets API. The app never talks to Google directly for this.
 
 **`youtube rss` and `audio history` — write-only, same auth pattern as Bug Reports**
-- Same service account + Sheets API v4 mechanism, but the trigger isn't a user action — it's the same backend polling job that already has to run for Home's "Most Recent" card, Watch's grid, and Listen's pagination cache.
+- Same service account + Sheets API v4 mechanism, but the trigger isn't a user action — it's the same backend polling job that already has to run to keep Home's "Most Recent" card fresh, discover/classify/archive new videos for Watch's grid, and maintain Listen's pagination cache.
 - After that job does its normal work (updating the app's own cache), it also appends a row to `youtube rss` (new videos) or `audio history` (new podcast episodes) as a side effect — one job, two purposes, not two separate jobs to maintain.
 - Needs an idempotency check before appending: look up whether this Video ID (or this episode's Audio File URL) already has a row, skip if so. Without this, a job polling every few minutes would create a duplicate row every cycle it still sees the same current episode.
 

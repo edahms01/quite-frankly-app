@@ -5,6 +5,7 @@ import { relativeTime } from '../../utils/relativeTime';
 import VideoEmbed from '../../components/VideoEmbed';
 import VideoThumbnailOverlay from '../../components/VideoThumbnailOverlay';
 import BackHeader from '../../components/BackHeader';
+import VideoTypePill from '../../components/VideoTypePill';
 import { useVideoActiveSource } from '../../hooks/useVideoActiveSource';
 
 // Matches Home.js's mostRecentCard video area, and playerArea's own height
@@ -40,14 +41,7 @@ export default function VideoPlayer({ navigation, route }) {
             resizeMode="contain"
           />
         }
-      >
-        <TouchableOpacity
-          style={styles.sponsorButton}
-          onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })}
-        >
-          <Text style={styles.sponsorButtonText}>Become a Sponsor</Text>
-        </TouchableOpacity>
-      </BackHeader>
+      />
 
       <View style={styles.playerArea}>
         {embedVisible ? (
@@ -73,6 +67,11 @@ export default function VideoPlayer({ navigation, route }) {
         ) : null}
 
         <View style={styles.actionsRow}>
+          <VideoTypePill
+            type={video?.contentType}
+            style={styles.typePill}
+            textStyle={styles.typePillText}
+          />
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => Linking.openURL(youtubeUrl)}
@@ -86,6 +85,13 @@ export default function VideoPlayer({ navigation, route }) {
             <Text style={styles.actionText}>Share</Text>
           </TouchableOpacity>
         </View>
+
+        <TouchableOpacity
+          style={styles.sponsorButton}
+          onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })}
+        >
+          <Text style={styles.sponsorButtonText}>Become a Sponsor</Text>
+        </TouchableOpacity>
 
         {video?.description ? (
           <>
@@ -116,6 +122,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     paddingVertical: spacing.sm,
     alignItems: 'center',
+    marginTop: spacing.md,
   },
   sponsorButtonText: {
     color: colors.accentGold,
@@ -142,6 +149,7 @@ const styles = StyleSheet.create({
   },
   actionsRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.sm,
     marginTop: spacing.md,
   },
@@ -153,6 +161,20 @@ const styles = StyleSheet.create({
   },
   actionText: {
     color: colors.inkPrimary,
+    fontFamily: fontFamily.semiBold,
+    fontSize: fontSize.base,
+  },
+  // Matches actionButton/actionText's box+text size exactly, so the pill
+  // reads as the same size as "Watch on YouTube"/"Share" next to it.
+  // borderRadius overrides the base pill's radius.sm — deliberately more
+  // rounded than actionButton's own radius.md, so it still reads as a
+  // pill/label next to the real buttons, not a third button.
+  typePill: {
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.lg,
+  },
+  typePillText: {
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.base,
   },
