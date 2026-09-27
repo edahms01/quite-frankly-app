@@ -3,7 +3,25 @@ import { Sun, Moon } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../theme';
 
 const DAY_ABBREVIATIONS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const TODAY_ABBREVIATION = DAY_ABBREVIATIONS[new Date().getDay()];
+const TODAY = new Date();
+const TODAY_ABBREVIATION = DAY_ABBREVIATIONS[TODAY.getDay()];
+
+// Sunday of the current week — every card's date is computed from this
+// rather than hardcoded in mockSchedule.js, so the placeholder week always
+// shows real, current dates instead of going stale.
+const WEEK_START = new Date(TODAY);
+WEEK_START.setDate(TODAY.getDate() - TODAY.getDay());
+
+function fullDateFor(dayAbbr) {
+  const date = new Date(WEEK_START);
+  date.setDate(WEEK_START.getDate() + DAY_ABBREVIATIONS.indexOf(dayAbbr));
+  return date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
 
 function DayCard({ item, isToday }) {
   const PeriodIcon = item.period === 'day' ? Sun : Moon;
@@ -16,7 +34,9 @@ function DayCard({ item, isToday }) {
       ]}
     >
       <View style={styles.dayCardHeader}>
-        <Text style={styles.dayLabel}>{item.day}</Text>
+        <Text style={styles.dayLabel} numberOfLines={1}>
+          {fullDateFor(item.day)}
+        </Text>
         {isToday && (
           <View style={styles.todayBadge}>
             <Text style={styles.todayBadgeText}>TODAY</Text>
@@ -24,11 +44,13 @@ function DayCard({ item, isToday }) {
         )}
       </View>
       <View style={styles.dayCardBody}>
-        <PeriodIcon color={item.club ? colors.accentGold : colors.inkMuted} size={18} />
+        <PeriodIcon color={item.club ? colors.accentGold : colors.inkMuted} size={22} />
         <View>
           <Text style={styles.dayTitle}>{item.title}</Text>
-          <Text style={styles.dayTime}>{item.time}</Text>
-          {item.extra ? <Text style={styles.dayExtra}>{item.extra}</Text> : null}
+          <Text style={styles.dayTime}>
+            {item.time}
+            {item.extra ? <Text style={styles.dayExtraInline}> - {item.extra}</Text> : null}
+          </Text>
         </View>
       </View>
     </View>
@@ -116,13 +138,14 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.regular,
     fontSize: fontSize.sm,
   },
+  // xs (not sm) so a full 7-day week fits on one screen without scrolling.
   weekBody: {
-    gap: spacing.sm,
+    gap: spacing.xs,
   },
   dayCard: {
     backgroundColor: colors.surfaceCard,
     borderRadius: radius.md,
-    padding: spacing.md,
+    padding: spacing.sm,
     borderWidth: 1,
     borderColor: colors.surfaceLine,
   },
@@ -136,12 +159,14 @@ const styles = StyleSheet.create({
   dayCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: spacing.sm,
+    alignItems: 'center',
+    marginBottom: spacing.xs,
   },
   dayLabel: {
+    flexShrink: 1,
     color: colors.inkMuted,
     fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.base,
+    fontSize: fontSize.sm,
   },
   todayBadge: {
     backgroundColor: colors.accentGold,
@@ -169,10 +194,10 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.regular,
     fontSize: fontSize.sm,
   },
-  dayExtra: {
+  // Inline (nested Text) span within dayTime, not its own line — keeps
+  // every card to a fixed 2-line body (title + time) regardless of
+  // whether a show has an extra note, so all cards stay the same height.
+  dayExtraInline: {
     color: colors.accentGold,
-    fontFamily: fontFamily.regular,
-    fontSize: fontSize.sm,
-    marginTop: 2,
   },
 });

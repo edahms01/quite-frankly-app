@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
   body: {
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.lg,
-    gap: spacing.lg,
+    gap: spacing.xl,
   },
   blurb: {
     color: colors.inkMuted,

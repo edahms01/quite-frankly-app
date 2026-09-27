@@ -1,5 +1,4 @@
 import { Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { ArrowUpRight } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
 import Section from '../../components/Section';
@@ -58,7 +57,6 @@ export default function Subscription({ navigation }) {
                 style={styles.platformCard}
                 onPress={() => Linking.openURL(p.url)}
               >
-                <ArrowUpRight color={colors.inkMuted} size={16} style={styles.platformArrow} />
                 <Image source={p.icon} style={styles.platformIcon} resizeMode="contain" />
                 <Text style={styles.platformLabel}>{p.label}</Text>
               </TouchableOpacity>
@@ -68,7 +66,7 @@ export default function Subscription({ navigation }) {
 
         <Section title="ONE-TIME DONATION">
           <Text style={styles.subtitle}>
-            Prefer a one-time contribution instead? No subscription required.
+            Prefer a one-time contribution instead?
           </Text>
 
           <CryptoCardGrid>
@@ -100,7 +98,7 @@ const styles = StyleSheet.create({
   body: {
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.lg,
-    gap: spacing.lg,
+    gap: spacing.xl,
   },
   subtitle: {
     color: colors.inkMuted,
@@ -160,11 +158,6 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     alignItems: 'center',
     gap: spacing.sm,
-  },
-  platformArrow: {
-    position: 'absolute',
-    top: spacing.sm,
-    right: spacing.sm,
   },
   platformIcon: {
     width: 40,

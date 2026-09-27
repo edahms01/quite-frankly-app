@@ -1,6 +1,5 @@
 import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import { ArrowUpRight } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../theme';
 
 // inAppBrowser: pass true for destinations with no dedicated mobile app
@@ -27,9 +26,7 @@ export default function ExternalRow({ avatarText, title, subtitle, url, badge, o
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{badge}</Text>
         </View>
-      ) : (
-        <ArrowUpRight color={colors.inkMuted} size={18} />
-      )}
+      ) : null}
     </TouchableOpacity>
   );
 }

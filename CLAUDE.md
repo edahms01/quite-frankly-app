@@ -40,6 +40,8 @@ Native-feeling iOS/Android mobile app for the *Quite Frankly* podcast (quitefran
 
 ## Component conventions
 
+- **Page layout standard**, app-wide across sub-pages (`Shop`, `Community`, `Writing`, `Subscription`/Become a Sponsor, `DonateToApp`, `Account`, `CultureClub`, `Watch` — anywhere a page has a `body` container stacking multiple `<Section>`s or top-level cards): the gap **between distinct sections/cards** is `spacing.xl` (32px, `theme.js`) — not `spacing.lg`, bumped up from 24px for more breathing room. Keep it in `body`'s own `gap`, separate from `Section`'s internal label-to-content gap (`spacing.md`, fixed in `Section.js` itself). `Calendar`'s `ScheduleTeaser` day-cards are a deliberate exception (see below) — don't pull them up to this standard, and don't quietly drop other pages back down to `spacing.lg` either.
+
 - **CryptoCard** (`src/components/CryptoCard.js`) — two size tiers, chosen automatically from `fields.length`, no `size` prop:
   - **Regular** (1 unlabeled field) — single row: ticker, address, Copy inline. Standard for any coin with one address.
   - **Large** (2+ fields) — ticker header, then one row per field below it, each independently copyable, no max field count. Covers two distinct cases off the same `fields` array (no separate prop/branch):
@@ -53,6 +55,8 @@ Native-feeling iOS/Android mobile app for the *Quite Frankly* podcast (quitefran
     - *Label/bullet column* (Large only): each field's label (with its gold bullet, or a hidden one via `bullet: false`) sits about halfway between the title column and the address column — `labelRow.marginLeft` pulls it in from the address column's inset. The bullet's layout space is always reserved (hidden via `color: 'transparent'`, never by omitting the node), so a hidden-bullet label still lines up with a visible-bullet label above it.
     - *Copy button*: Large's Copy badge is bottom-aligned (`fieldRow.alignItems: 'flex-end'`) so it lines up with the address line, not the label line, per field.
   - Don't fix a misalignment on one size by changing the other size's own styles — adjust the side that's actually off, using the shared constants/values above.
+
+- **ScheduleTeaser** (`src/components/ScheduleTeaser.js`) — shared by `Calendar.js` (full `WEEK`) and `CultureClub.js` (`WEEK` filtered to `club: true` days). `mockSchedule.js` only holds weekday abbreviation/title/time/period/club/extra — it does **not** hold literal dates. Each card's full date header (e.g. "Monday, September 28, 2026") is computed at render time in `ScheduleTeaser.js` for whichever week is currently on screen, so the placeholder never goes stale — don't hardcode a date into `mockSchedule.js`. A show's optional `extra` note (e.g. a guest) renders inline on the same line as `time`, not its own line, so every card stays a fixed 2-line body regardless of whether `extra` is present — keep it that way rather than reintroducing a 3rd line. Cards are intentionally compact (`spacing.sm`/`xs`, not `md`) specifically so Calendar's full 7-day week fits one screen without scrolling — don't loosen this back toward the app's normal `spacing.xl` between-sections standard.
 
 ## Splash screen
 - The native (OS-level) splash logo is sized/positioned to match `Welcome.js`'s onboarding wordmark (280x66pt, centered horizontally, `centerY` offset -69pt above true center) — not `expo-splash-screen`'s own default (a ~100x100pt box, dead-center).
