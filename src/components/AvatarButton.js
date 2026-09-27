@@ -1,11 +1,11 @@
-import { StyleSheet, Text, TouchableOpacity } from 'react-native';
-import { colors, fontFamily, fontSize } from '../theme';
+import { StyleSheet, TouchableOpacity } from 'react-native';
+import { User } from 'lucide-react-native';
+import { colors } from '../theme';
 
-// Placeholder initial until real account/profile data exists.
-export default function AvatarButton({ onPress, initial = 'E' }) {
+export default function AvatarButton({ onPress }) {
   return (
     <TouchableOpacity style={styles.avatar} onPress={onPress}>
-      <Text style={styles.initial}>{initial}</Text>
+      <User color={colors.inkPrimary} size={18} />
     </TouchableOpacity>
   );
 }
@@ -18,10 +18,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceLine,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  initial: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.md,
   },
 });

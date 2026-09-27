@@ -4,7 +4,6 @@ import { ChevronLeft } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, spacing } from '../theme';
 import AvatarButton from './AvatarButton';
 import OnAirBadge from './OnAirBadge';
-import { useAccountEmail } from '../hooks/useAccountEmail';
 
 // Every screen using this renders it as a plain child (inside a ScrollView
 // or View, not wrapped in its own SafeAreaView), so without accounting for
@@ -16,7 +15,6 @@ import { useAccountEmail } from '../hooks/useAccountEmail';
 // full email attached) — repeating it here would just duplicate it.
 export default function BackHeader({ title, navigation, hideAvatar = false }) {
   const insets = useSafeAreaInsets();
-  const { avatarInitial } = useAccountEmail();
   return (
     <View style={[styles.row, { paddingTop: insets.top + spacing.md }]}>
       <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
@@ -26,7 +24,7 @@ export default function BackHeader({ title, navigation, hideAvatar = false }) {
       {hideAvatar ? null : (
         <View style={styles.headerRight}>
           <OnAirBadge />
-          <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
+          <AvatarButton onPress={() => navigation.navigate('AccountStack')} />
         </View>
       )}
     </View>

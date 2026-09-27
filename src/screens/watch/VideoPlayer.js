@@ -9,7 +9,6 @@ import VideoThumbnailOverlay from '../../components/VideoThumbnailOverlay';
 import AvatarButton from '../../components/AvatarButton';
 import OnAirBadge from '../../components/OnAirBadge';
 import { useVideoActiveSource } from '../../hooks/useVideoActiveSource';
-import { useAccountEmail } from '../../hooks/useAccountEmail';
 
 // Matches Home.js's mostRecentCard video area, and playerArea's own height
 // below — kept as one constant so VideoEmbed's explicit numeric height
@@ -22,7 +21,6 @@ export default function VideoPlayer({ navigation, route }) {
   const youtubeUrl = video?.id
     ? `https://www.youtube.com/watch?v=${video.id}`
     : 'https://www.youtube.com/channel/UCtB5nbKHYsX8EGIk9cOevaQ';
-  const { avatarInitial } = useAccountEmail();
   const { width: windowWidth } = useWindowDimensions();
   // Arriving on this screen is itself the "play" action (matches today's
   // behavior, where the embed loads immediately on mount) — a podcast
@@ -51,7 +49,7 @@ export default function VideoPlayer({ navigation, route }) {
           </View>
           <View style={styles.headerRight}>
             <OnAirBadge />
-            <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
+            <AvatarButton onPress={() => navigation.navigate('AccountStack')} />
           </View>
         </View>
 

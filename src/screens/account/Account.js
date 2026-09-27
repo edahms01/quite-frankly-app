@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { ChevronRight, Eye, EyeOff } from 'lucide-react-native';
+import { ChevronRight, Eye, EyeOff, User } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
 import { useAccountEmail } from '../../hooks/useAccountEmail';
@@ -11,7 +11,7 @@ const ROWS = [
 ];
 
 export default function Account({ navigation }) {
-  const { email, avatarInitial } = useAccountEmail();
+  const { email } = useAccountEmail();
   const [emailVisible, setEmailVisible] = useState(false);
 
   const emailDisplay = email ?? 'No email on file';
@@ -22,7 +22,7 @@ export default function Account({ navigation }) {
       <View style={styles.body}>
         <View style={styles.profileRow}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarInitial}>{avatarInitial}</Text>
+            <User color={colors.inkPrimary} size={28} />
           </View>
           <View style={styles.emailRow}>
             <Text style={styles.email}>
@@ -99,11 +99,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceLine,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  avatarInitial: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.xxl,
   },
   emailRow: {
     flexDirection: 'row',

@@ -11,7 +11,6 @@ import VideoThumbnailOverlay from '../../components/VideoThumbnailOverlay';
 import { useYouTubeFeed } from '../../context/YouTubeFeedContext';
 import { useLiveStatus } from '../../hooks/useLiveStatus';
 import { useVideoActiveSource } from '../../hooks/useVideoActiveSource';
-import { useAccountEmail } from '../../hooks/useAccountEmail';
 import { relativeTime } from '../../utils/relativeTime';
 import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
@@ -46,7 +45,6 @@ export default function Home({ navigation }) {
   const { isLive } = useLiveStatus();
   const [embedVisible, setEmbedVisible] = useState(false);
   const { claim } = useVideoActiveSource({ onForcedStop: () => setEmbedVisible(false) });
-  const { avatarInitial } = useAccountEmail();
   const { width: windowWidth } = useWindowDimensions();
   const cardWidth = windowWidth - 2 * spacing.md;
 
@@ -69,7 +67,7 @@ export default function Home({ navigation }) {
         />
         <View style={styles.headerRight}>
           <OnAirBadge />
-          <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
+          <AvatarButton onPress={() => navigation.navigate('AccountStack')} />
         </View>
       </View>
 

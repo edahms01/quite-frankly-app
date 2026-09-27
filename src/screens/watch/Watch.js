@@ -6,7 +6,6 @@ import { CirclePlay, ChevronLeft } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
 import AvatarButton from '../../components/AvatarButton';
 import OnAirBadge from '../../components/OnAirBadge';
-import { useAccountEmail } from '../../hooks/useAccountEmail';
 import { useYouTubeFeed } from '../../context/YouTubeFeedContext';
 import { relativeTime } from '../../utils/relativeTime';
 import LoadingState from '../../components/LoadingState';
@@ -49,7 +48,6 @@ export default function Watch({ navigation }) {
   // + 1 (not allItems.length) since that's the same number of archive
   // items already shown on this screen either way.
   const allItems = mostRecent ? [mostRecent, ...gridItems] : gridItems;
-  const { avatarInitial } = useAccountEmail();
 
   const [historyEpisodes, setHistoryEpisodes] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
@@ -165,7 +163,7 @@ export default function Watch({ navigation }) {
           </View>
           <View style={styles.headerRight}>
             <OnAirBadge />
-            <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
+            <AvatarButton onPress={() => navigation.navigate('AccountStack')} />
           </View>
         </View>
 

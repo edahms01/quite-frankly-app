@@ -13,7 +13,6 @@ import { CirclePlay, Pause, ChevronLeft } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import { relativeTime } from '../../utils/relativeTime';
 import { useAudioPlayer } from '../../context/AudioPlayerContext';
-import { useAccountEmail } from '../../hooks/useAccountEmail';
 import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
 import AvatarButton from '../../components/AvatarButton';
@@ -24,7 +23,6 @@ const PAGE_SIZE = 20;
 
 export default function Listen({ navigation }) {
   const { currentTrack, playbackState, play, togglePlayPause } = useAudioPlayer();
-  const { avatarInitial } = useAccountEmail();
   const [episodes, setEpisodes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -140,7 +138,7 @@ export default function Listen({ navigation }) {
             </View>
             <View style={styles.headerRight}>
               <OnAirBadge />
-              <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
+              <AvatarButton onPress={() => navigation.navigate('AccountStack')} />
             </View>
           </View>
 

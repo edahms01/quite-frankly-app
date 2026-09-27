@@ -5,7 +5,6 @@ import { Lock, ChevronLeft } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
 import AvatarButton from '../../components/AvatarButton';
 import OnAirBadge from '../../components/OnAirBadge';
-import { useAccountEmail } from '../../hooks/useAccountEmail';
 
 const EVENTS = [
   { title: 'Book Club: [title]', when: 'Thu · 7:30 PM ET' },
@@ -15,8 +14,6 @@ const EVENTS = [
 const LOGIN_URL = 'https://www.quitefrankly.tv/account/login';
 
 export default function CultureClub({ navigation }) {
-  const { avatarInitial } = useAccountEmail();
-
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
     <ScrollView>
@@ -33,7 +30,7 @@ export default function CultureClub({ navigation }) {
         </View>
         <View style={styles.headerRight}>
           <OnAirBadge />
-          <AvatarButton onPress={() => navigation.navigate('AccountStack')} initial={avatarInitial} />
+          <AvatarButton onPress={() => navigation.navigate('AccountStack')} />
         </View>
       </View>
 
