@@ -47,6 +47,13 @@ export default function GameWindow({ game, screenBounds, avoidRect, hidden, onCl
   const dragStartRef = useRef({ left: 0, top: 0 });
 
   const bounds = getBounds(screenBounds, avoidRect);
+  // Re-clamp against *current* bounds every render, not just at mount/drag —
+  // screenBounds can shrink after mount (e.g. MiniPlayer appearing), and
+  // without this the window can end up overflowing its container. On
+  // Android, touches outside a parent's laid-out bounds are dropped, so an
+  // overflowing strip would also become untappable, not just visually off.
+  const clampedLeft = clamp(position.left, bounds.minLeft, bounds.maxLeft);
+  const clampedTop = clamp(position.top, bounds.minTop, bounds.maxTop);
 
   const onHandlerStateChange = (event) => {
     if (event.nativeEvent.state === State.BEGAN) {
@@ -73,7 +80,7 @@ export default function GameWindow({ game, screenBounds, avoidRect, hidden, onCl
     <View
       style={[
         styles.container,
-        { left: position.left, top: position.top, width: WINDOW_WIDTH, height: WINDOW_HEIGHT },
+        { left: clampedLeft, top: clampedTop, width: WINDOW_WIDTH, height: WINDOW_HEIGHT },
         hidden && styles.hidden,
       ]}
       pointerEvents={hidden ? 'none' : 'auto'}

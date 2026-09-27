@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View, Share } from 'react-native';
+import { Image, Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View, Share } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
 import { colors, fontFamily, fontSize, radius, shadows, spacing } from '../../theme';
 import { relativeTime } from '../../utils/relativeTime';
 import VideoEmbed from '../../components/VideoEmbed';
@@ -7,6 +8,8 @@ import VideoThumbnailOverlay from '../../components/VideoThumbnailOverlay';
 import BackHeader from '../../components/BackHeader';
 import VideoTypePill from '../../components/VideoTypePill';
 import { useVideoActiveSource } from '../../hooks/useVideoActiveSource';
+import { useAudioPlayer } from '../../context/AudioPlayerContext';
+import { MINI_PLAYER_HEIGHT } from '../../components/MiniPlayer';
 import { Gamepad2 } from 'lucide-react-native';
 import GameTray from '../../components/games/GameTray';
 import GameWindow from '../../components/games/GameWindow';
@@ -37,6 +40,8 @@ export default function VideoPlayer({ navigation, route }) {
       setIsFullscreen(false);
     },
   });
+  const { currentTrack } = useAudioPlayer();
+  const isFocused = useIsFocused();
 
   useEffect(() => {
     claim();
@@ -54,11 +59,22 @@ export default function VideoPlayer({ navigation, route }) {
   // bar, so windowHeight alone would let the window be dragged down
   // underneath it. Falls back to windowHeight until measured.
   const [viewportHeight, setViewportHeight] = useState(null);
+  // MiniPlayer renders as an absolute overlay outside the navigator (see
+  // App.js), docked above the tab bar, once a podcast track is loaded —
+  // viewportHeight already excludes the tab bar itself but has no idea
+  // MiniPlayer exists, so its height must be subtracted here too or the
+  // window/FAB end up underneath it.
+  const miniPlayerHeight = currentTrack ? MINI_PLAYER_HEIGHT : 0;
   // Only drives the window's *bottom* clamp. The game layer's *top* is not
   // derived from this (or any) React state — see gameAnchor below.
-  const gameLayerHeight = (viewportHeight ?? windowHeight) - headerHeight;
+  const gameLayerHeight = (viewportHeight ?? windowHeight) - headerHeight - miniPlayerHeight;
   const isLandscape = windowWidth > windowHeight;
-  const hidden = isLandscape || isFullscreen;
+  // On iPad, orientation alone shouldn't hide the window — the anchored/
+  // clamped game layer already guarantees no video overlap regardless of
+  // orientation, and hiding it there with no way back to portrait (no FAB,
+  // no visible window) is a dead end. Only phones are orientation-locked to
+  // portrait (app.json/AndroidManifest), so this only matters on iPad.
+  const hidden = (Platform.isPad ? false : isLandscape) || isFullscreen;
 
   const handleSelectGame = (id) => {
     const game = GAMES.find((g) => g.id === id);
@@ -176,7 +192,7 @@ export default function VideoPlayer({ navigation, route }) {
                 game={activeGame}
                 screenBounds={{ width: windowWidth, height: gameLayerHeight }}
                 avoidRect={{ top: 0, left: 0, width: windowWidth, height: PLAYER_HEIGHT }}
-                hidden={hidden}
+                hidden={hidden || !isFocused}
                 onClose={() => setActiveGame(null)}
               />
             </View>
@@ -189,7 +205,7 @@ export default function VideoPlayer({ navigation, route }) {
           they overlap. The window's own Close is the way out. */}
       {activeGame ? null : (
         <TouchableOpacity
-          style={styles.fab}
+          style={[styles.fab, miniPlayerHeight ? { bottom: spacing.md + miniPlayerHeight } : null]}
           activeOpacity={0.85}
           onPress={() => setTrayVisible(true)}
           accessibilityLabel="Play a game"
