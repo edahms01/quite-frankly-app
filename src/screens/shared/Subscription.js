@@ -38,7 +38,7 @@ export default function Subscription({ navigation }) {
           <View style={styles.qfHeader}>
             <View style={styles.qfAvatar}>
               <Image
-                source={require('../../assets/images/quite-frankly-jester-icon.png')}
+                source={require('../../../assets/icon.png')}
                 style={styles.qfAvatarImage}
                 resizeMode="cover"
               />
@@ -147,15 +147,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   qfAvatarImage: {
-    // Slightly oversized within its circular, clipped container — the
-    // source crop (quite-frankly-jester-icon.png) has tiny bits of the
-    // neighboring wordmark letters right at its corners (unavoidable —
-    // there's little clean gap between the jester and "QUITE"/"FRANKLY"
-    // at chin height in the source composite); oversizing pushes those
-    // corners outside the visible circle instead of trimming the crop
-    // tighter, which would start cutting into the face itself.
-    width: '115%',
-    height: '115%',
+    width: '100%',
+    height: '100%',
   },
   recommendedBadge: {
     borderWidth: 1,
