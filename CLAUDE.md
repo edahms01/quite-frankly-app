@@ -38,6 +38,22 @@ Native-feeling iOS/Android mobile app for the *Quite Frankly* podcast (quitefran
 
 ---
 
+## Component conventions
+
+- **CryptoCard** (`src/components/CryptoCard.js`) — two size tiers, chosen automatically from `fields.length`, no `size` prop:
+  - **Regular** (1 unlabeled field) — single row: ticker, address, Copy inline. Standard for any coin with one address.
+  - **Large** (2+ fields) — ticker header, then one row per field below it, each independently copyable, no max field count. Covers two distinct cases off the same `fields` array (no separate prop/branch):
+    - **Multiple addresses** (USDT, USDC) — one field per blockchain, each with its own gold bullet and its address indented below.
+    - **One address + a tag/code the coin requires** (XRP's destination tag) — the address is its own bulleted field as usual; the tag is a second field with `bullet: false`. Use this for any future coin needing a memo/tag/extra number alongside a single address.
+  - Used on Become a Sponsor (`Subscription.js`, BTC/XRP — both Regular) and Donate to App (`DonateToApp.js`, BTC/SOL/ETH/DOGE as Regular; XRP/USDT/USDC as Large).
+  - **Standing rules — both sizes were built to match each other and the page's other cards. If you touch spacing, keep these true:**
+    - *Card size*: Regular and Large are the same height and have the same padding-to-text ratio as the page's other button-style cards (PayPal, Amazon, tip apps) — `cryptoCardRegular.paddingVertical` and `cryptoCardLarge.paddingVertical` both equal `gridCard`/`tipCard`'s. Keep the two crypto-card values equal to each other if either changes.
+    - *Title/ticker column*: Regular's ticker and Large's header ("USDT", "XRP", etc.) sit in the same vertical column card-to-card. Regular's comes from `singleFieldRow.paddingLeft`; Large's from `largeCardTitle.paddingLeft`.
+    - *Address column*: Regular's address and Large's per-field addresses sit in the same vertical column, one column right of the title column. Regular's comes from `singleFieldRow.paddingLeft` + `singleFieldTitle.width` + its `gap`; Large's `fieldRow.paddingLeft` is set to land in that same spot (see `TITLE_COLUMN_WIDTH` in the file, shared by both).
+    - *Label/bullet column* (Large only): each field's label (with its gold bullet, or a hidden one via `bullet: false`) sits about halfway between the title column and the address column — `labelRow.marginLeft` pulls it in from the address column's inset. The bullet's layout space is always reserved (hidden via `color: 'transparent'`, never by omitting the node), so a hidden-bullet label still lines up with a visible-bullet label above it.
+    - *Copy button*: Large's Copy badge is bottom-aligned (`fieldRow.alignItems: 'flex-end'`) so it lines up with the address line, not the label line, per field.
+  - Don't fix a misalignment on one size by changing the other size's own styles — adjust the side that's actually off, using the shared constants/values above.
+
 ## Data sources
 | Source | Mechanism | Auth |
 |---|---|---|

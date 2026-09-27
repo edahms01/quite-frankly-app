@@ -37,7 +37,7 @@ export default function DonateToApp({ navigation }) {
         <Text style={styles.blurb}>
           This app is built and maintained independently, separate from the
           show itself. Support here goes toward keeping it running and
-          building new features, not to Frank or Quite Frankly directly. If
+          building new features, not to Quite Frankly directly. If
           you'd like to support the show instead, see Become a Sponsor.
         </Text>
 
@@ -63,7 +63,7 @@ export default function DonateToApp({ navigation }) {
             title="XRP"
             fields={[
               { label: 'Address', value: XRP_ADDRESS },
-              { label: 'Destination Tag', value: XRP_DESTINATION_TAG, truncate: false },
+              { label: 'Destination Tag', value: XRP_DESTINATION_TAG, truncate: false, bullet: false },
             ]}
           />
           <CryptoCard

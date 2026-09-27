@@ -1,10 +1,8 @@
-import { Alert, Image, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import * as Clipboard from 'expo-clipboard';
+import { Image, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ArrowUpRight } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
-import { CryptoCardGrid } from '../../components/CryptoCard';
-import { truncateAddress } from '../../utils/truncateAddress';
+import CryptoCard, { CryptoCardGrid } from '../../components/CryptoCard';
 
 // Patreon/SubscribeStar use OS-level Linking.openURL (not WebView) so
 // Universal Links/App Links can hand off to their native apps — see
@@ -26,11 +24,6 @@ const PAYPAL_URL = 'http://www.paypal.me/QuiteFranklyLive';
 const AMAZON_URL = 'https://amazon.com/shop/quitefranklyofficial';
 const BTC_ADDRESS = 'bc1q97w5aazjf7pjjl50n42kdmj9pqyn5zndwh3lng';
 const XRP_ADDRESS = 'rnES2vQV6d2jLpavzf7y97XD4AfK1MjePu';
-
-const copyToClipboard = async (value, label) => {
-  await Clipboard.setStringAsync(value);
-  Alert.alert('Copied', `${label} address copied to clipboard.`);
-};
 
 export default function Subscription({ navigation }) {
   return (
@@ -84,30 +77,8 @@ export default function Subscription({ navigation }) {
           <TouchableOpacity style={styles.gridCard} onPress={() => Linking.openURL(AMAZON_URL)}>
             <Text style={styles.gridCardTitle}>Amazon</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.gridCard, styles.gridCardRow]}
-            onPress={() => copyToClipboard(BTC_ADDRESS, 'BTC')}
-          >
-            <Text style={styles.gridCardTitle}>BTC</Text>
-            <Text style={[styles.gridCardValue, styles.gridCardValueInline]} numberOfLines={1}>
-              {truncateAddress(BTC_ADDRESS)}
-            </Text>
-            <View style={styles.gridCardBadge}>
-              <Text style={styles.gridCardBadgeText}>Copy</Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.gridCard, styles.gridCardRow]}
-            onPress={() => copyToClipboard(XRP_ADDRESS, 'XRP')}
-          >
-            <Text style={styles.gridCardTitle}>XRP</Text>
-            <Text style={[styles.gridCardValue, styles.gridCardValueInline]} numberOfLines={1}>
-              {truncateAddress(XRP_ADDRESS)}
-            </Text>
-            <View style={styles.gridCardBadge}>
-              <Text style={styles.gridCardBadgeText}>Copy</Text>
-            </View>
-          </TouchableOpacity>
+          <CryptoCard title="BTC" fields={[{ value: BTC_ADDRESS }]} />
+          <CryptoCard title="XRP" fields={[{ value: XRP_ADDRESS }]} />
         </CryptoCardGrid>
 
         <Text style={styles.mail}>
@@ -216,33 +187,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.xs,
   },
-  gridCardRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
   gridCardTitle: {
     color: colors.inkPrimary,
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.md,
-  },
-  gridCardValue: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.regular,
-    fontSize: fontSize.xs,
-  },
-  gridCardValueInline: {
-    flexShrink: 1,
-  },
-  gridCardBadge: {
-    backgroundColor: colors.surfaceLine,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-  },
-  gridCardBadgeText: {
-    color: colors.accentGold,
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.xs,
   },
   mail: {
     color: colors.inkMuted,
