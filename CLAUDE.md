@@ -125,3 +125,12 @@ Full detail, including idempotency requirements for the write-only sheet tabs, i
   (`brew install openjdk@21`, then
   `export JAVA_HOME="/opt/homebrew/opt/openjdk@21"`) for Android builds
   on this machine.
+- **Dev-client stuck on "Searching for development servers" / fails
+  loading from a `100.x.x.x` address**: Metro is advertising the VPN's
+  interface IP (Tailscale-range) instead of localhost, and the Simulator
+  can't route to it — same root cause as the known VPN-blocks-loopback
+  issue elsewhere in this file. Fix: kill the stale Metro on 8081
+  (`lsof -i :8081`, `kill -9 <pid>`), restart it (`npx expo start --ios`),
+  then force the dev client onto localhost directly instead of waiting
+  for auto-discovery:
+  `xcrun simctl openurl <device> "exp+quite-frankly://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081"`.
