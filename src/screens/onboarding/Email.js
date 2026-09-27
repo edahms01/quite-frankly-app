@@ -8,6 +8,10 @@ import OnboardingDots from '../../components/OnboardingDots';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
+// Mirrors the server-side check in netlify/functions/send-code.js —
+// keep in sync so client and server agree on what's valid.
+const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
 export default function Email({ navigation }) {
   const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
@@ -27,6 +31,10 @@ export default function Email({ navigation }) {
       setErrorMessage('Enter an email address to continue.');
       return;
     }
+    if (!isValidEmail(trimmedEmail)) {
+      setErrorMessage('Enter a valid email address.');
+      return;
+    }
 
     setSending(true);
     setErrorMessage('');
@@ -37,9 +45,12 @@ export default function Email({ navigation }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: trimmedEmail }),
       });
+      const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        throw new Error('Send failed');
+        setSending(false);
+        setErrorMessage(data.error || "Couldn't send a code. Check your connection and try again.");
+        return;
       }
 
       await AsyncStorage.setItem('onboarding_email', trimmedEmail);
