@@ -207,7 +207,15 @@ export default function Solitaire({ width, height, paused }) {
   const STATUS_HEIGHT = 18;
   const SECTION_GAP = 6;
   const TOP_ROW_HEIGHT = CARD_HEIGHT;
-  const TABLEAU_AREA_HEIGHT = Math.max(60, height - STATUS_HEIGHT - TOP_ROW_HEIGHT - SECTION_GAP * 2);
+  // container has its own paddingTop (spacing.xs) which eats into `height`
+  // just like STATUS_HEIGHT/TOP_ROW_HEIGHT/SECTION_GAP do — omitting it let
+  // the deepest tableau card run a few pixels past the bottom, clipped by
+  // GameWindow's overflow: hidden.
+  const CONTAINER_PADDING_TOP = spacing.xs;
+  const TABLEAU_AREA_HEIGHT = Math.max(
+    60,
+    height - STATUS_HEIGHT - TOP_ROW_HEIGHT - SECTION_GAP * 2 - CONTAINER_PADDING_TOP
+  );
   const BASE_OFFSET = 16;
 
   function stackOffset(count) {

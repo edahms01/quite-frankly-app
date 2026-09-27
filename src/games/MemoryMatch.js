@@ -18,7 +18,7 @@ const MISMATCH_DELAY_MS = 700;
 // palette, matching the precedent set by Minesweeper's NUMBER_COLORS.
 const SYMBOLS = [
   { Icon: Heart, color: '#E07A7A' },
-  { Icon: Star, color: colors.accentGold },
+  { Icon: Star, color: '#D97AA6' },
   { Icon: Sun, color: '#D9A066' },
   { Icon: Moon, color: '#B39DDB' },
   { Icon: Cloud, color: '#6FA8DC' },
@@ -69,8 +69,14 @@ export default function MemoryMatch({ width, height, paused }) {
   const { cardSize, boardSize } = useMemo(() => {
     const availableHeight = height - STATUS_HEIGHT;
     const boardMax = Math.min(width, availableHeight);
-    const size = Math.floor((boardMax - CARD_GAP * (GRID_COLS + 1)) / GRID_COLS);
-    return { cardSize: size, boardSize: size * GRID_COLS + CARD_GAP * (GRID_COLS + 1) };
+    // Each row actually renders: `board`'s own padding (CARD_GAP on both
+    // left and right = 2 * CARD_GAP) plus, per card, a CARD_GAP/2 margin on
+    // both sides (= CARD_GAP per card, GRID_COLS cards). That's
+    // CARD_GAP * (GRID_COLS + 2) of non-card space, not (GRID_COLS + 1) —
+    // the previous math undercounted the board's own edge padding as if it
+    // were just one more inter-card gap, overflowing by one CARD_GAP unit.
+    const size = Math.floor((boardMax - CARD_GAP * (GRID_COLS + 2)) / GRID_COLS);
+    return { cardSize: size, boardSize: size * GRID_COLS + CARD_GAP * (GRID_COLS + 2) };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
