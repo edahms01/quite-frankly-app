@@ -6,7 +6,7 @@ import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import AvatarButton from '../../components/AvatarButton';
 import OnAirBadge from '../../components/OnAirBadge';
 import ScheduleTeaser from '../../components/ScheduleTeaser';
-import { WEEK } from '../../data/mockSchedule';
+import { WEEK, SCHEDULE_NOTE } from '../../data/mockSchedule';
 
 const CLUB_DAYS = WEEK.filter((day) => day.club);
 
@@ -50,12 +50,7 @@ export default function CultureClub({ navigation }) {
         </TouchableOpacity>
 
         <Text style={styles.sectionLabel}>CULTURE CLUB CALENDAR</Text>
-        <ScheduleTeaser items={CLUB_DAYS} showLegend={false} />
-        <Text style={styles.calendarNote}>
-          If you'd like to see a show calendar, message Frank and ask him
-          to start using a digital calendar for show times. And we can
-          link it in the app.
-        </Text>
+        <ScheduleTeaser items={CLUB_DAYS} showLegend={false} note={SCHEDULE_NOTE} />
       </View>
     </ScrollView>
     </SafeAreaView>
@@ -140,12 +135,6 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.base,
     letterSpacing: 0.5,
-    marginTop: spacing.sm,
-  },
-  calendarNote: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.regular,
-    fontSize: fontSize.sm,
     marginTop: spacing.sm,
   },
 });

@@ -38,12 +38,14 @@ function DayCard({ item, isToday }) {
 // Non-interactive preview of what a real digital calendar could look like —
 // dimmed and un-tappable, with a "Coming Soon" badge, rather than fully
 // hidden. See mockSchedule.js for why.
-export default function ScheduleTeaser({ items, showLegend = true }) {
+export default function ScheduleTeaser({ items, showLegend = true, note }) {
   return (
     <View>
       <View style={styles.comingSoonBadge}>
         <Text style={styles.comingSoonText}>COMING SOON</Text>
       </View>
+
+      {note ? <Text style={styles.note}>{note}</Text> : null}
 
       <View style={styles.teaserBody} pointerEvents="none">
         {showLegend && (
@@ -83,6 +85,13 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.bold,
     fontSize: fontSize.sm,
     letterSpacing: 0.5,
+  },
+  note: {
+    color: colors.inkMuted,
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.sm,
+    textAlign: 'center',
+    marginBottom: spacing.md,
   },
   teaserBody: {
     opacity: 0.45,

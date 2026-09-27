@@ -5,6 +5,9 @@
 // Calendar.js (full week) and CultureClub.js (filtered to club days only)
 // so both stay consistent instead of drifting like the old hardcoded
 // Culture Club event list used to.
+export const SCHEDULE_NOTE =
+  "If you'd like to see a Show Calendar, message Frank and ask if he could start managing a digital calendar for upcoming episodes, and we can sync it here.";
+
 export const WEEK = [
   { day: 'Sun', title: 'Quite Frankly Live', time: '7:00 PM ET', period: 'evening', club: false },
   { day: 'Mon', title: 'Quite Frankly Live', time: '7:00 PM ET', period: 'evening', club: false },
