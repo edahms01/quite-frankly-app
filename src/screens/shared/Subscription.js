@@ -10,8 +10,16 @@ import { truncateAddress } from '../../utils/truncateAddress';
 // Universal Links/App Links can hand off to their native apps — see
 // component-map's Subscription notes.
 const PLATFORMS = [
-  { label: 'Patreon', url: 'https://www.patreon.com/QuiteFrankly' },
-  { label: 'SubscribeStar', url: 'https://www.subscribestar.com/quitefrankly' },
+  {
+    label: 'Patreon',
+    url: 'https://www.patreon.com/QuiteFrankly',
+    icon: require('../../../assets/patreon-icon.png'),
+  },
+  {
+    label: 'SubscribeStar',
+    url: 'https://www.subscribestar.com/quitefrankly',
+    icon: require('../../../assets/subscribestar-icon.png'),
+  },
 ];
 
 const PAYPAL_URL = 'http://www.paypal.me/QuiteFranklyLive';
@@ -58,7 +66,7 @@ export default function Subscription({ navigation }) {
               onPress={() => Linking.openURL(p.url)}
             >
               <ArrowUpRight color={colors.inkMuted} size={16} style={styles.platformArrow} />
-              <View style={styles.platformIcon} />
+              <Image source={p.icon} style={styles.platformIcon} resizeMode="contain" />
               <Text style={styles.platformLabel}>{p.label}</Text>
             </TouchableOpacity>
           ))}
@@ -187,8 +195,6 @@ const styles = StyleSheet.create({
   platformIcon: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.surfaceLine,
   },
   platformLabel: {
     color: colors.inkPrimary,
