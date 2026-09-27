@@ -228,14 +228,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: spacing.md,
   },
+  // paddingVertical/gap match DestinationCard's rhythm (spacing.lg/xs)
+  // instead of a much tighter one-off — this card sits directly among
+  // DestinationCards in the same grid.
   teaserCard: {
     width: '100%',
     backgroundColor: colors.surfaceCard,
     borderRadius: radius.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.lg,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 2,
+    gap: spacing.xs,
     opacity: 0.6,
     ...shadows.sm,
   },

@@ -44,7 +44,7 @@ function DayCard({ item, isToday }) {
         )}
       </View>
       <View style={styles.dayCardBody}>
-        <PeriodIcon color={item.club ? colors.accentGold : colors.inkMuted} size={22} />
+        <PeriodIcon color={item.club ? colors.inkPrimary : colors.inkMuted} size={22} />
         <View>
           <Text style={styles.dayTitle}>{item.title}</Text>
           <Text style={styles.dayTime}>
@@ -67,8 +67,6 @@ export default function ScheduleTeaser({ items, showLegend = true, note }) {
         <Text style={styles.comingSoonText}>COMING SOON</Text>
       </View>
 
-      {note ? <Text style={styles.note}>{note}</Text> : null}
-
       <View style={styles.teaserBody} pointerEvents="none">
         {showLegend && (
           <View style={styles.legendRow}>
@@ -77,7 +75,7 @@ export default function ScheduleTeaser({ items, showLegend = true, note }) {
               <Text style={styles.legendText}>Regular show</Text>
             </View>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: colors.accentGold }]} />
+              <View style={[styles.legendDot, { backgroundColor: colors.inkPrimary }]} />
               <Text style={styles.legendText}>Culture Club</Text>
             </View>
           </View>
@@ -88,6 +86,8 @@ export default function ScheduleTeaser({ items, showLegend = true, note }) {
           ))}
         </View>
       </View>
+
+      {note ? <Text style={styles.note}>{note}</Text> : null}
     </View>
   );
 }
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.regular,
     fontSize: fontSize.sm,
     textAlign: 'center',
-    marginBottom: spacing.md,
+    marginTop: spacing.md,
   },
   teaserBody: {
     opacity: 0.45,
@@ -150,10 +150,13 @@ const styles = StyleSheet.create({
     borderColor: colors.surfaceLine,
   },
   dayCardClub: {
-    borderColor: colors.accentGold,
+    borderColor: colors.inkPrimary,
   },
+  // No color change here (todayBadge below stays gold, at Eric's call) —
+  // just a thicker neutral outline so it doesn't compete with dayCardClub's
+  // white border for the same "highlight" language.
   dayCardToday: {
-    borderColor: colors.accentGold,
+    borderColor: colors.surfaceLine,
     borderWidth: 2,
   },
   dayCardHeader: {
@@ -198,6 +201,6 @@ const styles = StyleSheet.create({
   // every card to a fixed 2-line body (title + time) regardless of
   // whether a show has an extra note, so all cards stay the same height.
   dayExtraInline: {
-    color: colors.accentGold,
+    color: colors.inkPrimary,
   },
 });

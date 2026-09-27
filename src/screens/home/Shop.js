@@ -99,6 +99,7 @@ export default function Shop({ navigation }) {
                     key={s.label}
                     Icon={ShoppingBag}
                     label={s.label}
+                    fixedHeight
                     onPress={() => WebBrowser.openBrowserAsync(s.url, { dismissButtonStyle: 'close' })}
                   />
                 ))}

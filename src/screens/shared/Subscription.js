@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
   qfAvatar: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: radius.lg,
     backgroundColor: colors.surfaceLine,
     alignItems: 'center',
     justifyContent: 'center',
@@ -147,9 +147,11 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.md,
   },
+  // gap matches the app-wide small-card-grid standard (spacing.md) — see
+  // CLAUDE.md's card taxonomy.
   platformRow: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    gap: spacing.md,
   },
   platformCard: {
     flex: 1,
@@ -168,12 +170,14 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.md,
   },
+  // padding matches platformCard's shorthand — see CLAUDE.md's card
+  // taxonomy ("small link card" family: platformCard/gridCard/tipCard all
+  // use padding: spacing.md, not a paddingVertical/Horizontal split).
   gridCard: {
     width: '47%',
     backgroundColor: colors.surfaceCard,
     borderRadius: radius.md,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.sm,
+    padding: spacing.md,
     alignItems: 'center',
     gap: spacing.xs,
   },

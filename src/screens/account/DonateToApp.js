@@ -104,17 +104,21 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.regular,
     fontSize: fontSize.base,
   },
+  // gap matches the app-wide small-card-grid standard (spacing.md) — see
+  // CLAUDE.md's card taxonomy.
   tipGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    gap: spacing.sm,
+    gap: spacing.md,
   },
+  // padding matches platformCard/gridCard's shorthand (same "small link
+  // card" family) — was paddingVertical-only before, missing horizontal.
   tipCard: {
     width: '47%',
     backgroundColor: colors.surfaceCard,
     borderRadius: radius.md,
-    paddingVertical: spacing.md,
+    padding: spacing.md,
     alignItems: 'center',
   },
   tipLabel: {

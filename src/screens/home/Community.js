@@ -1,9 +1,10 @@
 import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { MessageCircle, Send, MessageSquare, Camera, X, Music2, ChevronRight } from 'lucide-react-native';
-import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
+import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
 import Section from '../../components/Section';
+import DestinationCard from '../../components/DestinationCard';
 
 const JOIN = [
   { label: 'Discord', Icon: MessageCircle, url: 'https://discord.gg/yzzqnGgzEv' },
@@ -18,19 +19,6 @@ const FOLLOW = [
   { label: 'Tumblr', Icon: Music2, url: 'http://stonedandstudying.tumblr.com' },
 ];
 
-function IconTile({ label, Icon, url, inAppBrowser }) {
-  return (
-    <TouchableOpacity
-      style={styles.tile}
-      onPress={() => (inAppBrowser ? WebBrowser.openBrowserAsync(url, { dismissButtonStyle: 'close' }) : Linking.openURL(url))}
-      activeOpacity={0.7}
-    >
-      <Icon color={colors.inkPrimary} size={22} />
-      <Text style={styles.tileLabel}>{label}</Text>
-    </TouchableOpacity>
-  );
-}
-
 export default function Community({ navigation }) {
   return (
     <ScrollView style={styles.container}>
@@ -39,7 +27,13 @@ export default function Community({ navigation }) {
         <Section title="JOIN THE CONVERSATION">
           <View style={styles.row}>
             {JOIN.map((j) => (
-              <IconTile key={j.label} {...j} />
+              <DestinationCard
+                key={j.label}
+                Icon={j.Icon}
+                label={j.label}
+                style={styles.tile}
+                onPress={() => (j.inAppBrowser ? WebBrowser.openBrowserAsync(j.url, { dismissButtonStyle: 'close' }) : Linking.openURL(j.url))}
+              />
             ))}
           </View>
         </Section>
@@ -47,7 +41,13 @@ export default function Community({ navigation }) {
         <Section title="FOLLOW FRANK">
           <View style={styles.row}>
             {FOLLOW.map((f) => (
-              <IconTile key={f.label} {...f} />
+              <DestinationCard
+                key={f.label}
+                Icon={f.Icon}
+                label={f.label}
+                style={styles.tile}
+                onPress={() => (f.inAppBrowser ? WebBrowser.openBrowserAsync(f.url, { dismissButtonStyle: 'close' }) : Linking.openURL(f.url))}
+              />
             ))}
           </View>
         </Section>
@@ -76,24 +76,16 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
     gap: spacing.xl,
   },
+  // gap matches the app-wide small-card-grid standard (spacing.md) — see
+  // CLAUDE.md's card taxonomy.
   row: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    gap: spacing.md,
   },
+  // DestinationCard defaults to width: '47%' (2-up wrapping grids); this
+  // is a fixed 3-up row instead, so it overrides to flex: 1.
   tile: {
     flex: 1,
-    backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
-    paddingVertical: spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    ...shadows.sm,
-  },
-  tileLabel: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.md,
   },
   eventRow: {
     flexDirection: 'row',

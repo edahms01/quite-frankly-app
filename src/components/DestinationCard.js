@@ -1,13 +1,27 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../theme';
 
-export default function DestinationCard({ Icon, label, onPress }) {
+// fixedHeight: opt in only where labels can genuinely vary enough to wrap
+// to 2 lines (Shop's live sheet-driven store names, Writing's one long
+// "Newsletter Archive" label next to a short one) — reserves a 2-line box
+// so every card in that grid matches. Home's labels are short, known,
+// hardcoded single words; forcing the same reserved box there just adds
+// dead space under the label for no reason, so it stays off (default) and
+// keeps its original compact, content-sized look.
+// style: merged onto the card's own width/shape — e.g. Community.js
+// overrides `width: '47%'` to `flex: 1` for its 3-up (non-wrapping) row,
+// instead of maintaining a separate near-duplicate tile component.
+export default function DestinationCard({ Icon, label, onPress, fixedHeight = false, style }) {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity style={[styles.card, style]} onPress={onPress} activeOpacity={0.7}>
       <Icon color={colors.inkPrimary} size={24} />
-      <View style={styles.labelBox}>
-        <Text style={styles.label} numberOfLines={2}>{label}</Text>
-      </View>
+      {fixedHeight ? (
+        <View style={styles.labelBox}>
+          <Text style={styles.label} numberOfLines={2}>{label}</Text>
+        </View>
+      ) : (
+        <Text style={styles.label}>{label}</Text>
+      )}
     </TouchableOpacity>
   );
 }
