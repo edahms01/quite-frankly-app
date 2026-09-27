@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2 } from 'lucide-react-native';
+import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2, Gamepad2 } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
 import DestinationCard from '../../components/DestinationCard';
 import AvatarButton from '../../components/AvatarButton';
@@ -38,6 +38,7 @@ const DESTINATIONS = [
   { label: 'Calendar', Icon: CalendarIcon, route: 'Calendar' },
   { label: 'Writing', Icon: FileText, route: 'Writing' },
   { label: 'Band', Icon: Music2, route: 'Band' },
+  { label: 'Games', Icon: Gamepad2, route: 'Games' },
 ];
 
 export default function Home({ navigation }) {

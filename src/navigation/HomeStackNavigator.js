@@ -5,6 +5,7 @@ import Community from '../screens/home/Community';
 import Writing from '../screens/home/Writing';
 import Band from '../screens/home/Band';
 import Calendar from '../screens/home/Calendar';
+import Games from '../screens/games/Games';
 import VideoPlayer from '../screens/watch/VideoPlayer';
 
 const Stack = createNativeStackNavigator();
@@ -17,6 +18,7 @@ export default function HomeStackNavigator() {
       <Stack.Screen name="Community" component={Community} options={{ headerShown: false }} />
       <Stack.Screen name="Writing" component={Writing} options={{ headerShown: false }} />
       <Stack.Screen name="Band" component={Band} options={{ headerShown: false }} />
+      <Stack.Screen name="Games" component={Games} options={{ headerShown: false }} />
       <Stack.Screen name="Calendar" component={Calendar} options={{ headerShown: false }} />
       <Stack.Screen name="VideoPlayer" component={VideoPlayer} options={{ headerShown: false }} />
     </Stack.Navigator>
