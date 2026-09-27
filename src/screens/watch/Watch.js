@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Image, Linking, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { CirclePlay, ChevronLeft } from 'lucide-react-native';
+import { CirclePlay } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
-import AvatarButton from '../../components/AvatarButton';
-import OnAirBadge from '../../components/OnAirBadge';
+import BackHeader from '../../components/BackHeader';
 import { useYouTubeFeed } from '../../context/YouTubeFeedContext';
 import { relativeTime } from '../../utils/relativeTime';
 import LoadingState from '../../components/LoadingState';
@@ -139,8 +137,8 @@ export default function Watch({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
     <ScrollView
+      style={styles.container}
       refreshControl={
         <RefreshControl
           refreshing={historyRefreshing}
@@ -149,85 +147,73 @@ export default function Watch({ navigation }) {
         />
       }
     >
-      <View style={styles.header}>
-        <View style={styles.headerTopRow}>
-          <View style={styles.titleRow}>
-            <TouchableOpacity
-              onPress={() => navigation.getParent()?.navigate('Home')}
-              style={styles.backButton}
-              hitSlop={12}
-            >
-              <ChevronLeft color={colors.inkPrimary} size={24} />
-            </TouchableOpacity>
-            <Text style={styles.title}>Watch</Text>
-          </View>
-          <View style={styles.headerRight}>
-            <OnAirBadge />
-            <AvatarButton onPress={() => navigation.navigate('AccountStack')} />
-          </View>
-        </View>
-
+      <BackHeader
+        title="Watch"
+        navigation={navigation}
+        onBack={() => navigation.getParent()?.navigate('Home')}
+      >
         <TouchableOpacity
           style={styles.sponsorButton}
           onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })}
         >
           <Text style={styles.sponsorButtonText}>Become a Sponsor</Text>
         </TouchableOpacity>
-      </View>
+      </BackHeader>
 
-      <View style={styles.platformRow}>
-        {PLATFORMS.map((p) => (
-          <TouchableOpacity
-            key={p.label}
-            style={styles.platformPill}
-            onPress={() => (p.inAppBrowser ? WebBrowser.openBrowserAsync(p.url, { dismissButtonStyle: 'close' }) : Linking.openURL(p.url))}
-          >
-            <Text style={styles.platformText}>{p.label}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <View style={styles.body}>
+        <View style={styles.platformRow}>
+          {PLATFORMS.map((p) => (
+            <TouchableOpacity
+              key={p.label}
+              style={styles.platformPill}
+              onPress={() => (p.inAppBrowser ? WebBrowser.openBrowserAsync(p.url, { dismissButtonStyle: 'close' }) : Linking.openURL(p.url))}
+            >
+              <Text style={styles.platformText}>{p.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-      <View style={styles.grid}>
-        {loading ? (
-          <LoadingState message="Loading videos…" style={styles.stateFullWidth} />
-        ) : error ? (
-          <ErrorState message="Unable to load videos" style={styles.stateFullWidth} />
-        ) : combinedItems.length === 0 && !historyLoading ? (
-          <EmptyState message="No videos yet — check back soon." style={styles.stateFullWidth} />
-        ) : (
-          combinedItems.map((video) => (
-            <VideoCard key={video.id} video={video} onPress={() => navigation.navigate('VideoPlayer', { video })} />
-          ))
-        )}
-      </View>
-
-      {!loading && !error && historyLoading ? (
-        <LoadingState message="Loading more videos…" style={styles.stateFullWidth} />
-      ) : null}
-      {historyRefreshError ? (
-        <ErrorState message="Couldn't refresh videos. Pull down and try again." style={styles.stateFullWidth} />
-      ) : null}
-      {historyError ? (
-        <ErrorState
-          message="Unable to load more videos"
-          onRetry={() => loadHistoryInitial()}
-          style={styles.stateFullWidth}
-        />
-      ) : null}
-      {historyHasMore ? (
-        <TouchableOpacity style={styles.loadMore} onPress={loadHistoryMore} disabled={historyLoadingMore}>
-          {historyLoadingMore ? (
-            <ActivityIndicator color={colors.accentGold} />
+        <View style={styles.grid}>
+          {loading ? (
+            <LoadingState message="Loading videos…" style={styles.stateFullWidth} />
+          ) : error ? (
+            <ErrorState message="Unable to load videos" style={styles.stateFullWidth} />
+          ) : combinedItems.length === 0 && !historyLoading ? (
+            <EmptyState message="No videos yet — check back soon." style={styles.stateFullWidth} />
           ) : (
-            <Text style={styles.loadMoreText}>Load More</Text>
+            combinedItems.map((video) => (
+              <VideoCard key={video.id} video={video} onPress={() => navigation.navigate('VideoPlayer', { video })} />
+            ))
           )}
-        </TouchableOpacity>
-      ) : null}
-      {historyLoadMoreError ? (
-        <ErrorState message="Couldn't load more videos." onRetry={loadHistoryMore} style={styles.stateFullWidth} />
-      ) : null}
+        </View>
+
+        {!loading && !error && historyLoading ? (
+          <LoadingState message="Loading more videos…" style={styles.stateFullWidth} />
+        ) : null}
+        {historyRefreshError ? (
+          <ErrorState message="Couldn't refresh videos. Pull down and try again." style={styles.stateFullWidth} />
+        ) : null}
+        {historyError ? (
+          <ErrorState
+            message="Unable to load more videos"
+            onRetry={() => loadHistoryInitial()}
+            style={styles.stateFullWidth}
+          />
+        ) : null}
+        {historyHasMore ? (
+          <TouchableOpacity style={styles.loadMore} onPress={loadHistoryMore} disabled={historyLoadingMore}>
+            {historyLoadingMore ? (
+              <ActivityIndicator color={colors.accentGold} />
+            ) : (
+              <Text style={styles.loadMoreText}>Load More</Text>
+            )}
+          </TouchableOpacity>
+        ) : null}
+        {historyLoadMoreError ? (
+          <ErrorState message="Couldn't load more videos." onRetry={loadHistoryMore} style={styles.stateFullWidth} />
+        ) : null}
+      </View>
     </ScrollView>
-    </SafeAreaView>
   );
 }
 
@@ -235,34 +221,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surfaceGround,
-  },
-  header: {
-    padding: spacing.md,
-    gap: spacing.md,
-  },
-  headerTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  backButton: {
-    padding: spacing.xs,
-    marginLeft: -spacing.xs,
-  },
-  title: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.xxl,
   },
   // Matches Home.js's sponsorButton exactly (full-width, gold-bordered,
   // centered label) for visual consistency across screens.
@@ -279,12 +237,15 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.md,
   },
+  body: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.lg,
+    gap: spacing.lg,
+  },
   platformRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.md,
   },
   platformPill: {
     backgroundColor: colors.surfaceCard,
@@ -301,8 +262,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.lg,
   },
   stateFullWidth: {
     width: '100%',

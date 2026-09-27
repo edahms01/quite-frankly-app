@@ -1,13 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View, Share } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import { relativeTime } from '../../utils/relativeTime';
 import VideoEmbed from '../../components/VideoEmbed';
 import VideoThumbnailOverlay from '../../components/VideoThumbnailOverlay';
-import AvatarButton from '../../components/AvatarButton';
-import OnAirBadge from '../../components/OnAirBadge';
+import BackHeader from '../../components/BackHeader';
 import { useVideoActiveSource } from '../../hooks/useVideoActiveSource';
 
 // Matches Home.js's mostRecentCard video area, and playerArea's own height
@@ -33,33 +30,24 @@ export default function VideoPlayer({ navigation, route }) {
   }, [claim]);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-    <ScrollView>
-      <View style={styles.header}>
-        <View style={styles.headerTopRow}>
-          <View style={styles.headerLeft}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-              <ChevronLeft color={colors.inkPrimary} size={24} />
-            </TouchableOpacity>
-            <Image
-              source={require('../../assets/images/quite-frankly-logo-final.png')}
-              style={styles.wordmark}
-              resizeMode="contain"
-            />
-          </View>
-          <View style={styles.headerRight}>
-            <OnAirBadge />
-            <AvatarButton onPress={() => navigation.navigate('AccountStack')} />
-          </View>
-        </View>
-
+    <ScrollView style={styles.container}>
+      <BackHeader
+        navigation={navigation}
+        titleElement={
+          <Image
+            source={require('../../assets/images/quite-frankly-logo-final.png')}
+            style={styles.wordmark}
+            resizeMode="contain"
+          />
+        }
+      >
         <TouchableOpacity
           style={styles.sponsorButton}
           onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })}
         >
           <Text style={styles.sponsorButtonText}>Become a Sponsor</Text>
         </TouchableOpacity>
-      </View>
+      </BackHeader>
 
       <View style={styles.playerArea}>
         {embedVisible ? (
@@ -107,7 +95,6 @@ export default function VideoPlayer({ navigation, route }) {
         ) : null}
       </View>
     </ScrollView>
-    </SafeAreaView>
   );
 }
 
@@ -116,32 +103,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.surfaceGround,
   },
-  header: {
-    padding: spacing.md,
-    gap: spacing.md,
-  },
-  headerTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
   wordmark: {
     width: 172,
     height: 40,
-  },
-  backButton: {
-    padding: spacing.xs,
-    marginLeft: -spacing.xs,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
   },
   // Matches Home.js's sponsorButton exactly (full-width, gold-bordered,
   // centered label) for visual consistency across screens.

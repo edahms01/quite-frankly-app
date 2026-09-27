@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
   },
   body: {
     paddingHorizontal: spacing.md,
-    gap: 1,
+    gap: spacing.sm,
   },
   row: {
     flexDirection: 'row',
@@ -72,7 +72,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceCard,
     borderRadius: radius.md,
     padding: spacing.md,
-    marginBottom: spacing.xs,
   },
   label: {
     color: colors.inkPrimary,

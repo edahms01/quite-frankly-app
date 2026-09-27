@@ -3,6 +3,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { FileText, Mail } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
+import Section from '../../components/Section';
 import DestinationCard from '../../components/DestinationCard';
 
 export default function Writing({ navigation }) {
@@ -10,26 +11,26 @@ export default function Writing({ navigation }) {
     <ScrollView style={styles.container}>
       <BackHeader title="Writing" navigation={navigation} />
       <View style={styles.body}>
-        <Text style={styles.sectionLabel}>Frank's Writing</Text>
-        <View style={styles.grid}>
-          <DestinationCard
-            Icon={FileText}
-            label="Blog"
-            onPress={() => WebBrowser.openBrowserAsync('https://www.quitefrankly.tv/blog', { dismissButtonStyle: 'close' })}
-          />
-          <DestinationCard
-            Icon={Mail}
-            label="Newsletter Archive"
-            onPress={() => WebBrowser.openBrowserAsync('https://www.quitefrankly.tv/newsletter-archives', { dismissButtonStyle: 'close' })}
-          />
-        </View>
-
-        <View style={styles.soonRow}>
-          <Text style={styles.soonText}>Guest Appearances</Text>
-          <View style={styles.soonBadge}>
-            <Text style={styles.soonBadgeText}>SOON</Text>
+        <Section title="FRANK'S WRITING">
+          <View style={styles.grid}>
+            <DestinationCard
+              Icon={FileText}
+              label="Blog"
+              onPress={() => WebBrowser.openBrowserAsync('https://www.quitefrankly.tv/blog', { dismissButtonStyle: 'close' })}
+            />
+            <DestinationCard
+              Icon={Mail}
+              label="Newsletter Archive"
+              onPress={() => WebBrowser.openBrowserAsync('https://www.quitefrankly.tv/newsletter-archives', { dismissButtonStyle: 'close' })}
+            />
           </View>
-        </View>
+        </Section>
+
+        <Section title="GUEST APPEARANCES">
+          <View style={styles.comingSoonBadge}>
+            <Text style={styles.comingSoonText}>COMING SOON</Text>
+          </View>
+        </Section>
       </View>
     </ScrollView>
   );
@@ -43,43 +44,27 @@ const styles = StyleSheet.create({
   body: {
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.lg,
-    gap: spacing.md,
-  },
-  sectionLabel: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.md,
+    gap: spacing.lg,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.md,
   },
-  soonRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  // Matches ScheduleTeaser's "COMING SOON" badge exactly, for the same
+  // placeholder-content meaning app-wide.
+  comingSoonBadge: {
+    alignSelf: 'center',
     borderWidth: 1,
-    borderColor: colors.surfaceLine,
-    borderStyle: 'dashed',
-    borderRadius: radius.md,
-    padding: spacing.md,
-  },
-  soonText: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.md,
-  },
-  soonBadge: {
-    borderWidth: 1,
-    borderColor: colors.surfaceLine,
+    borderColor: colors.accentGold,
     borderRadius: radius.sm,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
   },
-  soonBadgeText: {
-    color: colors.inkMuted,
+  comingSoonText: {
+    color: colors.accentGold,
     fontFamily: fontFamily.bold,
-    fontSize: fontSize.xs,
+    fontSize: fontSize.sm,
+    letterSpacing: 0.5,
   },
 });

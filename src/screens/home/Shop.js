@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ShoppingBag } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
+import Section from '../../components/Section';
 import DestinationCard from '../../components/DestinationCard';
 import ExternalRow from '../../components/ExternalRow';
 import LoadingState from '../../components/LoadingState';
@@ -91,31 +92,33 @@ export default function Shop({ navigation }) {
           />
         ) : (
           <>
-            <Text style={styles.sectionLabel}>SHOP</Text>
-            <View style={styles.grid}>
-              {data.stores.map((s) => (
-                <DestinationCard
-                  key={s.label}
-                  Icon={ShoppingBag}
-                  label={s.label}
-                  onPress={() => WebBrowser.openBrowserAsync(s.url, { dismissButtonStyle: 'close' })}
-                />
-              ))}
-            </View>
+            <Section title="SHOP">
+              <View style={styles.grid}>
+                {data.stores.map((s) => (
+                  <DestinationCard
+                    key={s.label}
+                    Icon={ShoppingBag}
+                    label={s.label}
+                    onPress={() => WebBrowser.openBrowserAsync(s.url, { dismissButtonStyle: 'close' })}
+                  />
+                ))}
+              </View>
+            </Section>
 
-            <Text style={[styles.sectionLabel, styles.affiliatesLabel]}>AFFILIATES & DISCOUNTS</Text>
-            <View style={styles.list}>
-              {data.affiliates.map((a) => (
-                <ExternalRow
-                  key={a.title}
-                  title={a.title}
-                  subtitle={a.subtitle}
-                  badge={a.badge}
-                  url={a.url}
-                  inAppBrowser
-                />
-              ))}
-            </View>
+            <Section title="AFFILIATES & DISCOUNTS">
+              <View style={styles.list}>
+                {data.affiliates.map((a) => (
+                  <ExternalRow
+                    key={a.title}
+                    title={a.title}
+                    subtitle={a.subtitle}
+                    badge={a.badge}
+                    url={a.url}
+                    inAppBrowser
+                  />
+                ))}
+              </View>
+            </Section>
           </>
         )}
 
@@ -133,21 +136,12 @@ const styles = StyleSheet.create({
   body: {
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.lg,
-    gap: spacing.md,
+    gap: spacing.lg,
   },
   cacheNotice: {
     color: colors.accentGold,
     fontFamily: fontFamily.medium,
     fontSize: fontSize.sm,
-  },
-  sectionLabel: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.base,
-    letterSpacing: 0.5,
-  },
-  affiliatesLabel: {
-    marginTop: spacing.md,
   },
   grid: {
     flexDirection: 'row',

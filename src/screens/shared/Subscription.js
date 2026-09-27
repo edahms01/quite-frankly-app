@@ -1,7 +1,8 @@
-import { Image, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ArrowUpRight } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
+import Section from '../../components/Section';
 import CryptoCard, { CryptoCardGrid } from '../../components/CryptoCard';
 
 // Patreon/SubscribeStar use OS-level Linking.openURL (not WebView) so
@@ -27,66 +28,67 @@ const XRP_ADDRESS = 'rnES2vQV6d2jLpavzf7y97XD4AfK1MjePu';
 
 export default function Subscription({ navigation }) {
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <BackHeader title="Become a Sponsor" navigation={navigation} />
       <View style={styles.body}>
-        <Text style={styles.sectionLabel}>MONTHLY SPONSORSHIP</Text>
+        <Section title="MONTHLY SPONSORSHIP">
+          <TouchableOpacity
+            style={styles.qfCard}
+            onPress={() => navigation.navigate('SubscriptionCheckout')}
+          >
+            <View style={styles.qfHeader}>
+              <View style={styles.qfAvatar}>
+                <Image
+                  source={require('../../../assets/icon.png')}
+                  style={styles.qfAvatarImage}
+                  resizeMode="cover"
+                />
+              </View>
+              <View style={styles.recommendedBadge}>
+                <Text style={styles.recommendedText}>RECOMMENDED</Text>
+              </View>
+            </View>
+            <Text style={styles.qfTitle}>Sponsor Frank Directly</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.qfCard}
-          onPress={() => navigation.navigate('SubscriptionCheckout')}
-        >
-          <View style={styles.qfHeader}>
-            <View style={styles.qfAvatar}>
-              <Image
-                source={require('../../../assets/icon.png')}
-                style={styles.qfAvatarImage}
-                resizeMode="cover"
-              />
-            </View>
-            <View style={styles.recommendedBadge}>
-              <Text style={styles.recommendedText}>RECOMMENDED</Text>
-            </View>
+          <View style={styles.platformRow}>
+            {PLATFORMS.map((p) => (
+              <TouchableOpacity
+                key={p.label}
+                style={styles.platformCard}
+                onPress={() => Linking.openURL(p.url)}
+              >
+                <ArrowUpRight color={colors.inkMuted} size={16} style={styles.platformArrow} />
+                <Image source={p.icon} style={styles.platformIcon} resizeMode="contain" />
+                <Text style={styles.platformLabel}>{p.label}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
-          <Text style={styles.qfTitle}>Sponsor Frank Directly</Text>
-        </TouchableOpacity>
+        </Section>
 
-        <View style={styles.platformRow}>
-          {PLATFORMS.map((p) => (
-            <TouchableOpacity
-              key={p.label}
-              style={styles.platformCard}
-              onPress={() => Linking.openURL(p.url)}
-            >
-              <ArrowUpRight color={colors.inkMuted} size={16} style={styles.platformArrow} />
-              <Image source={p.icon} style={styles.platformIcon} resizeMode="contain" />
-              <Text style={styles.platformLabel}>{p.label}</Text>
+        <Section title="ONE-TIME DONATION">
+          <Text style={styles.subtitle}>
+            Prefer a one-time contribution instead? No subscription required.
+          </Text>
+
+          <CryptoCardGrid>
+            <TouchableOpacity style={styles.gridCard} onPress={() => Linking.openURL(PAYPAL_URL)}>
+              <Text style={styles.gridCardTitle}>PayPal</Text>
             </TouchableOpacity>
-          ))}
-        </View>
-
-        <Text style={styles.sectionLabel}>ONE-TIME DONATION</Text>
-        <Text style={styles.subtitle}>
-          Prefer a one-time contribution instead? No subscription required.
-        </Text>
-
-        <CryptoCardGrid>
-          <TouchableOpacity style={styles.gridCard} onPress={() => Linking.openURL(PAYPAL_URL)}>
-            <Text style={styles.gridCardTitle}>PayPal</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.gridCard} onPress={() => Linking.openURL(AMAZON_URL)}>
-            <Text style={styles.gridCardTitle}>Amazon</Text>
-          </TouchableOpacity>
-          <CryptoCard title="BTC" fields={[{ value: BTC_ADDRESS }]} />
-          <CryptoCard title="XRP" fields={[{ value: XRP_ADDRESS }]} />
-        </CryptoCardGrid>
+            <TouchableOpacity style={styles.gridCard} onPress={() => Linking.openURL(AMAZON_URL)}>
+              <Text style={styles.gridCardTitle}>Amazon</Text>
+            </TouchableOpacity>
+            <CryptoCard title="BTC" fields={[{ value: BTC_ADDRESS }]} />
+            <CryptoCard title="XRP" fields={[{ value: XRP_ADDRESS }]} />
+          </CryptoCardGrid>
+        </Section>
 
         <Text style={styles.mail}>
           Prefer mail? Send letters, cards, or small gifts to: Quite
           Frankly, 222 Purchase Street, #105, Rye, NY 10580.
         </Text>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -97,7 +99,8 @@ const styles = StyleSheet.create({
   },
   body: {
     paddingHorizontal: spacing.md,
-    gap: spacing.md,
+    paddingBottom: spacing.lg,
+    gap: spacing.lg,
   },
   subtitle: {
     color: colors.inkMuted,
@@ -171,12 +174,6 @@ const styles = StyleSheet.create({
     color: colors.inkPrimary,
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.md,
-  },
-  sectionLabel: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.base,
-    letterSpacing: 0.5,
   },
   gridCard: {
     width: '47%',

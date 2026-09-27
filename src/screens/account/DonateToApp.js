@@ -1,6 +1,7 @@
 import { Linking, ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
+import Section from '../../components/Section';
 import CryptoCard, { CryptoCardGrid } from '../../components/CryptoCard';
 
 // TODO(Eric): swap these for your real payment links before shipping.
@@ -41,46 +42,48 @@ export default function DonateToApp({ navigation }) {
           you'd like to support the show instead, see Become a Sponsor.
         </Text>
 
-        <Text style={styles.sectionLabel}>SEND A TIP</Text>
-        <View style={styles.tipGrid}>
-          {TIP_APPS.map((app) => (
-            <TouchableOpacity
-              key={app.label}
-              style={styles.tipCard}
-              onPress={() => Linking.openURL(app.url)}
-            >
-              <Text style={styles.tipLabel}>{app.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        <Section title="SEND A TIP">
+          <View style={styles.tipGrid}>
+            {TIP_APPS.map((app) => (
+              <TouchableOpacity
+                key={app.label}
+                style={styles.tipCard}
+                onPress={() => Linking.openURL(app.url)}
+              >
+                <Text style={styles.tipLabel}>{app.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </Section>
 
-        <Text style={styles.sectionLabel}>CRYPTO</Text>
-        <CryptoCardGrid>
-          {SIMPLE_ADDRESSES.map((c) => (
-            <CryptoCard key={c.title} title={c.title} fields={[{ value: c.address }]} />
-          ))}
-          <CryptoCard
-            title="XRP"
-            fields={[
-              { label: 'Address', value: XRP_ADDRESS },
-              { label: 'Destination Tag', value: XRP_DESTINATION_TAG, truncate: false, bullet: false },
-            ]}
-          />
-          <CryptoCard
-            title="USDT"
-            fields={[
-              { label: 'Ethereum', value: ETH_ADDRESS },
-              { label: 'Solana', value: SOL_ADDRESS },
-            ]}
-          />
-          <CryptoCard
-            title="USDC"
-            fields={[
-              { label: 'Ethereum', value: ETH_ADDRESS },
-              { label: 'Solana', value: SOL_ADDRESS },
-            ]}
-          />
-        </CryptoCardGrid>
+        <Section title="CRYPTO">
+          <CryptoCardGrid>
+            {SIMPLE_ADDRESSES.map((c) => (
+              <CryptoCard key={c.title} title={c.title} fields={[{ value: c.address }]} />
+            ))}
+            <CryptoCard
+              title="XRP"
+              fields={[
+                { label: 'Address', value: XRP_ADDRESS },
+                { label: 'Destination Tag', value: XRP_DESTINATION_TAG, truncate: false, bullet: false },
+              ]}
+            />
+            <CryptoCard
+              title="USDT"
+              fields={[
+                { label: 'Ethereum', value: ETH_ADDRESS },
+                { label: 'Solana', value: SOL_ADDRESS },
+              ]}
+            />
+            <CryptoCard
+              title="USDC"
+              fields={[
+                { label: 'Ethereum', value: ETH_ADDRESS },
+                { label: 'Solana', value: SOL_ADDRESS },
+              ]}
+            />
+          </CryptoCardGrid>
+        </Section>
       </View>
     </ScrollView>
   );
@@ -94,18 +97,12 @@ const styles = StyleSheet.create({
   body: {
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.lg,
-    gap: spacing.md,
+    gap: spacing.lg,
   },
   blurb: {
     color: colors.inkMuted,
     fontFamily: fontFamily.regular,
     fontSize: fontSize.base,
-  },
-  sectionLabel: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.base,
-    letterSpacing: 0.5,
   },
   tipGrid: {
     flexDirection: 'row',

@@ -8,15 +8,13 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { CirclePlay, Pause, ChevronLeft } from 'lucide-react-native';
+import { CirclePlay, Pause } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import { relativeTime } from '../../utils/relativeTime';
 import { useAudioPlayer } from '../../context/AudioPlayerContext';
 import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
-import AvatarButton from '../../components/AvatarButton';
-import OnAirBadge from '../../components/OnAirBadge';
+import BackHeader from '../../components/BackHeader';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 const PAGE_SIZE = 20;
@@ -113,44 +111,31 @@ export default function Listen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView
-        contentContainerStyle={currentTrack && styles.listWithMiniPlayer}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={colors.accentGold}
-          />
-        }
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={currentTrack && styles.listWithMiniPlayer}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={colors.accentGold}
+        />
+      }
+    >
+      <BackHeader
+        title="Listen"
+        navigation={navigation}
+        onBack={() => navigation.getParent()?.navigate('Home')}
       >
-        <View style={styles.header}>
-          <View style={styles.headerTopRow}>
-            <View style={styles.titleRow}>
-              <TouchableOpacity
-                onPress={() => navigation.getParent()?.navigate('Home')}
-                style={styles.backButton}
-                hitSlop={12}
-              >
-                <ChevronLeft color={colors.inkPrimary} size={24} />
-              </TouchableOpacity>
-              <Text style={styles.title}>Listen</Text>
-            </View>
-            <View style={styles.headerRight}>
-              <OnAirBadge />
-              <AvatarButton onPress={() => navigation.navigate('AccountStack')} />
-            </View>
-          </View>
+        <TouchableOpacity
+          style={styles.sponsorButton}
+          onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })}
+        >
+          <Text style={styles.sponsorButtonText}>Become a Sponsor</Text>
+        </TouchableOpacity>
+      </BackHeader>
 
-          <TouchableOpacity
-            style={styles.sponsorButton}
-            onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })}
-          >
-            <Text style={styles.sponsorButtonText}>Become a Sponsor</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.list}>
+      <View style={styles.list}>
           {loading ? (
             <LoadingState style={styles.stateIndicator} />
           ) : error ? (
@@ -209,9 +194,8 @@ export default function Listen({ navigation }) {
               ) : null}
             </>
           )}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -219,34 +203,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surfaceGround,
-  },
-  header: {
-    padding: spacing.md,
-    gap: spacing.md,
-  },
-  headerTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  backButton: {
-    padding: spacing.xs,
-    marginLeft: -spacing.xs,
-  },
-  title: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.xxl,
   },
   // Matches Home.js's sponsorButton exactly (full-width, gold-bordered,
   // centered label) for visual consistency across screens.
@@ -264,7 +220,8 @@ const styles = StyleSheet.create({
     fontSize: fontSize.md,
   },
   list: {
-    padding: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.lg,
     gap: spacing.sm,
   },
   listWithMiniPlayer: {

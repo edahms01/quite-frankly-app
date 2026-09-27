@@ -40,34 +40,36 @@ export default function Account({ navigation }) {
           </View>
         </View>
 
-        {ROWS.map((r) => (
+        <View style={styles.menuGroup}>
+          {ROWS.map((r) => (
+            <TouchableOpacity
+              key={r.label}
+              style={styles.row}
+              onPress={() => navigation.navigate(r.route)}
+            >
+              <Text style={styles.rowLabel}>{r.label}</Text>
+              <ChevronRight color={colors.inkMuted} size={18} />
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <View style={styles.menuGroup}>
           <TouchableOpacity
-            key={r.label}
             style={styles.row}
-            onPress={() => navigation.navigate(r.route)}
+            onPress={() => navigation.navigate('ReportBug')}
           >
-            <Text style={styles.rowLabel}>{r.label}</Text>
+            <Text style={styles.rowLabel}>Report a Bug / Request Features</Text>
             <ChevronRight color={colors.inkMuted} size={18} />
           </TouchableOpacity>
-        ))}
 
-        <View style={styles.divider} />
-
-        <TouchableOpacity
-          style={styles.row}
-          onPress={() => navigation.navigate('ReportBug')}
-        >
-          <Text style={styles.rowLabel}>Report a Bug / Request Features</Text>
-          <ChevronRight color={colors.inkMuted} size={18} />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.row}
-          onPress={() => navigation.navigate('DonateToApp')}
-        >
-          <Text style={styles.rowLabel}>Donate to App</Text>
-          <ChevronRight color={colors.inkMuted} size={18} />
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() => navigation.navigate('DonateToApp')}
+          >
+            <Text style={styles.rowLabel}>Donate to App</Text>
+            <ChevronRight color={colors.inkMuted} size={18} />
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity style={styles.signOutRow}>
           <Text style={styles.signOutText}>Sign Out</Text>
@@ -84,13 +86,16 @@ const styles = StyleSheet.create({
   },
   body: {
     paddingHorizontal: spacing.md,
-    gap: spacing.sm,
+    paddingBottom: spacing.lg,
+    gap: spacing.lg,
   },
   profileRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    marginBottom: spacing.md,
+  },
+  menuGroup: {
+    gap: spacing.sm,
   },
   avatar: {
     width: 56,
@@ -123,16 +128,10 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.md,
   },
-  divider: {
-    height: 1,
-    backgroundColor: colors.surfaceLine,
-    marginVertical: spacing.sm,
-  },
   signOutRow: {
     backgroundColor: colors.surfaceCard,
     borderRadius: radius.md,
     padding: spacing.md,
-    marginTop: spacing.sm,
   },
   signOutText: {
     color: colors.brandRed,

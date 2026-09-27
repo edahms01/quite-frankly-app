@@ -22,7 +22,6 @@ const styles = StyleSheet.create({
   },
   body: {
     paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
     paddingBottom: spacing.lg,
   },
 });

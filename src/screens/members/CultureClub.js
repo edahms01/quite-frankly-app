@@ -1,10 +1,9 @@
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Lock, ChevronLeft } from 'lucide-react-native';
+import { Lock } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
-import AvatarButton from '../../components/AvatarButton';
-import OnAirBadge from '../../components/OnAirBadge';
+import BackHeader from '../../components/BackHeader';
+import Section from '../../components/Section';
 import ScheduleTeaser from '../../components/ScheduleTeaser';
 import { WEEK, SCHEDULE_NOTE } from '../../data/mockSchedule';
 
@@ -14,24 +13,12 @@ const LOGIN_URL = 'https://www.quitefrankly.tv/account/login';
 
 export default function CultureClub({ navigation }) {
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-    <ScrollView>
-      <View style={styles.header}>
-        <View style={styles.titleRow}>
-          <TouchableOpacity
-            onPress={() => navigation.getParent()?.navigate('Home')}
-            style={styles.backButton}
-            hitSlop={12}
-          >
-            <ChevronLeft color={colors.inkPrimary} size={24} />
-          </TouchableOpacity>
-          <Text style={styles.title}>Culture Club</Text>
-        </View>
-        <View style={styles.headerRight}>
-          <OnAirBadge />
-          <AvatarButton onPress={() => navigation.navigate('AccountStack')} />
-        </View>
-      </View>
+    <ScrollView style={styles.container}>
+      <BackHeader
+        title="Culture Club"
+        navigation={navigation}
+        onBack={() => navigation.getParent()?.navigate('Home')}
+      />
 
       <View style={styles.body}>
         <View style={styles.joinRow}>
@@ -49,11 +36,11 @@ export default function CultureClub({ navigation }) {
           <Text style={styles.loginText}>Already a Sponsor? Log in on quitefrankly.tv</Text>
         </TouchableOpacity>
 
-        <Text style={styles.sectionLabel}>CULTURE CLUB CALENDAR</Text>
-        <ScheduleTeaser items={CLUB_DAYS} showLegend={false} note={SCHEDULE_NOTE} />
+        <Section title="CULTURE CLUB CALENDAR">
+          <ScheduleTeaser items={CLUB_DAYS} showLegend={false} note={SCHEDULE_NOTE} />
+        </Section>
       </View>
     </ScrollView>
-    </SafeAreaView>
   );
 }
 
@@ -62,35 +49,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.surfaceGround,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    padding: spacing.md,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  backButton: {
-    padding: spacing.xs,
-    marginLeft: -spacing.xs,
-  },
-  title: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.xxl,
-  },
   body: {
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.lg,
-    gap: spacing.sm,
+    gap: spacing.lg,
   },
   joinRow: {
     flexDirection: 'row',
@@ -129,12 +91,5 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.medium,
     fontSize: fontSize.base,
     flex: 1,
-  },
-  sectionLabel: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.base,
-    letterSpacing: 0.5,
-    marginTop: spacing.sm,
   },
 });

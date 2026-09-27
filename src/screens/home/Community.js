@@ -3,6 +3,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { MessageCircle, Send, MessageSquare, Camera, X, Music2, ChevronRight } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
 import BackHeader from '../../components/BackHeader';
+import Section from '../../components/Section';
 
 const JOIN = [
   { label: 'Discord', Icon: MessageCircle, url: 'https://discord.gg/yzzqnGgzEv' },
@@ -35,28 +36,31 @@ export default function Community({ navigation }) {
     <ScrollView style={styles.container}>
       <BackHeader title="Community" navigation={navigation} />
       <View style={styles.body}>
-        <Text style={styles.sectionLabel}>JOIN THE CONVERSATION</Text>
-        <View style={styles.row}>
-          {JOIN.map((j) => (
-            <IconTile key={j.label} {...j} />
-          ))}
-        </View>
+        <Section title="JOIN THE CONVERSATION">
+          <View style={styles.row}>
+            {JOIN.map((j) => (
+              <IconTile key={j.label} {...j} />
+            ))}
+          </View>
+        </Section>
 
-        <Text style={styles.sectionLabel}>FOLLOW FRANK</Text>
-        <View style={styles.row}>
-          {FOLLOW.map((f) => (
-            <IconTile key={f.label} {...f} />
-          ))}
-        </View>
+        <Section title="FOLLOW FRANK">
+          <View style={styles.row}>
+            {FOLLOW.map((f) => (
+              <IconTile key={f.label} {...f} />
+            ))}
+          </View>
+        </Section>
 
-        <Text style={styles.sectionLabel}>EVENTS</Text>
-        <TouchableOpacity
-          style={styles.eventRow}
-          onPress={() => WebBrowser.openBrowserAsync('https://www.quitefrankly.tv/the-quite-frankly-live-events', { dismissButtonStyle: 'close' })}
-        >
-          <Text style={styles.eventText}>Main Event · Oct 23, 2027</Text>
-          <ChevronRight color={colors.inkMuted} size={18} />
-        </TouchableOpacity>
+        <Section title="EVENTS">
+          <TouchableOpacity
+            style={styles.eventRow}
+            onPress={() => WebBrowser.openBrowserAsync('https://www.quitefrankly.tv/the-quite-frankly-live-events', { dismissButtonStyle: 'close' })}
+          >
+            <Text style={styles.eventText}>Main Event · Oct 23, 2027</Text>
+            <ChevronRight color={colors.inkMuted} size={18} />
+          </TouchableOpacity>
+        </Section>
       </View>
     </ScrollView>
   );
@@ -70,13 +74,7 @@ const styles = StyleSheet.create({
   body: {
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.lg,
-    gap: spacing.md,
-  },
-  sectionLabel: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.base,
-    letterSpacing: 0.5,
+    gap: spacing.lg,
   },
   row: {
     flexDirection: 'row',
