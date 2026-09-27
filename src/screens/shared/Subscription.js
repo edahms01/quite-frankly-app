@@ -1,9 +1,10 @@
-import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { ArrowUpRight } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
-import ExternalRow from '../../components/ExternalRow';
-import CryptoCard, { CryptoCardGrid } from '../../components/CryptoCard';
+import { CryptoCardGrid } from '../../components/CryptoCard';
+import { truncateAddress } from '../../utils/truncateAddress';
 
 // Patreon/SubscribeStar use OS-level Linking.openURL (not WebView) so
 // Universal Links/App Links can hand off to their native apps — see
@@ -13,15 +14,22 @@ const PLATFORMS = [
   { label: 'SubscribeStar', url: 'https://www.subscribestar.com/quitefrankly' },
 ];
 
+const PAYPAL_URL = 'http://www.paypal.me/QuiteFranklyLive';
+const AMAZON_URL = 'https://amazon.com/shop/quitefranklyofficial';
 const BTC_ADDRESS = 'bc1q97w5aazjf7pjjl50n42kdmj9pqyn5zndwh3lng';
 const XRP_ADDRESS = 'rnES2vQV6d2jLpavzf7y97XD4AfK1MjePu';
+
+const copyToClipboard = async (value, label) => {
+  await Clipboard.setStringAsync(value);
+  Alert.alert('Copied', `${label} address copied to clipboard.`);
+};
 
 export default function Subscription({ navigation }) {
   return (
     <View style={styles.container}>
       <BackHeader title="Become a Sponsor" navigation={navigation} />
       <View style={styles.body}>
-        <Text style={styles.subtitle}>Not a member yet. Choose how you'd like to subscribe:</Text>
+        <Text style={styles.sectionLabel}>MONTHLY SPONSORSHIP</Text>
 
         <TouchableOpacity
           style={styles.qfCard}
@@ -29,14 +37,17 @@ export default function Subscription({ navigation }) {
         >
           <View style={styles.qfHeader}>
             <View style={styles.qfAvatar}>
-              <Text style={styles.qfAvatarText}>QF</Text>
+              <Image
+                source={require('../../assets/images/quite-frankly-jester-icon.png')}
+                style={styles.qfAvatarImage}
+                resizeMode="cover"
+              />
             </View>
             <View style={styles.recommendedBadge}>
               <Text style={styles.recommendedText}>RECOMMENDED</Text>
             </View>
           </View>
-          <Text style={styles.qfTitle}>Continue with Quite Frankly</Text>
-          <Text style={styles.qfSubtitle}>Signs you up right here in the app</Text>
+          <Text style={styles.qfTitle}>Sponsor Frank Directly</Text>
         </TouchableOpacity>
 
         <View style={styles.platformRow}>
@@ -53,26 +64,42 @@ export default function Subscription({ navigation }) {
           ))}
         </View>
 
-        <View style={styles.divider} />
-        <Text style={styles.sectionLabel}>ONE-TIME SUPPORT</Text>
+        <Text style={styles.sectionLabel}>ONE-TIME DONATION</Text>
         <Text style={styles.subtitle}>
           Prefer a one-time contribution instead? No subscription required.
         </Text>
 
-        <ExternalRow
-          avatarText="P"
-          title="PayPal — One-Time Tip"
-          url="http://www.paypal.me/QuiteFranklyLive"
-        />
-        <ExternalRow
-          avatarText="A"
-          title="Amazon Storefront"
-          subtitle="Shop Frank's picks — no extra cost to you"
-          url="https://amazon.com/shop/quitefranklyofficial"
-        />
         <CryptoCardGrid>
-          <CryptoCard title="BTC" fields={[{ value: BTC_ADDRESS }]} />
-          <CryptoCard title="XRP" fields={[{ value: XRP_ADDRESS }]} />
+          <TouchableOpacity style={styles.gridCard} onPress={() => Linking.openURL(PAYPAL_URL)}>
+            <Text style={styles.gridCardTitle}>PayPal</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.gridCard} onPress={() => Linking.openURL(AMAZON_URL)}>
+            <Text style={styles.gridCardTitle}>Amazon</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.gridCard}
+            onPress={() => copyToClipboard(BTC_ADDRESS, 'BTC')}
+          >
+            <Text style={styles.gridCardTitle}>BTC</Text>
+            <Text style={styles.gridCardValue} numberOfLines={1}>
+              {truncateAddress(BTC_ADDRESS)}
+            </Text>
+            <View style={styles.gridCardBadge}>
+              <Text style={styles.gridCardBadgeText}>Copy</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.gridCard}
+            onPress={() => copyToClipboard(XRP_ADDRESS, 'XRP')}
+          >
+            <Text style={styles.gridCardTitle}>XRP</Text>
+            <Text style={styles.gridCardValue} numberOfLines={1}>
+              {truncateAddress(XRP_ADDRESS)}
+            </Text>
+            <View style={styles.gridCardBadge}>
+              <Text style={styles.gridCardBadgeText}>Copy</Text>
+            </View>
+          </TouchableOpacity>
         </CryptoCardGrid>
 
         <Text style={styles.mail}>
@@ -100,7 +127,7 @@ const styles = StyleSheet.create({
   },
   qfCard: {
     borderWidth: 1,
-    borderColor: colors.brandRed,
+    borderColor: colors.accentGold,
     borderRadius: radius.md,
     padding: spacing.md,
   },
@@ -113,25 +140,32 @@ const styles = StyleSheet.create({
   qfAvatar: {
     width: 40,
     height: 40,
-    borderRadius: radius.sm,
+    borderRadius: 20,
     backgroundColor: colors.surfaceLine,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
-  qfAvatarText: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.base,
+  qfAvatarImage: {
+    // Slightly oversized within its circular, clipped container — the
+    // source crop (quite-frankly-jester-icon.png) has tiny bits of the
+    // neighboring wordmark letters right at its corners (unavoidable —
+    // there's little clean gap between the jester and "QUITE"/"FRANKLY"
+    // at chin height in the source composite); oversizing pushes those
+    // corners outside the visible circle instead of trimming the crop
+    // tighter, which would start cutting into the face itself.
+    width: '115%',
+    height: '115%',
   },
   recommendedBadge: {
     borderWidth: 1,
-    borderColor: colors.brandRed,
+    borderColor: colors.accentGold,
     borderRadius: radius.sm,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
   },
   recommendedText: {
-    color: colors.brandRed,
+    color: colors.accentGold,
     fontFamily: fontFamily.bold,
     fontSize: fontSize.xs,
   },
@@ -139,12 +173,6 @@ const styles = StyleSheet.create({
     color: colors.inkPrimary,
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.md,
-  },
-  qfSubtitle: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.regular,
-    fontSize: fontSize.sm,
-    marginTop: 2,
   },
   platformRow: {
     flexDirection: 'row',
@@ -174,16 +202,41 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.md,
   },
-  divider: {
-    height: 1,
-    backgroundColor: colors.surfaceLine,
-    marginVertical: spacing.xs,
-  },
   sectionLabel: {
     color: colors.inkMuted,
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.base,
     letterSpacing: 0.5,
+  },
+  gridCard: {
+    width: '47%',
+    backgroundColor: colors.surfaceCard,
+    borderRadius: radius.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.sm,
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  gridCardTitle: {
+    color: colors.inkPrimary,
+    fontFamily: fontFamily.semiBold,
+    fontSize: fontSize.md,
+  },
+  gridCardValue: {
+    color: colors.inkMuted,
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.xs,
+  },
+  gridCardBadge: {
+    backgroundColor: colors.surfaceLine,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+  },
+  gridCardBadgeText: {
+    color: colors.accentGold,
+    fontFamily: fontFamily.bold,
+    fontSize: fontSize.xs,
   },
   mail: {
     color: colors.inkMuted,
