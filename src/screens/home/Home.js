@@ -84,7 +84,9 @@ export default function Home({ navigation }) {
             <UpcomingCountdown scheduledStartTime={mostRecent?.scheduledStartTime} />
             <OnAirBadge />
           </View>
-          <AvatarButton onPress={() => navigation.navigate('AccountStack')} />
+          <View style={styles.avatarNudge}>
+            <AvatarButton onPress={() => navigation.navigate('AccountStack')} />
+          </View>
         </View>
       </View>
 
@@ -193,6 +195,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: spacing.sm,
+  },
+  // Static nudge, tuned by eye — just moves AvatarButton down to meet
+  // OnAirBadge's bottom edge, no change to OnAirBadge/onAirGroup at all.
+  avatarNudge: {
+    marginTop: 8,
   },
   // OnAirBadge's vertical center lines up with the seam between
   // UpcomingCountdown's two text lines — centered against the countdown
