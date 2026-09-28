@@ -153,6 +153,8 @@ export default function WritingBlog({ navigation }) {
         setHasMore(data.hasMore);
         setUsingCache(true);
         setError(null);
+        setLoadMoreError(null);
+        setRefreshError(null);
       } else {
         setError(err.message);
       }
@@ -212,7 +214,7 @@ export default function WritingBlog({ navigation }) {
         {loading ? (
           <LoadingState message="Loading posts…" />
         ) : error ? (
-          <ErrorState message="Couldn't load the blog. Check your connection and try again." onRetry={loadInitial} />
+          <ErrorState message="Couldn't load the blog. Check your connection and try again." onRetry={() => loadInitial()} />
         ) : posts.length === 0 ? (
           <EmptyState message="No posts yet — check back soon." />
         ) : (
