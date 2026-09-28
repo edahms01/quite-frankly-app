@@ -1,6 +1,11 @@
 import crypto from 'node:crypto';
-import { setJSON } from './lib/blobs.js';
+import { getJSON, setJSON } from './lib/blobs.js';
 import { getTokensForPreference, sendExpoPushBatch } from './lib/push.js';
+import { isGenuineLiveEvent, isNewStreamId } from './lib/twitch.js';
+
+// Recent-processed-id list kept short — only needs to survive a retried
+// webhook delivery for the same stream, not serve as a long-term history.
+const MAX_RECENT_STREAM_IDS = 20;
 
 const MESSAGE_TYPE_VERIFICATION = 'webhook_callback_verification';
 const MESSAGE_TYPE_NOTIFICATION = 'notification';
@@ -45,18 +50,43 @@ export default async (req) => {
   if (messageType === MESSAGE_TYPE_NOTIFICATION) {
     const eventType = body.subscription?.type;
     if (eventType === 'stream.online') {
-      await setJSON('qf-live-status', 'status', { isLive: true, checkedAt: new Date().toISOString() });
-      try {
-        const tokens = await getTokensForPreference('live');
-        await sendExpoPushBatch(tokens, {
-          title: 'Quite Frankly is live',
-          body: 'Frank just went live — tap to watch now.',
+      console.log('twitch stream.online event', JSON.stringify(body.event));
+
+      if (!isGenuineLiveEvent(body.event)) {
+        console.log('twitch stream.online ignored, not a genuine live broadcast', body.event?.type);
+      } else {
+        const streamId = body.event?.id;
+        const current = await getJSON('qf-live-status', 'status', { isLive: false, checkedAt: null, recentStreamIds: [] });
+        const recentStreamIds = current.recentStreamIds ?? [];
+        const isNew = isNewStreamId(recentStreamIds, streamId);
+
+        await setJSON('qf-live-status', 'status', {
+          isLive: true,
+          checkedAt: new Date().toISOString(),
+          recentStreamIds: [streamId, ...recentStreamIds].slice(0, MAX_RECENT_STREAM_IDS),
         });
-      } catch (err) {
-        console.error('Push notification step failed for stream.online', err);
+
+        if (isNew) {
+          try {
+            const tokens = await getTokensForPreference('live');
+            await sendExpoPushBatch(tokens, {
+              title: 'Quite Frankly is live',
+              body: 'Frank just went live — tap to watch now.',
+            });
+          } catch (err) {
+            console.error('Push notification step failed for stream.online', err);
+          }
+        } else {
+          console.log('twitch stream.online push skipped, duplicate stream id', streamId);
+        }
       }
     } else if (eventType === 'stream.offline') {
-      await setJSON('qf-live-status', 'status', { isLive: false, checkedAt: new Date().toISOString() });
+      const current = await getJSON('qf-live-status', 'status', { isLive: false, checkedAt: null, recentStreamIds: [] });
+      await setJSON('qf-live-status', 'status', {
+        isLive: false,
+        checkedAt: new Date().toISOString(),
+        recentStreamIds: current.recentStreamIds ?? [],
+      });
     }
     return new Response(null, { status: 204 });
   }
