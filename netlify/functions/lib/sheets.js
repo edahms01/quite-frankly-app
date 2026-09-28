@@ -41,7 +41,7 @@ async function getAccessToken() {
   const signature = base64url(signer.sign(sa.private_key));
   const jwt = `${unsigned}.${signature}`;
 
-  const response = await fetch('https://oauth2.googleapis.com/token', {
+  const response = await fetchWithBackoff('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
@@ -94,7 +94,7 @@ export async function appendRow(tab, values) {
 export async function getColumn(tab, columnLetter) {
   const token = await getAccessToken();
   const range = `'${tab}'!${columnLetter}:${columnLetter}`;
-  const response = await fetch(sheetsUrl(`/values/${encodeURIComponent(range)}`), {
+  const response = await fetchWithBackoff(sheetsUrl(`/values/${encodeURIComponent(range)}`), {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!response.ok) {
@@ -113,7 +113,7 @@ export async function getColumn(tab, columnLetter) {
 export async function getRows(tab, range) {
   const token = await getAccessToken();
   const fullRange = `'${tab}'!${range}`;
-  const response = await fetch(sheetsUrl(`/values/${encodeURIComponent(fullRange)}`), {
+  const response = await fetchWithBackoff(sheetsUrl(`/values/${encodeURIComponent(fullRange)}`), {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!response.ok) {

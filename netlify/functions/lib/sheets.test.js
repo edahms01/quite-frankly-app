@@ -93,15 +93,40 @@ test('getRows returns an empty array when the range has no values', async () => 
 });
 
 test('getRows throws with status and body text on a failed request', async () => {
+  // 400, not 500/429 -- getRows now goes through fetchWithBackoff (it retries
+  // 429/5xx with real backoff delays), and retry-exhaustion-eventually-throws
+  // is already covered by fetchWithBackoff's own test suite. A 400 exercises
+  // the exact same "!response.ok -> throw" wrapping in getRows without
+  // waiting through real retry delays for a case this test isn't about.
   const mock = installFetchMock([
     (url, init) => {
       if (url.includes('/values/') && (!init.method || init.method === 'GET')) {
-        return jsonResponse(500, { error: 'boom' });
+        return jsonResponse(400, { error: 'boom' });
       }
     },
   ]);
   try {
-    await assert.rejects(() => getRows('blog posts', 'A:I'), /Sheets read of "blog posts" failed: 500/);
+    await assert.rejects(() => getRows('blog posts', 'A:I'), /Sheets read of "blog posts" failed: 400/);
+  } finally {
+    mock.restore();
+  }
+});
+
+test('getRows retries a transient 500 and recovers -- the exact gap that let a real "couldn\'t load more posts" failure through before this fix', async () => {
+  let attempts = 0;
+  const mock = installFetchMock([
+    (url, init) => {
+      if (url.includes('/values/') && (!init.method || init.method === 'GET')) {
+        attempts += 1;
+        if (attempts === 1) return jsonResponse(500, { error: 'transient' });
+        return jsonResponse(200, { values: [['id'], ['a']] });
+      }
+    },
+  ]);
+  try {
+    const rows = await getRows('blog posts', 'A:I');
+    assert.equal(attempts, 2, 'first attempt failed, second succeeded -- proves a retry actually happened, not just luck on attempt 1');
+    assert.deepEqual(rows, [['id'], ['a']]);
   } finally {
     mock.restore();
   }
