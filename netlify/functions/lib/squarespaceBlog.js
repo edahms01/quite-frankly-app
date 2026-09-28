@@ -23,7 +23,7 @@
 //     11,109-137,365 chars) and the first page of `original-articles`. No
 //     per-item `?format=json` fetch is needed or performed.
 import { fetchWithBackoff } from './fetchWithBackoff.js';
-import { normalizeBlogHtml } from './normalizeBlogHtml.js';
+import { normalizeBlogHtml, decodeEntities } from './normalizeBlogHtml.js';
 
 export const SITE_BASE_URL = 'https://www.quitefrankly.tv';
 
@@ -95,11 +95,15 @@ export function mapItemToPost(item, collection) {
   return {
     id: item.id,
     collection,
-    title: item.title ?? '',
+    // Squarespace's JSON gives title/author HTML-entity-encoded (e.g.
+    // "Pena v VDH Lawsuit &amp; How to Follow") -- decode at write time,
+    // same "normalize once, never at render time" rule as bodyHtml, so
+    // the app never has to know this quirk exists.
+    title: item.title ? decodeEntities(item.title) : '',
     url: `${SITE_BASE_URL}${item.fullUrl ?? ''}`,
     publishedAt: item.publishOn ? new Date(item.publishOn).toISOString() : '',
     heroImageUrl,
-    author: item.author?.displayName ?? '',
+    author: item.author?.displayName ? decodeEntities(item.author.displayName) : '',
     rawBodyHtml: item.body ?? '',
   };
 }

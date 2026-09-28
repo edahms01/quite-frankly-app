@@ -117,6 +117,19 @@ test('mapItemToPost extracts the confirmed real field names into the canonical p
   assert.equal(post.rawBodyHtml, item.body);
 });
 
+test('mapItemToPost decodes HTML entities in title and author -- confirmed live against real Squarespace posts (e.g. "Pena v VDH Lawsuit &amp; How to Follow" rendering literally instead of as "&")', () => {
+  const item = {
+    id: 'x',
+    title: 'Pena v VDH Lawsuit &amp; How to Follow',
+    fullUrl: '/p',
+    publishOn: 0,
+    author: { displayName: 'Smith &amp; Jones' },
+  };
+  const post = mapItemToPost(item, 'original-articles');
+  assert.equal(post.title, 'Pena v VDH Lawsuit & How to Follow');
+  assert.equal(post.author, 'Smith & Jones');
+});
+
 test('mapItemToPost rewrites a protocol-relative assetUrl to https', () => {
   const post = mapItemToPost({ id: 'x', assetUrl: '//images.example.com/a.jpg', fullUrl: '/p', publishOn: 0 }, 'original-articles');
   assert.equal(post.heroImageUrl, 'https://images.example.com/a.jpg');

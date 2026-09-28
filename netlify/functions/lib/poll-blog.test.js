@@ -20,9 +20,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
-import { collectRecentPosts, runPollBlog } from './poll-blog.js';
-import { BLOG_COLLECTIONS, BLOG_BODIES_STORE } from './lib/squarespaceBlog.js';
-import { normalizeBlogHtml } from './lib/normalizeBlogHtml.js';
+import { collectRecentPosts, runPollBlog } from '../poll-blog.js';
+import { BLOG_COLLECTIONS, BLOG_BODIES_STORE } from './squarespaceBlog.js';
+import { normalizeBlogHtml } from './normalizeBlogHtml.js';
 
 const { privateKey } = crypto.generateKeyPairSync('rsa', {
   modulusLength: 2048,

@@ -6,8 +6,8 @@
 // feature's other tasks use for their pure/orchestration-only test seams.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import handler, { listBlogPosts, getBlogPostById, clampLimit } from './get-blog-posts.js';
-import { BLOG_POSTS_HEADER } from './lib/sheets.js';
+import handler, { listBlogPosts, getBlogPostById, clampLimit } from '../get-blog-posts.js';
+import { BLOG_POSTS_HEADER } from './sheets.js';
 
 // Builds one 'blog posts' Sheet row-array in BLOG_POSTS_HEADER's exact
 // column order (id, collection, title, url, publishedAt, heroImageUrl,

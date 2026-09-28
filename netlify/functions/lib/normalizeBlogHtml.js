@@ -27,7 +27,11 @@ const IFRAME_RE = /<iframe\b[^>]*?(?:\/>|>[\s\S]*?<\/iframe>)/gi;
 
 const IMG_TAG_RE = /<img\b[^>]*>/gi;
 
-function decodeEntities(str) {
+// Exported for reuse on plain-text fields (title, author) sourced directly
+// from Squarespace's JSON, which come HTML-entity-encoded (e.g. "Pena v VDH
+// Lawsuit &amp; How to Follow") the same way body HTML attribute values do
+// -- confirmed live against real posts, not just body markup.
+export function decodeEntities(str) {
   return str
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
