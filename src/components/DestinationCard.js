@@ -11,17 +11,22 @@ import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../theme
 // style: merged onto the card's own width/shape — e.g. Community.js
 // overrides `width: '47%'` to `flex: 1` for its 3-up (non-wrapping) row,
 // instead of maintaining a separate near-duplicate tile component.
-export default function DestinationCard({ Icon, label, onPress, fixedHeight = false, style }) {
+// subtext: optional second line (e.g. "Coming Soon") for a not-yet-live
+// destination — its presence also mutes the icon/label color, since a
+// coming-soon tile reading as fully "live" would be misleading. No route
+// wired yet for these, so onPress is typically omitted by the caller.
+export default function DestinationCard({ Icon, label, onPress, fixedHeight = false, style, subtext }) {
   return (
     <TouchableOpacity style={[styles.card, style]} onPress={onPress} activeOpacity={0.7}>
-      <Icon color={colors.inkPrimary} size={24} />
+      <Icon color={subtext ? colors.inkMuted : colors.inkPrimary} size={24} />
       {fixedHeight ? (
         <View style={styles.labelBox}>
-          <Text style={styles.label} numberOfLines={2}>{label}</Text>
+          <Text style={[styles.label, subtext && styles.labelMuted]} numberOfLines={2}>{label}</Text>
         </View>
       ) : (
-        <Text style={styles.label}>{label}</Text>
+        <Text style={[styles.label, subtext && styles.labelMuted]}>{label}</Text>
       )}
+      {subtext ? <Text style={styles.subtext}>{subtext}</Text> : null}
     </TouchableOpacity>
   );
 }
@@ -55,5 +60,14 @@ const styles = StyleSheet.create({
     fontSize: fontSize.md,
     textAlign: 'center',
     lineHeight: 18,
+  },
+  labelMuted: {
+    color: colors.inkMuted,
+  },
+  subtext: {
+    color: colors.inkMuted,
+    fontFamily: fontFamily.regularItalic,
+    fontSize: fontSize.sm,
+    textAlign: 'center',
   },
 });

@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2, Gamepad2 } from 'lucide-react-native';
+import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2, Gamepad2, Sparkles } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
 import DestinationCard from '../../components/DestinationCard';
 import AvatarButton from '../../components/AvatarButton';
 import OnAirBadge from '../../components/OnAirBadge';
+import UpcomingCountdown from '../../components/UpcomingCountdown';
 import VideoEmbed from '../../components/VideoEmbed';
 import VideoThumbnailOverlay from '../../components/VideoThumbnailOverlay';
 import { useYouTubeFeed } from '../../context/YouTubeFeedContext';
@@ -42,12 +43,19 @@ const DESTINATIONS = [
 ];
 
 export default function Home({ navigation }) {
-  const { mostRecent, loading, error } = useYouTubeFeed();
+  const { mostRecent, loading, error, refetch } = useYouTubeFeed();
   const { isLive } = useLiveStatus();
   const [embedVisible, setEmbedVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const { claim } = useVideoActiveSource({ onForcedStop: () => setEmbedVisible(false) });
   const { width: windowWidth } = useWindowDimensions();
   const cardWidth = windowWidth - 2 * spacing.md;
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
 
   const goTo = (route) => {
     if (route === 'CultureClubTab') {
@@ -59,7 +67,12 @@ export default function Home({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView
+      contentContainerStyle={styles.content}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accentGold} />
+      }
+    >
       <View style={styles.header}>
         <Image
           source={require('../../assets/images/quite-frankly-logo-final.png')}
@@ -67,6 +80,7 @@ export default function Home({ navigation }) {
           resizeMode="contain"
         />
         <View style={styles.headerRight}>
+          <UpcomingCountdown scheduledStartTime={mostRecent?.scheduledStartTime} />
           <OnAirBadge />
           <AvatarButton onPress={() => navigation.navigate('AccountStack')} />
         </View>
@@ -129,10 +143,7 @@ export default function Home({ navigation }) {
             onPress={() => goTo(d.route)}
           />
         ))}
-        <View style={styles.teaserCard}>
-          <Text style={styles.teaserLabel}>AskFrankie AI</Text>
-          <Text style={styles.teaserSubtext}>Coming Soon</Text>
-        </View>
+        <DestinationCard Icon={Sparkles} label="AskFrankie AI" subtext="Coming Soon" />
       </View>
     </ScrollView>
     </SafeAreaView>
@@ -229,29 +240,5 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     gap: spacing.md,
-  },
-  // paddingVertical/gap match DestinationCard's rhythm (spacing.lg/xs)
-  // instead of a much tighter one-off — this card sits directly among
-  // DestinationCards in the same grid.
-  teaserCard: {
-    width: '100%',
-    backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
-    paddingVertical: spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.xs,
-    opacity: 0.6,
-    ...shadows.sm,
-  },
-  teaserLabel: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.md,
-  },
-  teaserSubtext: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.regularItalic,
-    fontSize: fontSize.sm,
   },
 });

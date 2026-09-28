@@ -3,7 +3,7 @@ import { getJSON, setJSON } from './lib/blobs.js';
 import { appendRow, getColumn } from './lib/sheets.js';
 import { filterNewByKey } from './lib/idempotency.js';
 import { getTokensForPreference, sendExpoPushBatch } from './lib/push.js';
-import { CHANNEL_ID, classifyVideo, mergeVideosById, parseISO8601Duration } from './lib/youtube.js';
+import { CHANNEL_ID, classifyVideo, mergeVideosById, parseISO8601Duration, pickMostRecentItem } from './lib/youtube.js';
 import { secondsToTimestamp } from './lib/duration.js';
 
 export const config = { schedule: '*/15 * * * *' };
@@ -67,9 +67,11 @@ export default async () => {
     let contentType = 'video';
     let durationSeconds = 0;
     let description = '';
+    let scheduledStartTime = null;
     if (video) {
       durationSeconds = parseISO8601Duration(video.contentDetails.duration);
       description = video.snippet.description ?? '';
+      scheduledStartTime = video.liveStreamingDetails?.scheduledStartTime ?? null;
       const hasLiveStreamingDetails = 'liveStreamingDetails' in video;
       try {
         contentType = await classifyVideo({
@@ -108,6 +110,7 @@ export default async () => {
       description,
       thumbnailUrl: item.thumbnailUrl,
       lastSyncedAt,
+      scheduledStartTime,
     });
   }
 
@@ -119,7 +122,56 @@ export default async () => {
   const mergedArchive = newArchiveItems.length > 0
     ? mergeVideosById(existingArchive, newArchiveItems)
     : existingArchive;
-  if (newArchiveItems.length > 0) {
+  let archiveDirty = newArchiveItems.length > 0;
+
+  // classifyVideo only ever runs once, on first RSS discovery — so a
+  // pre-loaded item classified 'upcoming' would otherwise stay 'upcoming'
+  // forever, even once it's actually gone live or finished airing, which
+  // would make pickMostRecentItem's window check (no upper bound) keep
+  // prioritizing it indefinitely after the show ends. Re-checking any
+  // still-'upcoming' archive entries each poll is what lets it revert to a
+  // normal item (and Most Recent selection fall through to whatever's
+  // actually newest) once it's real. Bounded to however many items are
+  // currently 'upcoming' — normally zero or one, not a new poll loop.
+  const upcomingArchived = mergedArchive.filter((v) => v.contentType === 'upcoming');
+  if (upcomingArchived.length > 0 && YOUTUBE_API_KEY) {
+    const ids = upcomingArchived.map((v) => v.id).join(',');
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,liveStreamingDetails&id=${ids}&key=${YOUTUBE_API_KEY}`);
+    if (res.ok) {
+      const data = await res.json();
+      const refreshedById = new Map((data.items ?? []).map((v) => [v.id, v]));
+      for (const archived of upcomingArchived) {
+        const video = refreshedById.get(archived.id);
+        if (!video) continue; // e.g. deleted/privated since — leave the stale entry as-is
+        const durationSeconds = parseISO8601Duration(video.contentDetails.duration);
+        const hasLiveStreamingDetails = 'liveStreamingDetails' in video;
+        let newType;
+        try {
+          newType = await classifyVideo({
+            videoId: archived.id,
+            durationSeconds,
+            liveBroadcastContent: video.snippet.liveBroadcastContent,
+            hasLiveStreamingDetails,
+          });
+        } catch (err) {
+          console.error(`reclassify failed for ${archived.id}, leaving as 'upcoming':`, err.message);
+          continue;
+        }
+        if (newType !== 'upcoming') {
+          archived.contentType = newType;
+          archived.durationSeconds = durationSeconds;
+          archived.durationTimestamp = secondsToTimestamp(durationSeconds);
+          archiveDirty = true;
+        }
+      }
+    } else {
+      console.error(`videos.list reclassify failed: ${res.status}`);
+    }
+  } else if (upcomingArchived.length > 0) {
+    console.warn('YOUTUBE_LIVE_STATUS_API_KEY not set; skipping reclassification of upcoming items');
+  }
+
+  if (archiveDirty) {
     await setJSON('qf-youtube-archive', 'episodes', mergedArchive);
   }
 
@@ -128,22 +180,40 @@ export default async () => {
   // its whole list from the archive (get-youtube-episodes.js) instead of
   // a parallel gridItems cache, so this poll's only other job is
   // discovering brand-new videos to classify and archive above.
+  //
+  // mostRecent prioritizes a pre-loaded/'upcoming' broadcast once it's
+  // within pickMostRecentItem's window of its scheduledStartTime — even
+  // over something nominally more recently published — and otherwise
+  // falls back to the newest non-'upcoming' item. No separate UI state
+  // needed either way: Home's card already flips its own badge from
+  // "MOST RECENT" to "LIVE NOW" off the Twitch webhook signal, independent
+  // of this selection.
   const archiveById = new Map(mergedArchive.map((e) => [e.id, e]));
+  const mostRecentItem = pickMostRecentItem(items, (id) => archiveById.get(id));
+
   await setJSON('qf-youtube-cache', 'feed', {
-    mostRecent: items[0]
+    mostRecent: mostRecentItem
       ? {
-          ...items[0],
-          description: archiveById.get(items[0].id)?.description ?? '',
-          contentType: archiveById.get(items[0].id)?.contentType,
+          ...mostRecentItem,
+          description: archiveById.get(mostRecentItem.id)?.description ?? '',
+          contentType: archiveById.get(mostRecentItem.id)?.contentType,
+          scheduledStartTime: archiveById.get(mostRecentItem.id)?.scheduledStartTime ?? null,
         }
       : null,
     updatedAt: new Date().toISOString(),
   });
 
-  if (newItems.length > 0) {
+  // Twitch EventSub is the only live-alert source (real-time, no polling
+  // delay) — never push a "new video" notification for anything the
+  // YouTube poll classified as 'live' or 'upcoming', genuine live start or
+  // pre-load alike. Only a real regular upload/short gets this push.
+  const itemsToNotify = newArchiveItems.filter(
+    (item) => item.contentType !== 'upcoming' && item.contentType !== 'live'
+  );
+  if (itemsToNotify.length > 0) {
     try {
       const tokens = await getTokensForPreference('video');
-      for (const item of newItems) {
+      for (const item of itemsToNotify) {
         await sendExpoPushBatch(tokens, {
           title: 'New video from Quite Frankly',
           body: item.title,

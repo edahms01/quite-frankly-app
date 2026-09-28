@@ -11,7 +11,14 @@ export function parseISO8601Duration(duration) {
 }
 
 export async function classifyVideo({ videoId, durationSeconds, liveBroadcastContent, hasLiveStreamingDetails }) {
-  if (liveBroadcastContent === 'live' || liveBroadcastContent === 'upcoming' || hasLiveStreamingDetails) {
+  // 'upcoming' is a pre-loaded/scheduled broadcast that hasn't actually
+  // started — kept distinct from 'live' so callers (Home's Most Recent
+  // selection, the new-video push) can treat "not real yet" differently
+  // from a genuinely live or already-aired stream.
+  if (liveBroadcastContent === 'upcoming') {
+    return 'upcoming';
+  }
+  if (liveBroadcastContent === 'live' || hasLiveStreamingDetails) {
     return 'live';
   }
   // Shorts have a hard 180s format ceiling (raised from 60s, Oct 2024) — YouTube's
@@ -24,6 +31,30 @@ export async function classifyVideo({ videoId, durationSeconds, liveBroadcastCon
 async function isShort(videoId) {
   const res = await fetch(`https://www.youtube.com/shorts/${videoId}`, { method: 'HEAD', redirect: 'manual' });
   return res.status === 200; // 3xx = redirected to /watch = not actually a Short
+}
+
+export const UPCOMING_WINDOW_MS = 3 * 60 * 60 * 1000;
+
+// Picks Home's "Most Recent" item from `items` (RSS order, newest first).
+// getArchived(id) looks up that item's archive record (contentType,
+// scheduledStartTime), e.g. a Map's .get bound, or archiveById.get.
+//
+// Priority: a pre-loaded/'upcoming' item due within UPCOMING_WINDOW_MS of
+// its scheduledStartTime wins outright — it's about to be the show, so it
+// takes over even if something else was published more recently (a Short
+// posted while the pre-load sits waiting shouldn't bump it). Otherwise,
+// fall back to the newest item that isn't 'upcoming' at all — a pre-load
+// still more than the window away is invisible to this selection, same as
+// one with no known scheduledStartTime (fails open: never hidden, just
+// never prioritized either).
+export function pickMostRecentItem(items, getArchived, now = Date.now()) {
+  const dueSoon = items.find((item) => {
+    const archived = getArchived(item.id);
+    if (archived?.contentType !== 'upcoming' || !archived.scheduledStartTime) return false;
+    return new Date(archived.scheduledStartTime).getTime() - now <= UPCOMING_WINDOW_MS;
+  });
+  if (dueSoon) return dueSoon;
+  return items.find((item) => getArchived(item.id)?.contentType !== 'upcoming') ?? items[0] ?? null;
 }
 
 // Same guid-keyed merge pattern as lib/soundcloud.js's mergeEpisodesByGuid,
