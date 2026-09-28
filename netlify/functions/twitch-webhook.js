@@ -7,6 +7,18 @@ import { isGenuineLiveEvent, isNewStreamId } from './lib/twitch.js';
 // webhook delivery for the same stream, not serve as a long-term history.
 const MAX_RECENT_STREAM_IDS = 20;
 
+// Durable record of every notification delivery, keyed by Twitch's own
+// message id — survives Netlify's short function-log retention (which lost
+// the payload for the false alert this fix was written for). Best-effort:
+// a logging failure must never break the actual webhook response.
+async function logDelivery(messageId, entry) {
+  try {
+    await setJSON('qf-webhook-log', messageId, { loggedAt: new Date().toISOString(), ...entry });
+  } catch (err) {
+    console.error('Webhook delivery log write failed', err);
+  }
+}
+
 const MESSAGE_TYPE_VERIFICATION = 'webhook_callback_verification';
 const MESSAGE_TYPE_NOTIFICATION = 'notification';
 const MESSAGE_TYPE_REVOCATION = 'revocation';
@@ -38,6 +50,7 @@ export default async (req) => {
   }
 
   const messageType = req.headers.get('twitch-eventsub-message-type');
+  const messageId = req.headers.get('twitch-eventsub-message-id') ?? `no-id-${Date.now()}`;
   const body = JSON.parse(rawBody);
 
   if (messageType === MESSAGE_TYPE_VERIFICATION) {
@@ -54,6 +67,12 @@ export default async (req) => {
 
       if (!isGenuineLiveEvent(body.event)) {
         console.log('twitch stream.online ignored, not a genuine live broadcast', body.event?.type);
+        await logDelivery(messageId, {
+          subscriptionType: eventType,
+          event: body.event,
+          decision: 'skipped',
+          reason: `event.type "${body.event?.type}" is not a genuine live broadcast`,
+        });
       } else {
         const streamId = body.event?.id;
         const current = await getJSON('qf-live-status', 'status', { isLive: false, checkedAt: null, recentStreamIds: [] });
@@ -67,6 +86,7 @@ export default async (req) => {
         });
 
         if (isNew) {
+          let pushError = null;
           try {
             const tokens = await getTokensForPreference('live');
             await sendExpoPushBatch(tokens, {
@@ -75,9 +95,22 @@ export default async (req) => {
             });
           } catch (err) {
             console.error('Push notification step failed for stream.online', err);
+            pushError = err.message;
           }
+          await logDelivery(messageId, {
+            subscriptionType: eventType,
+            event: body.event,
+            decision: 'alerted',
+            reason: pushError ? `push send failed: ${pushError}` : 'genuine live event, new stream id',
+          });
         } else {
           console.log('twitch stream.online push skipped, duplicate stream id', streamId);
+          await logDelivery(messageId, {
+            subscriptionType: eventType,
+            event: body.event,
+            decision: 'deduped',
+            reason: `stream id "${streamId}" already processed`,
+          });
         }
       }
     } else if (eventType === 'stream.offline') {
@@ -86,6 +119,12 @@ export default async (req) => {
         isLive: false,
         checkedAt: new Date().toISOString(),
         recentStreamIds: current.recentStreamIds ?? [],
+      });
+      await logDelivery(messageId, {
+        subscriptionType: eventType,
+        event: body.event,
+        decision: 'offline',
+        reason: 'stream.offline, isLive cleared',
       });
     }
     return new Response(null, { status: 204 });
