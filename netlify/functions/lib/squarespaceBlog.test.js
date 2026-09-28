@@ -11,6 +11,7 @@ import {
   toBlogPostRow,
   median,
   writeBlobsAndPartition,
+  buildPostRecord,
   BLOG_COLLECTIONS,
 } from './squarespaceBlog.js';
 
@@ -168,6 +169,53 @@ test('toBlogPostRow builds the 8-column A-H row in sheets.js BLOG_POSTS_HEADER o
     3,
     'Frankie Val',
   ]);
+});
+
+// buildPostRecord: the shared map/normalize/computeReadMinutes/build-record
+// sequence extracted from the backfill script and the poller (review fix,
+// 2026-09-28) so both write paths call one implementation instead of each
+// maintaining their own copy.
+test('buildPostRecord: maps, normalizes at write time, and computes readMinutes off the normalized body', () => {
+  const item = {
+    id: 'abc123',
+    title: 'A Title',
+    fullUrl: '/quite-frankly-originals/a-title',
+    publishOn: 1700000000000,
+    assetUrl: '//images.example.com/a.jpg',
+    author: { displayName: 'Frankie Val' },
+    body: '<script>evil()</script><p>hello world</p><img data-src="//cdn.example.com/x.jpg">',
+  };
+
+  const { post, videoEmbedCount } = buildPostRecord(item, 'quite-frankly-originals');
+
+  assert.equal(post.id, 'abc123');
+  assert.equal(post.collection, 'quite-frankly-originals');
+  assert.equal(post.title, 'A Title');
+  assert.equal(post.url, 'https://www.quitefrankly.tv/quite-frankly-originals/a-title');
+  assert.equal(post.publishedAt, new Date(1700000000000).toISOString());
+  assert.equal(post.heroImageUrl, 'https://images.example.com/a.jpg');
+  assert.equal(post.author, 'Frankie Val');
+  assert.ok(!post.bodyHtml.includes('<script>'), 'script tags must be stripped at write time');
+  assert.ok(post.bodyHtml.includes('src="https://cdn.example.com/x.jpg"'), 'data-src must be rewritten to an absolute https src');
+  assert.equal(post.readMinutes, 1);
+  assert.equal(videoEmbedCount, 0);
+});
+
+test('buildPostRecord: surfaces videoEmbedCount separately from the post record (backfill dry-run report needs it, the poller ignores it)', () => {
+  const item = {
+    id: 'vid1',
+    title: 'Video Post',
+    fullUrl: '/original-articles/video-post',
+    publishOn: 1700000000000,
+    author: {},
+    body: '<p>intro</p><iframe src="https://www.youtube.com/embed/xyz"></iframe>',
+  };
+
+  const { post, videoEmbedCount } = buildPostRecord(item, 'original-articles');
+
+  assert.equal(videoEmbedCount, 1);
+  assert.ok(post.bodyHtml.includes('Watch video'));
+  assert.ok(!('videoEmbedCount' in post), 'videoEmbedCount must not leak onto the post record itself');
 });
 
 test('median: empty array returns 0, odd-length returns the middle value, even-length averages the two middle values', () => {

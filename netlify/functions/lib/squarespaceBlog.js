@@ -23,6 +23,7 @@
 //     11,109-137,365 chars) and the first page of `original-articles`. No
 //     per-item `?format=json` fetch is needed or performed.
 import { fetchWithBackoff } from './fetchWithBackoff.js';
+import { normalizeBlogHtml } from './normalizeBlogHtml.js';
 
 export const SITE_BASE_URL = 'https://www.quitefrankly.tv';
 
@@ -123,6 +124,38 @@ export function computeReadMinutes(bodyHtml) {
   const text = (bodyHtml || '').replace(/<[^>]*>/g, ' ');
   const words = text.trim().split(/\s+/).filter(Boolean);
   return Math.max(1, Math.ceil(words.length / 200));
+}
+
+// Builds a fully assembled post record from one raw Squarespace list item:
+// mapItemToPost -> normalizeBlogHtml (write-time only, per the Global
+// Constraints -- never at render time) -> computeReadMinutes off the
+// normalized body. Single shared implementation of that sequence --
+// review fix (2026-09-28): the backfill script and the poller (Task 3)
+// used to each repeat this map/normalize/compute/build-record sequence
+// independently, which was a real drift risk (if one side's logic changed
+// and the other didn't, the two write paths could produce different blob
+// content for the same post depending on which one touched it last). Both
+// callers now call this instead of maintaining their own copy.
+// Returns { post, videoEmbedCount } -- videoEmbedCount is surfaced
+// separately (not on `post`) since only the backfill script's dry-run
+// report consumes it; the poller ignores it.
+export function buildPostRecord(item, collection) {
+  const mapped = mapItemToPost(item, collection);
+  const { html: bodyHtml, videoEmbedCount } = normalizeBlogHtml(mapped.rawBodyHtml);
+  return {
+    post: {
+      id: mapped.id,
+      collection: mapped.collection,
+      title: mapped.title,
+      url: mapped.url,
+      publishedAt: mapped.publishedAt,
+      heroImageUrl: mapped.heroImageUrl,
+      readMinutes: computeReadMinutes(bodyHtml),
+      author: mapped.author,
+      bodyHtml, // carried on the post record for the blob write; toBlogPostRow ignores it
+    },
+    videoEmbedCount,
+  };
 }
 
 // Writes each post's normalized bodyHtml (+ readMinutes) to a Blobs store,

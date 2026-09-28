@@ -31,14 +31,12 @@ import {
   updateRows,
 } from '../netlify/functions/lib/sheets.js';
 import { partitionForUpsert } from '../netlify/functions/lib/idempotency.js';
-import { normalizeBlogHtml } from '../netlify/functions/lib/normalizeBlogHtml.js';
 import { setJSON, blobStore } from '../netlify/functions/lib/blobs.js';
 import {
   BLOG_BODIES_STORE,
   BLOG_COLLECTIONS,
-  computeReadMinutes,
+  buildPostRecord,
   iterateCollectionItems,
-  mapItemToPost,
   median,
   toBlogPostRow,
   writeBlobsAndPartition,
@@ -47,32 +45,22 @@ import {
 const DRY_RUN = process.argv.includes('--dry-run');
 
 // Builds every post for one collection: pages the list JSON (throttled
-// internally by squarespaceBlog.js), normalizes each body at write time
-// (Global Constraints: normalize once, at write time, never at render
-// time), computes readMinutes off the NORMALIZED body. No size guard --
-// the old 45k-char stop-and-hold-out rule is moot now that body content
-// lives in Blobs, not a Sheet cell. Every post found gets returned.
+// internally by squarespaceBlog.js), then delegates the per-item
+// map/normalize/compute-readMinutes/build-record sequence to
+// buildPostRecord (shared with poll-blog.js, so the two write paths can't
+// drift). No size guard -- the old 45k-char stop-and-hold-out rule is moot
+// now that body content lives in Blobs, not a Sheet cell. Every post found
+// gets returned.
 async function collectCollectionPosts(collection) {
   const posts = [];
   let videoEmbedPostCount = 0;
 
   for await (const item of iterateCollectionItems(collection)) {
-    const mapped = mapItemToPost(item, collection);
-    const { html: bodyHtml, videoEmbedCount } = normalizeBlogHtml(mapped.rawBodyHtml);
+    const { post, videoEmbedCount } = buildPostRecord(item, collection);
 
     if (videoEmbedCount > 0) videoEmbedPostCount++;
 
-    posts.push({
-      id: mapped.id,
-      collection: mapped.collection,
-      title: mapped.title,
-      url: mapped.url,
-      publishedAt: mapped.publishedAt,
-      heroImageUrl: mapped.heroImageUrl,
-      readMinutes: computeReadMinutes(bodyHtml),
-      author: mapped.author,
-      bodyHtml, // carried on the post record for the blob write; toBlogPostRow ignores it
-    });
+    posts.push(post);
   }
 
   return { collection, posts, videoEmbedPostCount };

@@ -11,12 +11,22 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as WebBrowser from 'expo-web-browser';
-import RenderHTML from 'react-native-render-html';
+import RenderHTML, { defaultSystemFonts } from 'react-native-render-html';
 import { ChevronLeft, ChevronRight, Image as ImageIcon, Share2 } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import LoadingState from '../../components/LoadingState';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+// Same value as netlify/functions/lib/squarespaceBlog.js's SITE_BASE_URL --
+// not imported directly since this frontend file has no existing precedent
+// of importing from netlify/functions (every other quitefrankly.tv literal
+// in this codebase, e.g. Writing.js/Community.js/CultureClub.js, is its own
+// local hardcoded string, same pattern kept here). Used to resolve
+// relative hrefs/srcs in post bodies (Squarespace posts commonly link to
+// other same-site pages with a relative path) so react-native-render-html
+// resolves them to absolute URLs before this screen's isHttpUrl guard ever
+// sees them -- review fix, otherwise a relative link silently no-ops on tap.
+const SITE_BASE_URL = 'https://www.quitefrankly.tv';
 const HERO_HEIGHT = 220;
 const BODY_FETCH_TIMEOUT_MS = 10000;
 const AUTHOR_FALLBACK = 'Quite Frankly';
@@ -112,7 +122,27 @@ const tagsStyles = {
   img: {
     borderRadius: radius.md,
   },
+  // Inter's weights are separate font families here (not one family
+  // toggled via fontWeight) -- a plain CSS `font-weight` on a single-weight
+  // custom font is a no-op in RN's Yoga/text layer, especially on Android.
+  // Review fix: without this, <strong>/<b> silently rendered as regular
+  // weight instead of bold.
+  strong: {
+    fontFamily: fontFamily.bold,
+  },
+  b: {
+    fontFamily: fontFamily.bold,
+  },
 };
+
+// react-native-render-html@6.3.4 only renders a fontFamily value that's in
+// this list (buildTREFromConfig.js/LongFontFamilyPropertyValidator) --
+// anything else is silently dropped and falls back to the system font.
+// Review fix: baseStyle/tagsStyles above reference fontFamily.regular and
+// fontFamily.bold, neither of which is in the library's own default list
+// (Arial/Courier New/Georgia + platform system fonts), so the article body
+// was silently rendering in the system font instead of Inter.
+const systemFonts = [...defaultSystemFonts, fontFamily.regular, fontFamily.bold];
 
 // Link-press interception: react-native-render-html 6.3.4's documented API
 // for this is renderersProps.a.onPress(event, href, htmlAttribs, target) —
@@ -245,10 +275,11 @@ export default function Article({ navigation, route }) {
           </View>
         ) : (
           <RenderHTML
-            source={{ html: bodyHtml }}
+            source={{ html: bodyHtml, baseUrl: SITE_BASE_URL }}
             contentWidth={contentWidth}
             baseStyle={baseStyle}
             tagsStyles={tagsStyles}
+            systemFonts={systemFonts}
             renderersProps={renderersProps}
           />
         )}

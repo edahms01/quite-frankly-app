@@ -32,14 +32,12 @@ import {
   BLOG_POSTS_TAB,
 } from './lib/sheets.js';
 import { partitionForUpsert } from './lib/idempotency.js';
-import { normalizeBlogHtml } from './lib/normalizeBlogHtml.js';
 import { setJSON } from './lib/blobs.js';
 import {
   BLOG_COLLECTIONS,
   BLOG_BODIES_STORE,
+  buildPostRecord,
   iterateCollectionItems,
-  mapItemToPost,
-  computeReadMinutes,
   toBlogPostRow,
   writeBlobsAndPartition,
 } from './lib/squarespaceBlog.js';
@@ -51,29 +49,18 @@ export const config = { schedule: '@daily' };
 // normal case.
 const POSTS_PER_COLLECTION = 10;
 
-// Fetches and maps the newest `limit` posts for one collection, normalizing
-// each body at write time (never at render time, per the Global
-// Constraints) and computing readMinutes off the normalized body, same
-// ordering the backfill script uses. `fetchConfig` forwards test seams
-// (fetchImpl/sleepFn/etc.) straight through to iterateCollectionItems ->
-// fetchBlogListPage -> fetchWithBackoff, so every Squarespace request goes
-// through the shared retry/backoff helper.
+// Fetches and maps the newest `limit` posts for one collection, delegating
+// the per-item map/normalize/compute-readMinutes/build-record sequence to
+// buildPostRecord (shared with backfill-blog.mjs, so the two write paths
+// can't drift). `fetchConfig` forwards test seams (fetchImpl/sleepFn/etc.)
+// straight through to iterateCollectionItems -> fetchBlogListPage ->
+// fetchWithBackoff, so every Squarespace request goes through the shared
+// retry/backoff helper.
 export async function collectRecentPosts(collection, limit, fetchConfig = {}) {
   const posts = [];
   for await (const item of iterateCollectionItems(collection, fetchConfig)) {
-    const mapped = mapItemToPost(item, collection);
-    const { html: bodyHtml } = normalizeBlogHtml(mapped.rawBodyHtml);
-    posts.push({
-      id: mapped.id,
-      collection: mapped.collection,
-      title: mapped.title,
-      url: mapped.url,
-      publishedAt: mapped.publishedAt,
-      heroImageUrl: mapped.heroImageUrl,
-      readMinutes: computeReadMinutes(bodyHtml),
-      author: mapped.author,
-      bodyHtml, // carried for the blob write; toBlogPostRow ignores it
-    });
+    const { post } = buildPostRecord(item, collection);
+    posts.push(post);
     if (posts.length >= limit) break;
   }
   return posts;
