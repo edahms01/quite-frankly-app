@@ -122,7 +122,56 @@ export default async () => {
   const mergedArchive = newArchiveItems.length > 0
     ? mergeVideosById(existingArchive, newArchiveItems)
     : existingArchive;
-  if (newArchiveItems.length > 0) {
+  let archiveDirty = newArchiveItems.length > 0;
+
+  // classifyVideo only ever runs once, on first RSS discovery — so a
+  // pre-loaded item classified 'upcoming' would otherwise stay 'upcoming'
+  // forever, even once it's actually gone live or finished airing, which
+  // would make pickMostRecentItem's window check (no upper bound) keep
+  // prioritizing it indefinitely after the show ends. Re-checking any
+  // still-'upcoming' archive entries each poll is what lets it revert to a
+  // normal item (and Most Recent selection fall through to whatever's
+  // actually newest) once it's real. Bounded to however many items are
+  // currently 'upcoming' — normally zero or one, not a new poll loop.
+  const upcomingArchived = mergedArchive.filter((v) => v.contentType === 'upcoming');
+  if (upcomingArchived.length > 0 && YOUTUBE_API_KEY) {
+    const ids = upcomingArchived.map((v) => v.id).join(',');
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,liveStreamingDetails&id=${ids}&key=${YOUTUBE_API_KEY}`);
+    if (res.ok) {
+      const data = await res.json();
+      const refreshedById = new Map((data.items ?? []).map((v) => [v.id, v]));
+      for (const archived of upcomingArchived) {
+        const video = refreshedById.get(archived.id);
+        if (!video) continue; // e.g. deleted/privated since — leave the stale entry as-is
+        const durationSeconds = parseISO8601Duration(video.contentDetails.duration);
+        const hasLiveStreamingDetails = 'liveStreamingDetails' in video;
+        let newType;
+        try {
+          newType = await classifyVideo({
+            videoId: archived.id,
+            durationSeconds,
+            liveBroadcastContent: video.snippet.liveBroadcastContent,
+            hasLiveStreamingDetails,
+          });
+        } catch (err) {
+          console.error(`reclassify failed for ${archived.id}, leaving as 'upcoming':`, err.message);
+          continue;
+        }
+        if (newType !== 'upcoming') {
+          archived.contentType = newType;
+          archived.durationSeconds = durationSeconds;
+          archived.durationTimestamp = secondsToTimestamp(durationSeconds);
+          archiveDirty = true;
+        }
+      }
+    } else {
+      console.error(`videos.list reclassify failed: ${res.status}`);
+    }
+  } else if (upcomingArchived.length > 0) {
+    console.warn('YOUTUBE_LIVE_STATUS_API_KEY not set; skipping reclassification of upcoming items');
+  }
+
+  if (archiveDirty) {
     await setJSON('qf-youtube-archive', 'episodes', mergedArchive);
   }
 
