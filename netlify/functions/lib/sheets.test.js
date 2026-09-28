@@ -145,6 +145,9 @@ test('ensureTabExists creates the tab and writes the header row when missing', a
     (url, init) => {
       if (url.includes('/values/') && init.method === 'PUT') {
         assert.match(url, /valueInputOption=RAW/);
+        // BLOG_POSTS_HEADER is 8 columns (A-H, no bodyHtml) -- confirms the
+        // header-row range shrinks correctly to A1:H1, not a stale A1:I1.
+        assert.match(decodeURIComponent(url), /'blog posts'!A1:H1/);
         const payload = JSON.parse(init.body);
         assert.deepEqual(payload.values, [BLOG_POSTS_HEADER]);
         return jsonResponse(200, { updatedCells: BLOG_POSTS_HEADER.length });
@@ -161,6 +164,21 @@ test('ensureTabExists creates the tab and writes the header row when missing', a
   } finally {
     mock.restore();
   }
+});
+
+test('BLOG_POSTS_HEADER is the 8-column metadata-only schema (no bodyHtml)', () => {
+  assert.deepEqual(BLOG_POSTS_HEADER, [
+    'id',
+    'collection',
+    'title',
+    'url',
+    'publishedAt',
+    'heroImageUrl',
+    'readMinutes',
+    'author',
+  ]);
+  assert.equal(BLOG_POSTS_HEADER.length, 8);
+  assert.ok(!BLOG_POSTS_HEADER.includes('bodyHtml'), 'bodyHtml moved to Blobs, must not be a Sheet column');
 });
 
 test('ensureBlogPostsTabExists uses the fixed tab name and header', async () => {

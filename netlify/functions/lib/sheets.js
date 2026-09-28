@@ -241,10 +241,15 @@ export async function ensureTabExists(tab, headerRow) {
   return { created: true };
 }
 
-// Fixed schema for the blog-reading feature's Sheet tab (Global Constraints:
-// columns A-I, exact order, bodyHtml last). Exported alongside the ensure
-// helper so later tasks (backfill script, poller) import both the tab name
-// and header spec from one place rather than re-typing the column list.
+// Fixed schema for the blog-reading feature's Sheet tab -- metadata only,
+// columns A-H, exact order. `bodyHtml` (formerly column I) was removed:
+// live dry-run data found 10 of 142 real posts exceed the Sheet's 50,000-
+// char cell limit (worst case 245k chars), so bodyHtml now lives in Netlify
+// Blobs for every post rather than branching on size -- see the backfill
+// script / read function for the Blobs read/write side of that. Exported
+// alongside the ensure helper so later tasks (backfill script, poller)
+// import both the tab name and header spec from one place rather than
+// re-typing the column list.
 export const BLOG_POSTS_TAB = 'blog posts';
 export const BLOG_POSTS_HEADER = [
   'id',
@@ -255,7 +260,6 @@ export const BLOG_POSTS_HEADER = [
   'heroImageUrl',
   'readMinutes',
   'author',
-  'bodyHtml',
 ];
 
 export async function ensureBlogPostsTabExists() {
