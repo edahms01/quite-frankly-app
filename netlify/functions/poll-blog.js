@@ -25,6 +25,15 @@
 //
 // No delete-detection this phase (accepted gap, logged below): a post
 // unpublished/deleted on the live site lingers in the Sheet tab.
+//
+// Runtime fix pass (2026-09-28): collections fetch concurrently
+// (Promise.all, see runPollBlog) rather than sequentially, with a shorter
+// poller-only page-fetch throttle (POLLER_PAGE_THROTTLE_MS); the Sheet
+// column-A read + append/update/format calls are skipped entirely on a run
+// with nothing to write (the common case); and a ~22s time guard
+// (POLLER_TIME_GUARD_MS/timeBoxPosts) defers any changed post not started
+// in time to the next run, so a slow run degrades to "did less, logged
+// what's left" instead of risking a mid-write kill at Netlify's 30s limit.
 import {
   ensureBlogPostsTabExists,
   getColumnWithRows,
@@ -61,6 +70,45 @@ const SCHEDULED_FUNCTION_TIME_LIMIT_MS = 30_000;
 // while still comfortably covering how often Frank publishes.
 const POSTS_PER_COLLECTION = 3;
 
+// Delay between successive list-page fetches, poller-only (2026-09-28
+// runtime-fix pass). squarespaceBlog.js's own default (PAGE_FETCH_DELAY_MS,
+// 300ms) is tuned for the backfill script, which makes many sequential page
+// requests across a collection's full history -- a real "don't hammer
+// Squarespace" concern there. The poller only ever fetches page 1 for each
+// collection in the overwhelmingly common case (POSTS_PER_COLLECTION=3 is
+// far below page 1's 20-item size), so that delay is almost never even
+// incurred; when it is (page 1 came up short), a shorter delay is fine
+// since it's at most one extra page, once, for a poller that already runs
+// daily.
+const POLLER_PAGE_THROTTLE_MS = 100;
+
+// Scheduled Functions get hard-killed at SCHEDULED_FUNCTION_TIME_LIMIT_MS
+// with no chance to finish in-flight work or log a clean summary. This
+// guard is checked before starting each changed post's blob write; once
+// elapsed time crosses it, remaining posts are left unwritten (safe -- they
+// still have whatever blob/row they had before, or none if genuinely new)
+// and logged by id, to be picked up on the very next scheduled run rather
+// than risking a mid-write kill. 22s leaves an ~8s margin under the 30s
+// limit for the Sheet upsert write + formatColumnsAsText that still need to
+// run afterward for whatever did make it into writablePosts.
+const POLLER_TIME_GUARD_MS = 22_000;
+
+// Splits `posts` into those startable before the time guard trips and those
+// left for next run. Checked once per post (not mid-post) -- a single
+// post's own blob write is never interrupted partway. Exported for tests.
+export function timeBoxPosts(posts, startedAt, now, guardMs = POLLER_TIME_GUARD_MS) {
+  const inBudget = [];
+  const deferred = [];
+  for (const post of posts) {
+    if (now() - startedAt >= guardMs) {
+      deferred.push(post);
+    } else {
+      inBudget.push(post);
+    }
+  }
+  return { inBudget, deferred };
+}
+
 // Fetches and maps the newest `limit` posts for one collection, delegating
 // the per-item map/normalize/compute-readMinutes/build-record sequence to
 // buildPostRecord (shared with backfill-blog.mjs, so the two write paths
@@ -88,22 +136,38 @@ export async function runPollBlog({ fetchConfig = {}, setJSONFn = setJSON, getJS
   const startedAt = now();
   await ensureBlogPostsTabExists();
 
+  // Collections are independent Squarespace fetches (different URLs, no
+  // shared state) -- run them concurrently rather than one-after-another.
+  // Poller-only throttle override (see POLLER_PAGE_THROTTLE_MS) applies to
+  // both; the backfill script is untouched (still calls with no override,
+  // keeping squarespaceBlog.js's 300ms default for its own long sequential
+  // pagination runs).
+  const pollerFetchConfig = { throttleMs: POLLER_PAGE_THROTTLE_MS, ...fetchConfig };
+  const perCollectionPosts = await Promise.all(
+    BLOG_COLLECTIONS.map((collection) => collectRecentPosts(collection, POSTS_PER_COLLECTION, pollerFetchConfig))
+  );
+
   const allPosts = [];
   const perCollectionCounts = {};
-  for (const collection of BLOG_COLLECTIONS) {
-    const posts = await collectRecentPosts(collection, POSTS_PER_COLLECTION, fetchConfig);
+  BLOG_COLLECTIONS.forEach((collection, i) => {
+    const posts = perCollectionPosts[i];
     perCollectionCounts[collection] = posts.length;
     console.log(`[poll-blog] "${collection}": fetched ${posts.length} of the newest posts.`);
     allPosts.push(...posts);
-  }
+  });
 
   const { changed, unchangedCount } = await filterChangedPosts(allPosts, getJSONFn, BLOG_BODIES_STORE);
   if (unchangedCount > 0) {
     console.log(`[poll-blog] ${unchangedCount} post(s) unchanged since the last run -- skipping their blob + Sheet-row write.`);
   }
 
-  console.log(`[poll-blog] Writing ${changed.length} blobs to "${BLOG_BODIES_STORE}" (blob first, then the matching Sheet row -- a post whose blob write fails is skipped and logged, never given a row with no matching blob)...`);
-  const { writablePosts, blobFailures } = await writeBlobsAndPartition(changed, setJSONFn, BLOG_BODIES_STORE);
+  const { inBudget, deferred } = timeBoxPosts(changed, startedAt, now);
+  if (deferred.length > 0) {
+    console.warn(`[poll-blog] Time guard tripped at ${now() - startedAt}ms (limit ${POLLER_TIME_GUARD_MS}ms) -- ${deferred.length} changed post(s) NOT started this run, picked up next run: ${deferred.map((p) => p.id).join(', ')}`);
+  }
+
+  console.log(`[poll-blog] Writing ${inBudget.length} blobs to "${BLOG_BODIES_STORE}" (blob first, then the matching Sheet row -- a post whose blob write fails is skipped and logged, never given a row with no matching blob)...`);
+  const { writablePosts, blobFailures } = await writeBlobsAndPartition(inBudget, setJSONFn, BLOG_BODIES_STORE);
   if (blobFailures.length > 0) {
     console.error(`[poll-blog] ${blobFailures.length} post(s) had a failed blob write and were held out of the Sheet write entirely:`);
     for (const f of blobFailures) {
@@ -111,13 +175,25 @@ export async function runPollBlog({ fetchConfig = {}, setJSONFn = setJSON, getJS
     }
   }
 
-  const existingRows = await getColumnWithRows(BLOG_POSTS_TAB, 'A');
-  const { toInsert, toUpdate } = partitionForUpsert(existingRows, writablePosts, (p) => p.id, toBlogPostRow);
-  console.log(`[poll-blog] Upsert plan: ${toInsert.length} new row(s) to insert, ${toUpdate.length} existing row(s) to update.`);
+  // Skip the full-tab column-A read and the append/update/format calls
+  // entirely when there's nothing to write -- the common case on most
+  // days, since this poller only re-checks POSTS_PER_COLLECTION newest
+  // posts per collection and most of those are usually unchanged. Reading
+  // and rewriting a metadata-format pass over a Sheet tab for zero actual
+  // row changes was pure overhead.
+  let toInsert = [];
+  let toUpdate = [];
+  if (writablePosts.length > 0) {
+    const existingRows = await getColumnWithRows(BLOG_POSTS_TAB, 'A');
+    ({ toInsert, toUpdate } = partitionForUpsert(existingRows, writablePosts, (p) => p.id, toBlogPostRow));
+    console.log(`[poll-blog] Upsert plan: ${toInsert.length} new row(s) to insert, ${toUpdate.length} existing row(s) to update.`);
 
-  await appendRows(BLOG_POSTS_TAB, toInsert);
-  await updateRows(BLOG_POSTS_TAB, toUpdate);
-  await formatColumnsAsText(BLOG_POSTS_TAB, ['A', 'E']);
+    await appendRows(BLOG_POSTS_TAB, toInsert);
+    await updateRows(BLOG_POSTS_TAB, toUpdate);
+    await formatColumnsAsText(BLOG_POSTS_TAB, ['A', 'E']);
+  } else {
+    console.log('[poll-blog] Nothing to write this run -- skipping the Sheet column-A read and the append/update/format calls entirely.');
+  }
 
   console.log('[poll-blog] Accepted gap: an unpublished/deleted post on the live site lingers in the Sheet tab -- no delete-detection this phase.');
 

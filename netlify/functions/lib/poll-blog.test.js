@@ -20,7 +20,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
-import { collectRecentPosts, runPollBlog } from '../poll-blog.js';
+import { collectRecentPosts, runPollBlog, timeBoxPosts } from '../poll-blog.js';
 import { BLOG_COLLECTIONS, BLOG_BODIES_STORE } from './squarespaceBlog.js';
 import { normalizeBlogHtml } from './normalizeBlogHtml.js';
 
@@ -350,6 +350,106 @@ test('runPollBlog: polls every collection in BLOG_COLLECTIONS', async () => {
     const result = await runPollBlog({ fetchConfig: { fetchImpl, sleepFn: async () => {} }, setJSONFn: async () => {}, getJSONFn: async () => null });
     assert.deepEqual([...requestedCollections].sort(), [...BLOG_COLLECTIONS].sort());
     assert.equal(result.fetched, 0);
+  } finally {
+    mock.restore();
+  }
+});
+
+// ---- runtime fix pass (2026-09-28): parallel fetch, empty-write skip, time guard ----
+
+test('runPollBlog: fetches both collections concurrently, not sequentially', async () => {
+  // Each collection's fetch holds open until BOTH have started, proving
+  // they overlap -- a sequential implementation would deadlock here since
+  // the second collection's fetch would never start until the first
+  // resolved.
+  let inFlight = 0;
+  let bothStartedResolve;
+  const bothStarted = new Promise((r) => { bothStartedResolve = r; });
+  const fetchImpl = async (url) => {
+    inFlight++;
+    if (inFlight >= 2) bothStartedResolve();
+    await bothStarted;
+    return jsonResponse(200, makePage([], { nextPage: false }));
+  };
+  const mock = installSheetsFetchMock(defaultSheetsHandlers(['id']));
+  try {
+    const result = await runPollBlog({ fetchConfig: { fetchImpl, sleepFn: async () => {} }, setJSONFn: async () => {}, getJSONFn: async () => null });
+    assert.equal(result.fetched, 0);
+    assert.equal(inFlight, 2, 'both collection fetches actually started');
+  } finally {
+    mock.restore();
+  }
+});
+
+test('runPollBlog: skips the Sheet column-A read and append/update/format calls when nothing is written', async () => {
+  const fetchImpl = async () => jsonResponse(200, makePage([], { nextPage: false }));
+  const sheetCalls = [];
+  const mock = installSheetsFetchMock(defaultSheetsHandlers(['id']));
+  const originalFetch = global.fetch;
+  global.fetch = async (url, init = {}) => {
+    sheetCalls.push(String(url));
+    return originalFetch(url, init);
+  };
+  try {
+    const result = await runPollBlog({ fetchConfig: { fetchImpl, sleepFn: async () => {} }, setJSONFn: async () => {}, getJSONFn: async () => null });
+    assert.equal(result.written, 0);
+    assert.equal(result.inserted, 0);
+    assert.equal(result.updated, 0);
+    assert.ok(!sheetCalls.some((u) => u.includes('/values/') && u.includes('A')), 'must not read column A when there is nothing to upsert');
+    assert.ok(!sheetCalls.some((u) => u.includes(':append')), 'must not call append with nothing to insert');
+  } finally {
+    global.fetch = originalFetch;
+    mock.restore();
+  }
+});
+
+test('timeBoxPosts: defers posts past the guard, keeps posts under it, checked once per post not mid-post', () => {
+  const posts = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+  const startedAt = 0;
+  const guardMs = 100;
+  const values = [10, 50, 150]; // elapsed at the check before each post -- guard trips between b and c
+  let i = 0;
+  const now = () => values[i++];
+  const { inBudget, deferred } = timeBoxPosts(posts, startedAt, now, guardMs);
+  assert.deepEqual(inBudget.map((p) => p.id), ['a', 'b']);
+  assert.deepEqual(deferred.map((p) => p.id), ['c']);
+});
+
+test('timeBoxPosts: empty input returns empty in both buckets', () => {
+  const { inBudget, deferred } = timeBoxPosts([], 0, () => 0, 100);
+  assert.deepEqual(inBudget, []);
+  assert.deepEqual(deferred, []);
+});
+
+test('runPollBlog: a changed post past the time guard is deferred -- not written, no Sheet row, next run picks it up', async () => {
+  const item0 = makeItem('quite-frankly-originals', 0);
+  const item1 = makeItem('quite-frankly-originals', 1);
+  const fetchImpl = async (url) => {
+    if (String(url).includes('original-articles')) return jsonResponse(200, makePage([], { nextPage: false }));
+    return jsonResponse(200, makePage([item0, item1], { nextPage: false }));
+  };
+  const blobWriteKeys = [];
+  const setJSONFn = async (storeName, key) => { blobWriteKeys.push(key); };
+  const mock = installSheetsFetchMock(defaultSheetsHandlers(['id']));
+
+  // Call sequence: [0]=startedAt, [1]=guard check for item0 (under guard,
+  // kept), [2]=guard check for item1 (over guard, deferred), [3]=final
+  // duration log. Item order matches fetch order (both "changed" -- no
+  // existing blob for either).
+  const nowValues = [0, 10_000, 23_000, 23_000];
+  let calls = 0;
+  const now = () => nowValues[Math.min(calls++, nowValues.length - 1)];
+
+  try {
+    const result = await runPollBlog({
+      fetchConfig: { fetchImpl, sleepFn: async () => {} },
+      setJSONFn,
+      getJSONFn: async () => null,
+      now,
+    });
+    assert.equal(result.fetched, 2);
+    assert.equal(result.written, 1, 'only the post that fit under the time guard gets written');
+    assert.deepEqual(blobWriteKeys, [item0.id]);
   } finally {
     mock.restore();
   }
