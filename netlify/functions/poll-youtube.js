@@ -197,6 +197,7 @@ export default async () => {
           ...mostRecentItem,
           description: archiveById.get(mostRecentItem.id)?.description ?? '',
           contentType: archiveById.get(mostRecentItem.id)?.contentType,
+          scheduledStartTime: archiveById.get(mostRecentItem.id)?.scheduledStartTime ?? null,
         }
       : null,
     updatedAt: new Date().toISOString(),

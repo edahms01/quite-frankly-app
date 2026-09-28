@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2, Gamepad2 } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
 import DestinationCard from '../../components/DestinationCard';
 import AvatarButton from '../../components/AvatarButton';
 import OnAirBadge from '../../components/OnAirBadge';
+import UpcomingCountdown from '../../components/UpcomingCountdown';
 import VideoEmbed from '../../components/VideoEmbed';
 import VideoThumbnailOverlay from '../../components/VideoThumbnailOverlay';
 import { useYouTubeFeed } from '../../context/YouTubeFeedContext';
@@ -42,12 +43,19 @@ const DESTINATIONS = [
 ];
 
 export default function Home({ navigation }) {
-  const { mostRecent, loading, error } = useYouTubeFeed();
+  const { mostRecent, loading, error, refetch } = useYouTubeFeed();
   const { isLive } = useLiveStatus();
   const [embedVisible, setEmbedVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const { claim } = useVideoActiveSource({ onForcedStop: () => setEmbedVisible(false) });
   const { width: windowWidth } = useWindowDimensions();
   const cardWidth = windowWidth - 2 * spacing.md;
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
 
   const goTo = (route) => {
     if (route === 'CultureClubTab') {
@@ -59,7 +67,12 @@ export default function Home({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView
+      contentContainerStyle={styles.content}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accentGold} />
+      }
+    >
       <View style={styles.header}>
         <Image
           source={require('../../assets/images/quite-frankly-logo-final.png')}
@@ -67,6 +80,7 @@ export default function Home({ navigation }) {
           resizeMode="contain"
         />
         <View style={styles.headerRight}>
+          <UpcomingCountdown scheduledStartTime={mostRecent?.scheduledStartTime} />
           <OnAirBadge />
           <AvatarButton onPress={() => navigation.navigate('AccountStack')} />
         </View>
