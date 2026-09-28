@@ -1,15 +1,28 @@
 // Normalizes Squarespace blog-post HTML once, at write time (backfill script
-// and poller both call this before writing column I) — never at render time.
-// Pure function: no network access, no DOM library dependency (none is
-// already a project dependency, and regex-based tag handling is sufficient
-// for the narrow, known shapes Squarespace's export actually produces).
+// and poller both call this before writing to Blobs) — never at render
+// time. The video-embed/data-src/protocol-relative passes below are regex —
+// narrow, known Squarespace shapes, already reviewed. The final pass
+// (stripToWhitelist) is a real HTML parser (htmlparser2 + dom-serializer —
+// both already transitive deps of react-native-render-html, no new
+// install), not regex: it removes Microsoft-Word-paste bloat (`<w:...>`,
+// `<m:...>`, `<o:...>`, `<xml>` blocks — confirmed root cause of a real
+// 245k-char outlier post, 2026-09-28) that a regex pass can't safely target
+// without risking real content.
 //
-// Rules (Global Constraints):
+// Rules (Global Constraints + 2026-09-28 whitelist-strip follow-up):
 // - copy `data-src` -> `src` on <img> (lazyload placeholders)
 // - rewrite protocol-relative `//...` to `https://...`
 // - strip <script>/<style>/<noscript> entirely
 // - replace video embeds (`data-html` attrs / iframes) with a plain "Watch
 //   video" link to the source URL when one can be extracted, else drop them
+// - whitelist-strip the result to only the tags RenderHtml actually uses,
+//   dropping class/style/id/data-* everywhere, all HTML comments (catches
+//   Word's mso conditional blocks), and any office-namespace element
+//   (`w:`/`m:`/`o:`/etc. — any tag name containing ":") entirely, along
+//   with its contents
+
+import { parseDocument } from 'htmlparser2';
+import render from 'dom-serializer';
 
 const SCRIPT_STYLE_NOSCRIPT_RE = /<(script|style|noscript)\b[^>]*>[\s\S]*?<\/\1>/gi;
 
@@ -61,6 +74,117 @@ function extractAttrValue(tagOrMarkup, attrName) {
 
 function watchVideoLink(url) {
   return `<p><a href="${escapeAttr(url)}">Watch video</a></p>`;
+}
+
+// --- Whitelist strip (real parser, 2026-09-28) --------------------------
+//
+// Keeps only the tags react-native-render-html actually styles/renders for
+// this app (Task 6's tagsStyles / defaults), unwraps everything else
+// (keeping its text/children -- this is what "collapses wrapper divs/spans"
+// in practice, since div/span/font/etc. are never in the keep-list, so
+// they're always unwrapped whether empty or not), and removes a small set
+// of tags ENTIRELY (tag + all descendant content): script/style/noscript
+// (belt-and-suspenders, the regex pass above already removes these),
+// head/meta/link/title/xml (not real body content), and any tag whose name
+// contains ":" -- Microsoft Word/Office XML namespace elements
+// (w:WordDocument, m:oMath, o:p, v:shape, etc.) always take this form and
+// their "content" is Word's internal style/schema data, not article prose.
+// HTML comments (mso conditional blocks live here) are dropped outright.
+const REMOVE_ENTIRELY_TAGS = new Set(['script', 'style', 'noscript', 'head', 'meta', 'link', 'title', 'xml']);
+
+const KEEP_TAGS = new Set([
+  'p', 'br', 'strong', 'b', 'em', 'i', 'u', 'a', 'img',
+  'ul', 'ol', 'li', 'blockquote',
+  'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+  'hr', 'figure', 'figcaption',
+  'table', 'thead', 'tbody', 'tr', 'td', 'th',
+]);
+
+// Only these tags keep any attributes at all; every other kept tag is
+// serialized bare (class/style/id/data-* and anything else all dropped,
+// "everywhere", per spec).
+const ATTR_WHITELIST = {
+  a: ['href'],
+  img: ['src', 'alt', 'width', 'height'],
+};
+
+// Tags allowed to be legitimately content-free -- never pruned as "empty".
+const VOID_OK_EMPTY = new Set(['br', 'hr', 'img', 'td', 'th']);
+
+function isOfficeNamespaceTag(name) {
+  return name.includes(':');
+}
+
+function hasContent(node) {
+  if (node.type === 'text') return node.data.trim() !== '';
+  if (node.type === 'tag') {
+    if (node.name === 'img' || node.name === 'br' || node.name === 'hr') return true;
+    return (node.children || []).some(hasContent);
+  }
+  return false;
+}
+
+function pruneAttribs(node) {
+  const allowed = ATTR_WHITELIST[node.name];
+  const attribs = {};
+  if (allowed) {
+    for (const attr of allowed) {
+      if (node.attribs && node.attribs[attr] !== undefined) {
+        attribs[attr] = node.attribs[attr];
+      }
+    }
+  }
+  node.attribs = attribs;
+}
+
+// Recursively whitelist-filters a list of sibling parser nodes, returning
+// the new list. Mutates the surviving nodes' own `attribs`/`children`
+// in place (cheaper and avoids reconstructing domhandler-internal shape)
+// rather than building fresh node objects.
+function filterNodes(nodes) {
+  const out = [];
+  for (const node of nodes) {
+    if (node.type === 'comment' || node.type === 'directive' || node.type === 'cdata') {
+      continue; // strip all HTML comments (catches Word's mso conditional blocks) and doctype/PI/cdata noise
+    }
+    if (node.type === 'text') {
+      out.push(node);
+      continue;
+    }
+    if (node.type === 'script' || node.type === 'style') {
+      continue; // htmlparser2 tags these with their own node.type, not 'tag'
+    }
+    if (node.type !== 'tag') {
+      continue;
+    }
+    const name = node.name;
+    if (REMOVE_ENTIRELY_TAGS.has(name) || isOfficeNamespaceTag(name)) {
+      continue; // remove entirely, including all descendant content
+    }
+    node.children = filterNodes(node.children || []);
+    if (!KEEP_TAGS.has(name)) {
+      out.push(...node.children); // unwrap: splice children in place of this wrapper
+      continue;
+    }
+    pruneAttribs(node);
+    if (!VOID_OK_EMPTY.has(name) && !hasContent(node)) {
+      continue; // prune empty p/li/blockquote/h1-6/figure/figcaption/ul/ol/table/etc.
+    }
+    out.push(node);
+  }
+  return out;
+}
+
+// Parses `html` with a real parser and re-serializes only the whitelisted
+// tags/attributes. `encodeEntities: 'utf8'` escapes just the 5 XML-significant
+// characters (&<>"') and leaves other UTF-8 text (accents, emoji) as raw
+// bytes rather than numeric entities -- correct either way, but meaningfully
+// smaller output for non-ASCII-heavy posts.
+function stripToWhitelist(html) {
+  if (typeof html !== 'string' || html.length === 0) return html || '';
+  const doc = parseDocument(html);
+  const filtered = filterNodes(doc.children || []);
+  return render(filtered, { encodeEntities: 'utf8' });
 }
 
 // Returns { html, videoEmbedCount }. videoEmbedCount counts every video
@@ -117,6 +241,8 @@ export function normalizeBlogHtml(html) {
   result = result
     .replace(/(?<=[\s])(src|href)(\s*=\s*)"\/\//gi, '$1$2"https://')
     .replace(/(?<=[\s])(src|href)(\s*=\s*)'\/\//gi, "$1$2'https://");
+
+  result = stripToWhitelist(result);
 
   return { html: result, videoEmbedCount };
 }

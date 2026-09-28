@@ -2,10 +2,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { normalizeBlogHtml } from './normalizeBlogHtml.js';
 
-test('copies data-src to src on <img>, leaving other attributes intact', () => {
+test('copies data-src to src on <img>; class is dropped by the whitelist strip (not in img\'s allowed attrs)', () => {
   const input = '<p>hi</p><img class="lazy" data-src="https://example.com/a.jpg" src="placeholder.gif">';
   const { html, videoEmbedCount } = normalizeBlogHtml(input);
-  assert.match(html, /<img[^>]*class="lazy"/);
+  assert.doesNotMatch(html, /class="lazy"/);
   assert.match(html, /src="https:\/\/example\.com\/a\.jpg"/);
   assert.doesNotMatch(html, /placeholder\.gif/);
   assert.equal(videoEmbedCount, 0);
@@ -129,4 +129,50 @@ test('is idempotent-ish: normalizing already-normalized html is a no-op', () => 
   const { html, videoEmbedCount } = normalizeBlogHtml(input);
   assert.equal(html, input);
   assert.equal(videoEmbedCount, 0);
+});
+
+// Real-world fixture: a trimmed-down version of the actual Microsoft-Word
+// "paste as HTML" shape found in the live 245k-char outlier post (confirmed
+// via direct blob inspection, 2026-09-28) -- an <xml> block of
+// WordprocessingML style/schema data, an mso conditional-comment block, and
+// an inline <o:p> paragraph marker, none of which render any visible text,
+// sitting alongside genuine article prose.
+test('strips Microsoft Word paste artifacts (xml/w:/m:/o: namespace elements + mso comments) while keeping real content intact', () => {
+  const input = [
+    '<p>Real article text starts here.</p>',
+    '<xml>',
+    '<w:WordDocument><w:View>Normal</w:View><w:Zoom>0</w:Zoom></w:WordDocument>',
+    '<m:mathPr><m:mathFont m:val="Cambria Math"/></m:mathPr>',
+    '</xml>',
+    '<!--[if gte mso 9]><xml><o:OfficeDocumentSettings></o:OfficeDocumentSettings></xml><![endif]-->',
+    '<p class="MsoNormal"><o:p>&nbsp;</o:p></p>',
+    '<p>And it continues with more real prose after the junk.</p>',
+  ].join('');
+  const { html } = normalizeBlogHtml(input);
+  assert.doesNotMatch(html, /w:|m:|o:|WordDocument|mathPr|OfficeDocumentSettings|MsoNormal|xml/i);
+  assert.doesNotMatch(html, /<!--/);
+  assert.match(html, /<p>Real article text starts here\.<\/p>/);
+  assert.match(html, /<p>And it continues with more real prose after the junk\.<\/p>/);
+  // The junk-only <o:p>&nbsp;</o:p> paragraph produces no real content once
+  // the o:p element is dropped -- its wrapping <p class="MsoNormal"> is
+  // then empty too and gets pruned rather than left as a bare stray <p></p>.
+  assert.doesNotMatch(html, /<p>\s*<\/p>/);
+});
+
+test('strips class/style/id/data-* attributes from every tag, keeping only a[href] and img[src,alt,width,height]', () => {
+  const input = '<p class="MsoNormal" style="margin:0" id="x" data-foo="bar">text</p><a class="link" href="https://example.com" style="color:red" data-track="1">click</a>';
+  const { html } = normalizeBlogHtml(input);
+  assert.equal(html, '<p>text</p><a href="https://example.com">click</a>');
+});
+
+test('unwraps non-whitelisted tags (div/span) keeping their text content', () => {
+  const input = '<div class="wrapper"><span style="color:red">plain text</span></div>';
+  const { html } = normalizeBlogHtml(input);
+  assert.equal(html, 'plain text');
+});
+
+test('preserves table markup (tables were confirmed present in real post data)', () => {
+  const input = '<table><tbody><tr><td>a</td><td>b</td></tr></tbody></table>';
+  const { html } = normalizeBlogHtml(input);
+  assert.equal(html, input);
 });
