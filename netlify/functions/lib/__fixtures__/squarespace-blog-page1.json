@@ -1,0 +1,149 @@
+{
+  "pagination": {
+    "nextPage": true,
+    "nextPageOffset": 1729890403961,
+    "nextPageUrl": "/quite-frankly-originals?offset=1729890403961",
+    "pageSize": 20
+  },
+  "items": [
+    {
+      "id": "69f6335fafa8177364cda117",
+      "collectionId": "5afa242c2b6a28d17424fad2",
+      "recordType": 1,
+      "addedOn": 1777743649979,
+      "updatedOn": 1777743650122,
+      "starred": false,
+      "passthrough": false,
+      "tags": [],
+      "categories": [],
+      "workflowState": 1,
+      "publishOn": 1777743649979,
+      "authorId": "5830d0978419c22be2442b9c",
+      "systemDataId": "1777743408342-WPLWUODP8QZKBTQMTEKT",
+      "systemDataVariants": "3024x4032,2500w",
+      "systemDataSourceType": "JPG",
+      "filename": "IMG_0277.JPEG",
+      "mediaFocalPoint": {
+        "x": 0.5,
+        "y": 0.5,
+        "source": 3
+      },
+      "colorData": {
+        "topLeftAverage": "aaacad",
+        "topRightAverage": "99958a",
+        "bottomLeftAverage": "836d59",
+        "bottomRightAverage": "675d52",
+        "centerAverage": "4d3a31",
+        "suggestedBgColor": "897768"
+      },
+      "urlId": "sourdough-cinnamon-brains-buns-featuring-cinnamon-pluck",
+      "title": "Sourdough Cinnamon Brains Buns featuring Cinnamon PLUCK",
+      "sourceUrl": "",
+      "body": "<div class=\"sqs-layout sqs-grid-12 columns-12\" data-layout-label=\"Post Body\" data-type=\"item\" data-updated-on=\"1777743604082\" id=\"item-69f6335fafa8177364cda117\"><div class=\"row sqs-row\"><div class=\"col sqs-col-12 span-12\"><div class=\"sqs-block image-block sqs-block-image\" data-block-type=\"5\" data-sqsp-block=\"image-classic\" id=\"block-yui_3_17_2_1_1777741681431_41978\"><div class=\"sqs-block-content\">...TRUNCATED-FOR-FIXTURE...",
+      "excerpt": "<p style=\"white-space:pre-wrap;\" data-rte-preserve-empty=\"true\">We had a <em>delicious</em> time crafting this special recipe with J the Nutritionist and sourdough maven, Jess aka head baker/ owner of Ashie\u2019s Bread Co. and Lauren\u2019s big sis. </p>",
+      "location": {
+        "mapZoom": 12.0,
+        "mapLat": 40.7207559,
+        "mapLng": -74.0007613,
+        "markerLat": 40.7207559,
+        "markerLng": -74.0007613,
+        "addressTitle": "",
+        "addressLine1": "",
+        "addressLine2": "",
+        "addressCountry": ""
+      },
+      "customContent": null,
+      "likeCount": 0,
+      "commentCount": 0,
+      "publicCommentCount": 0,
+      "commentState": 1,
+      "unsaved": false,
+      "author": {
+        "id": "5830d0978419c22be2442b9c",
+        "displayName": "Frankie Val",
+        "firstName": "Frankie",
+        "lastName": "Val",
+        "avatarUrl": "https://images.squarespace-cdn.com/content/v2/namespaces/memberAccountAvatars/libraries/5830d0978419c22be2442b9c/bebdefab63f745c0961ace21ab7f401b/bebdefab63f745c0961ace21ab7f401b.jpeg?format=300w",
+        "avatarId": "58405a6eb3db2b7f144539c7",
+        "websiteUrl": "http://www.quitefranklypodcast.com",
+        "bio": "<p>Writer and Host of the nightly Quite Frankly podcast (Youtube, iTunes, SoundCloud, Google Play). An entrepreneur with a background in Health &amp; Fitness, coaching Youth Sports, New Media, and the Arts.</p>\n<p>&nbsp;</p>",
+        "avatarAssetUrl": "https://images.squarespace-cdn.com/content/v2/namespaces/memberAccountAvatars/libraries/5830d0978419c22be2442b9c/bebdefab63f745c0961ace21ab7f401b/bebdefab63f745c0961ace21ab7f401b.jpeg?format=300w"
+      },
+      "fullUrl": "/quite-frankly-originals/sourdough-cinnamon-brains-buns-featuring-cinnamon-pluck",
+      "assetUrl": "https://images.squarespace-cdn.com/content/v1/5802d63eb8a79b9e8001efd1/1777743408342-WPLWUODP8QZKBTQMTEKT/IMG_0277.JPEG",
+      "contentType": "image/jpeg",
+      "items": [],
+      "pushedServices": {},
+      "pendingPushedServices": {},
+      "seoData": {
+        "seoHidden": false
+      },
+      "originalSize": "3024x4032",
+      "recordTypeLabel": "text"
+    },
+    {
+      "id": "69174f063da52f7aeb60b2c7",
+      "collectionId": "5afa242c2b6a28d17424fad2",
+      "recordType": 1,
+      "addedOn": 1763135966101,
+      "updatedOn": 1763135966302,
+      "starred": false,
+      "passthrough": false,
+      "tags": [],
+      "categories": [],
+      "workflowState": 1,
+      "publishOn": 1763135966101,
+      "authorId": "5830d0978419c22be2442b9c",
+      "systemDataId": "1763135604462-7VOXW9U15J26HAECYSJY",
+      "systemDataVariants": "1530x1859,100w,300w,500w,750w,1000w,1500w",
+      "systemDataSourceType": "JPG",
+      "filename": "image0 (58).jpeg",
+      "mediaFocalPoint": {
+        "x": 0.5,
+        "y": 0.5,
+        "source": 3
+      },
+      "colorData": {
+        "topLeftAverage": "010101",
+        "topRightAverage": "030303",
+        "bottomLeftAverage": "040404",
+        "bottomRightAverage": "030303",
+        "centerAverage": "eaeaea",
+        "suggestedBgColor": "515151"
+      },
+      "urlId": "2025-my-favorite-chair",
+      "title": "My Favorite Chair",
+      "sourceUrl": "",
+      "body": "<div class=\"sqs-layout sqs-grid-12 columns-12\" data-layout-label=\"Post Body\" data-type=\"item\" data-updated-on=\"1763135850455\" id=\"item-69174f063da52f7aeb60b2c7\"><div class=\"row sqs-row\"><div class=\"col sqs-col-12 span-12\"><div class=\"sqs-block html-block sqs-block-html\" data-block-type=\"2\" data-sqsp-block=\"text\" id=\"block-39f681d607a6623e4e63\"><div class=\"sqs-block-content\">\n\n<div class=\"sqs-html-...TRUNCATED-FOR-FIXTURE...",
+      "excerpt": "<p style=\"white-space:pre-wrap;\" data-rte-preserve-empty=\"true\">I was sitting there, sitting in my favorite chair. I was bent over, tying my boots\u2014old leather boots with stitching frayed and one string shorter than the other. On the left boot, I noticed where the steel toe cap poked through the dried and cracked leather. That bit was polished smooth, and while I bent to lace&nbsp;up that foot first, I noticed something I never had before. There, with my heel on the floor, in the shine of&nbsp;my toe, I could see myself a bit. It wasn\u2019t a perfect reflection. I appeared there on the metal just so,&nbsp;warped by the curve of the steel into a cartoonish head. I almost laughed, but something about work and&nbsp;the day ahead crept into mind, and I only let go a little smile. I was headed for the other boot when\u2026</p>",
+      "customContent": null,
+      "likeCount": 0,
+      "commentCount": 0,
+      "publicCommentCount": 0,
+      "commentState": 1,
+      "unsaved": false,
+      "author": {
+        "id": "5830d0978419c22be2442b9c",
+        "displayName": "Frankie Val",
+        "firstName": "Frankie",
+        "lastName": "Val",
+        "avatarUrl": "https://images.squarespace-cdn.com/content/v2/namespaces/memberAccountAvatars/libraries/5830d0978419c22be2442b9c/bebdefab63f745c0961ace21ab7f401b/bebdefab63f745c0961ace21ab7f401b.jpeg?format=300w",
+        "avatarId": "58405a6eb3db2b7f144539c7",
+        "websiteUrl": "http://www.quitefranklypodcast.com",
+        "bio": "<p>Writer and Host of the nightly Quite Frankly podcast (Youtube, iTunes, SoundCloud, Google Play). An entrepreneur with a background in Health &amp; Fitness, coaching Youth Sports, New Media, and the Arts.</p>\n<p>&nbsp;</p>",
+        "avatarAssetUrl": "https://images.squarespace-cdn.com/content/v2/namespaces/memberAccountAvatars/libraries/5830d0978419c22be2442b9c/bebdefab63f745c0961ace21ab7f401b/bebdefab63f745c0961ace21ab7f401b.jpeg?format=300w"
+      },
+      "fullUrl": "/quite-frankly-originals/2025-my-favorite-chair",
+      "assetUrl": "https://images.squarespace-cdn.com/content/v1/5802d63eb8a79b9e8001efd1/1763135604462-7VOXW9U15J26HAECYSJY/image0+%2858%29.jpeg",
+      "contentType": "image/jpeg",
+      "items": [],
+      "pushedServices": {},
+      "pendingPushedServices": {},
+      "seoData": {
+        "seoHidden": false
+      },
+      "originalSize": "1530x1859",
+      "recordTypeLabel": "text"
+    }
+  ]
+}
