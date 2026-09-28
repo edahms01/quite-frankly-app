@@ -54,6 +54,12 @@ export default function VideoPlayer({ navigation, route }) {
   const scrollViewRef = useRef(null);
   const [activeGame, setActiveGame] = useState(null);
   const [trayVisible, setTrayVisible] = useState(false);
+  // Which games' controls splash has already been dismissed this
+  // screen-visit — resets naturally when this screen unmounts/remounts
+  // (leaving and returning to the video), persists across switching games
+  // within one visit, and is untouched by a Restart (which only remounts
+  // the game component via GameWindow's own resetKey).
+  const [seenGames, setSeenGames] = useState(() => new Set());
   const [headerHeight, setHeaderHeight] = useState(0);
   // The ScrollView's own visible height — the screen sits above the tab
   // bar, so windowHeight alone would let the window be dragged down
@@ -197,6 +203,8 @@ export default function VideoPlayer({ navigation, route }) {
                 avoidRect={{ top: 0, left: 0, width: windowWidth, height: PLAYER_HEIGHT }}
                 hidden={hidden || !isFocused}
                 onClose={() => setActiveGame(null)}
+                showSplash={!seenGames.has(activeGame.id)}
+                onDismissSplash={() => setSeenGames((prev) => new Set(prev).add(activeGame.id))}
               />
             </View>
           ) : null}
