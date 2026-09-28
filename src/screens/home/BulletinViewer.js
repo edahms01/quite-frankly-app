@@ -32,19 +32,28 @@ function isHttpUrl(url) {
 }
 
 // Best-effort: hides the campaign's footer/unsubscribe block and forces a
-// dark-friendly background/link color to match the app's theme. Selectors
-// are a generic guess at common footer/unsubscribe markup (class/id
-// containing "footer"/"unsubscribe", plus any element linking to an
-// unsubscribe URL) -- NOT verified against the real rendered campaign
-// page, since the spike (2026-09-28) deliberately avoided fetching a
-// campaign page directly (429s on repeated hits). Confirm this visually
-// against a real bulletin on first on-device open; adjust selectors here
-// if the real footer markup doesn't match.
+// dark-friendly background/link color to match the app's theme.
+//
+// CONFIRMED NOT WORKING on-device (2026-09-28, real "July 2025 Bulletin"),
+// after two attempts (html/body alone, then widened to table/td/tr once
+// the first attempt confirmed the page is table-based email HTML): the
+// page still renders with its native white background either way. Most
+// likely cause: the campaign page's actual content loads into an iframe
+// (common for Squarespace's "view in browser" pages, for style isolation
+// from the wrapping page) -- injectedJavaScript only runs in the WebView's
+// main-frame document, so it can't reach same-origin-or-not iframed
+// content. Left in place since it's harmless (a genuine table-based page
+// without an iframe would still benefit), but per Eric's QA rule --
+// "more than one fix-and-retest loop means stop and tell me" -- this is
+// flagged as a known, reported gap rather than chased further: the
+// bulletin is still fully readable (just on its native white background),
+// and the actual functional requirements (link interception, blocking
+// mailto/unsubscribe) all work correctly.
 const injectedJavaScript = `
 (function () {
   var style = document.createElement('style');
   style.innerHTML = [
-    'html, body { background: ${colors.surfaceGround} !important; color: ${colors.inkPrimary} !important; }',
+    'html, body, table, td, tr { background-color: ${colors.surfaceGround} !important; color: ${colors.inkPrimary} !important; }',
     'a { color: ${colors.accentGold} !important; }',
     '.footer, [class*="footer" i], [id*="footer" i],',
     '[href*="unsubscribe" i], [class*="unsubscribe" i], [id*="unsubscribe" i]',
