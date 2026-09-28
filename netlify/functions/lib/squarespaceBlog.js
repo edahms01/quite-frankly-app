@@ -28,11 +28,6 @@ export const SITE_BASE_URL = 'https://www.quitefrankly.tv';
 
 export const BLOG_COLLECTIONS = ['quite-frankly-originals', 'original-articles'];
 
-// Sheet cell limit is 50,000 chars (Global Constraints); guard at ~45k so a
-// write path never even approaches the hard limit. Shared here since both
-// the backfill and the poller must apply the same guard at write time.
-export const MAX_BODY_HTML_CHARS = 45000;
-
 // Delay between successive list-page fetches within one collection, on top
 // of fetchWithBackoff's own per-request retry/backoff -- keeps a full
 // backfill's pagination from hammering Squarespace back-to-back.
@@ -101,6 +96,18 @@ export function mapItemToPost(item, collection) {
   };
 }
 
+// Median of a numeric array. Pure. Used for the backfill/poller's
+// render-performance-signal reporting (max/median normalized bodyHtml
+// length per collection) -- purely informational since the Blobs ruling
+// removed the Sheet-cell size guard, but still worth surfacing. Returns 0
+// for an empty array rather than NaN.
+export function median(numbers) {
+  if (numbers.length === 0) return 0;
+  const sorted = [...numbers].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+}
+
 // Word-count-based read time, exact spec from the plan: strip tags, collapse
 // whitespace, count words, ceil(words / 200), floor of 1 minute. Pure.
 // Applied to the NORMALIZED bodyHtml (post-normalizeBlogHtml), not the raw
@@ -111,10 +118,14 @@ export function computeReadMinutes(bodyHtml) {
   return Math.max(1, Math.ceil(words.length / 200));
 }
 
-// Builds the full A-I row (sheets.js's BLOG_POSTS_HEADER order) for a fully
-// assembled post record: { id, collection, title, url, publishedAt,
-// heroImageUrl, readMinutes, author, bodyHtml } (bodyHtml already
-// normalized). Shared by insert and update paths so they can't drift.
+// Builds the full A-H row (sheets.js's BLOG_POSTS_HEADER order -- the
+// 'blog posts' tab is metadata-only as of the post-Task-2 Blobs ruling, no
+// bodyHtml column) for a fully assembled post record: { id, collection,
+// title, url, publishedAt, heroImageUrl, readMinutes, author }. `post` may
+// still carry a `bodyHtml` property (callers need it to write the matching
+// blob) -- this function simply doesn't include it in the row, since body
+// content now lives in Netlify Blobs, keyed by `id`, not in the Sheet.
+// Shared by insert and update paths so they can't drift.
 export function toBlogPostRow(post) {
   return [
     post.id,
@@ -125,6 +136,5 @@ export function toBlogPostRow(post) {
     post.heroImageUrl,
     post.readMinutes,
     post.author,
-    post.bodyHtml,
   ];
 }

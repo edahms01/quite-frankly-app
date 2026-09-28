@@ -9,7 +9,7 @@ import {
   mapItemToPost,
   computeReadMinutes,
   toBlogPostRow,
-  MAX_BODY_HTML_CHARS,
+  median,
   BLOG_COLLECTIONS,
 } from './squarespaceBlog.js';
 
@@ -145,7 +145,7 @@ test('computeReadMinutes strips tags before counting so markup never inflates th
   assert.equal(computeReadMinutes(html), 1);
 });
 
-test('toBlogPostRow builds the 9-column A-I row in sheets.js BLOG_POSTS_HEADER order', () => {
+test('toBlogPostRow builds the 8-column A-H row in sheets.js BLOG_POSTS_HEADER order (metadata-only, no bodyHtml column)', () => {
   const post = {
     id: 'abc123',
     collection: 'quite-frankly-originals',
@@ -155,7 +155,7 @@ test('toBlogPostRow builds the 9-column A-I row in sheets.js BLOG_POSTS_HEADER o
     heroImageUrl: 'https://images.example.com/a.jpg',
     readMinutes: 3,
     author: 'Frankie Val',
-    bodyHtml: '<p>body</p>',
+    bodyHtml: '<p>body</p>', // present on the post record (needed for the blob write) but must NOT appear in the row
   };
   assert.deepEqual(toBlogPostRow(post), [
     'abc123',
@@ -166,10 +166,13 @@ test('toBlogPostRow builds the 9-column A-I row in sheets.js BLOG_POSTS_HEADER o
     'https://images.example.com/a.jpg',
     3,
     'Frankie Val',
-    '<p>body</p>',
   ]);
 });
 
-test('MAX_BODY_HTML_CHARS matches the Global Constraints ~45k guard threshold', () => {
-  assert.equal(MAX_BODY_HTML_CHARS, 45000);
+test('median: empty array returns 0, odd-length returns the middle value, even-length averages the two middle values', () => {
+  assert.equal(median([]), 0);
+  assert.equal(median([5]), 5);
+  assert.equal(median([1, 3, 2]), 2);
+  assert.equal(median([1, 2, 3, 4]), 2.5);
+  assert.equal(median([7, 1, 5, 3]), 4); // unsorted input, sorted -> [1,3,5,7] -> (3+5)/2
 });
