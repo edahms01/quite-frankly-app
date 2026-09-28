@@ -133,7 +133,22 @@ QA is risk-based and lean: live dry-run + diff for data work, one smoke pass on 
 - **Android/iOS QA**: never run both emulators concurrently — starves the
   host, causes ANRs/phantom reloads. Alternate platforms. Boot Android with
   `-gpu swiftshader_indirect -memory 1536` (not `-gpu auto`), and kill stale
-  gradle/kotlin daemons first if instability resurfaces.
+  gradle/kotlin daemons first if instability resurfaces. `-memory 1536` is
+  guest RAM only — the host-side qemu process uses well more than that
+  (`swiftshader_indirect` is software GPU rendering, itself heavy), so also
+  stop Metro/`netlify dev` while the emulator boots and the native app
+  installs, restarting them only once that's done, and never run a Gradle
+  build at the same time as the emulator either (confirmed 2026-09-28: a
+  disk-full Gradle failure and an OOM-crashed emulator both traced back to
+  everything running at once). If the emulator becomes persistently
+  unresponsive ("System UI isn't responding" loops that don't clear), it's
+  faster to `adb emu kill` and relaunch with `-no-snapshot-load` (cold
+  boot) than to keep waiting — confirmed this fixes it, likely a corrupted
+  snapshot from an earlier crash. A `gradlew assembleDebug`
+  "No space left on device" failure is a real full-disk issue on this
+  machine, not a code problem — check `df -h /` first; `~/.gradle/caches`,
+  Xcode DerivedData, and the Homebrew cache are all safe to clear and
+  regenerate.
 - **Dev-client testing**: the dev-tools floating button overlaps the
   top-right corner in every screen (same spot as the avatar button),
   blocking taps there. Workaround: temporarily point RootNavigator's

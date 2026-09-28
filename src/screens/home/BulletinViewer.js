@@ -34,18 +34,21 @@ function isHttpUrl(url) {
 // Best-effort: hides the campaign's footer/unsubscribe block and forces a
 // dark-friendly background/link color to match the app's theme.
 //
-// CONFIRMED NOT WORKING on-device (2026-09-28, real "July 2025 Bulletin"),
-// after two attempts (html/body alone, then widened to table/td/tr once
-// the first attempt confirmed the page is table-based email HTML): the
-// page still renders with its native white background either way. Most
-// likely cause: the campaign page's actual content loads into an iframe
-// (common for Squarespace's "view in browser" pages, for style isolation
-// from the wrapping page) -- injectedJavaScript only runs in the WebView's
-// main-frame document, so it can't reach same-origin-or-not iframed
-// content. Left in place since it's harmless (a genuine table-based page
-// without an iframe would still benefit), but per Eric's QA rule --
-// "more than one fix-and-retest loop means stop and tell me" -- this is
-// flagged as a known, reported gap rather than chased further: the
+// PLATFORM SPLIT, confirmed on-device (2026-09-28, real "July 2025
+// Bulletin"): works correctly on Android (react-native-webview there is
+// backed by the system WebView/Chromium, which applies the injected
+// stylesheet as expected) -- but NOT on iOS Simulator, even after
+// widening the selector from html/body alone to table/td/tr once that
+// first attempt confirmed the page is table-based email HTML. iOS still
+// renders on its native white background either way. Most likely cause:
+// WKWebView (iOS's engine) isolates the campaign page's actual content
+// into an iframe (common for Squarespace's "view in browser" pages, for
+// style isolation from the wrapping page) more aggressively than Chromium
+// does here -- injectedJavaScript only runs in the WebView's main-frame
+// document, so it can't reach iframed content. Left in place since it's
+// harmless and already benefits Android, but per Eric's QA rule --
+// "more than one fix-and-retest loop means stop and tell me" -- the iOS
+// gap is flagged as known and reported rather than chased further: the
 // bulletin is still fully readable (just on its native white background),
 // and the actual functional requirements (link interception, blocking
 // mailto/unsubscribe) all work correctly.
