@@ -1,0 +1,52 @@
+{
+  "items": [
+    {
+      "id": "687feaf5a501fd726cf6cde0",
+      "title": "Frank's Behind the Scenes July 2025 Reflections ",
+      "fullUrl": "/newsletter-content/2025/7/22/franks-behind-the-scenes-july-2025-reflections",
+      "publishOn": 1753213907218,
+      "assetUrl": "https://images.squarespace-cdn.com/content/v1/5802d63eb8a79b9e8001efd1/07f8faf3-17e7-4da4-8f83-a63675b598f6/33B43B45-0E91-4645-B535-B89A5F5DA007+%281%29.jpeg",
+      "author": {
+        "id": "5830d0978419c22be2442b9c",
+        "displayName": "Frankie Val"
+      },
+      "categories": ["Frank's Favorites"],
+      "tags": [],
+      "body": "<p>Half of this year is already gone...</p>"
+    },
+    {
+      "id": "681b8a3f52a2a925a7dcc8d6",
+      "title": "May Crowning",
+      "fullUrl": "/newsletter-content/2025/may-crowning",
+      "publishOn": 1746635773954,
+      "assetUrl": "",
+      "author": {
+        "id": "5910a1a1b8a79b1e8001efd2",
+        "displayName": "Krista Roman"
+      },
+      "categories": ["Submissions", "Prayer of the Month"],
+      "tags": [],
+      "body": "<p>May is the month of Mary...</p>"
+    },
+    {
+      "id": "67661c0e1852e105ac0d582c",
+      "title": "The Hundredth Conservative",
+      "fullUrl": "/newsletter-content/2025/the-hundredth-conservative",
+      "publishOn": 1734745633484,
+      "assetUrl": "",
+      "author": {
+        "id": "5830d0978419c22be2442b9c",
+        "displayName": "Frankie Val"
+      },
+      "categories": ["Submissions"],
+      "tags": [],
+      "body": "<p>By Ed H... I never thought I'd be the hundredth conservative...</p>"
+    }
+  ],
+  "pagination": {
+    "nextPage": false,
+    "nextPageOffset": null,
+    "nextPageUrl": null,
+    "pageSize": 20
+  }
+}
