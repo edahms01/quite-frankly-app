@@ -83,7 +83,8 @@ Native-feeling iOS/Android mobile app for the *Quite Frankly* podcast (quitefran
 ## Data sources
 | Source | Mechanism | Auth |
 |---|---|---|
-| YouTube videos | Free RSS feed (`/feeds/videos.xml?channel_id=...`, caps at 15) + YouTube Data API for live-status polling | API key for Data API only |
+| YouTube videos | Free RSS feed (`/feeds/videos.xml?channel_id=...`, caps at 15) + YouTube Data API for new-video classification | API key for Data API only |
+| Live status | Twitch EventSub (`stream.online`/`stream.offline`) → `twitch-webhook.js` — sole live-status source since PR #2 (`twitch-live-status`); YouTube-based live polling was removed | Twitch app access token + webhook secret |
 | Podcast episodes | SoundCloud RSS, no native pagination — backend caches it, app paginates against the cache | None to read |
 | Shop & Affiliates | Google Sheet tab, published-to-web as CSV | None — public CSV fetch |
 | Bug Reports, `youtube rss`, `audio history` | Google Sheets API v4, write-only from backend | Service account (JSON key held server-side only, Netlify env var) |
@@ -101,13 +102,14 @@ Full detail, including idempotency requirements for the write-only sheet tabs, i
 4. **Backend functions** (Netlify) — Bug Report writer, video-polling job (writes `youtube rss`, triggers Home/Watch refresh), SoundCloud polling/caching job (powers Listen, writes `audio history`).
 5. **Audio player** — `expo-audio` wired to Listen's episode list, persistent mini-player, background playback and lock-screen controls.
 6. **Subscription flow** — native checkout modal, Patreon/SubscribeStar external opens.
-7. **Notifications** ✅ — Expo push service (register-push-device.js, `qf-push-tokens` Blobs store), real toggle persistence in NotificationsSettings.js, live-alert and new-video-alert triggers wired to twitch-webhook.js/poll-youtube.js. Culture Club Reminders has preference storage only, no trigger (no data source yet).
+7. **Notifications** ✅ — Expo push service (register-push-device.js, `qf-push-tokens` Blobs store), real toggle persistence in NotificationsSettings.js, live-alert wired to `twitch-webhook.js` (Twitch EventSub, PR #2), new-video-alert wired to `poll-youtube.js`. Culture Club Reminders has preference storage only, no trigger (no data source yet).
 8. **Polish** — icon/splash asset replacement, shared loading/error/empty state components + app-wide offline detection (screen-level gap fixes across Home/Watch/Listen/Shop), CLAUDE.md cleanup.
 
 ---
 
 ## QA and deploy process
 QA is risk-based and lean: live dry-run + diff for data work, one smoke pass on worst-case items, one real deploy, exceptions-only reports. After one failed fix-and-retest loop, stop and ask. Merges to main do not auto-deploy: after merge, trigger a production deploy manually (`netlify api createSiteBuild`) and confirm changed functions are live.
+- **Netlify Blobs stores here are site-wide, not deploy-scoped** — a PR's deploy preview and production read/write the exact same store (`getStore()` in `lib/blobs.js` is site scope, not `getDeployStore()`). Confirmed 2026-09-28: `get-live-status` on a deploy preview returned byte-identical output to prod, same timestamp. A fixture/dry-run POST to a state-writing function (e.g. `twitch-webhook.js`) against a deploy preview is **not isolated** — it writes the real prod-facing blob and can affect real users, same as hitting prod directly. Fixture-test state-writing functions against local `netlify dev` (genuinely isolated local Blobs store) instead, never a preview.
 
 ## Known open items
 - **Calendar's real source** — need to ask Frank (ICS-capable calendar vs. manual).
