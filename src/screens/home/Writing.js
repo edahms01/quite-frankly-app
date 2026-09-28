@@ -1,38 +1,37 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
-import { FileText, Mail } from 'lucide-react-native';
-import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { colors } from '../../theme';
 import BackHeader from '../../components/BackHeader';
-import Section from '../../components/Section';
-import DestinationCard from '../../components/DestinationCard';
+import SegmentedControl from '../../components/SegmentedControl';
+import WritingBlog from './WritingBlog';
+import WritingNewsletter from './WritingNewsletter';
 
+const TABS = [
+  { key: 'blog', label: 'Blog' },
+  { key: 'newsletter', label: 'Newsletter' },
+];
+
+// Writing is one screen: Blog | Newsletter segmented control, default Blog.
+// Replaces the old three-destination screen (Blog card, external
+// Newsletter Archive link, "Guest Appearances" coming-soon badge) --
+// Guest Appearances is dropped, covered by the Newsletter tab's
+// Submissions category instead. BackHeader is owned here, once, for both
+// tabs; WritingBlog/WritingNewsletter render only their own content below
+// it (each still owns its own ScrollView/RefreshControl/pagination, since
+// their data and scroll position are independent).
 export default function Writing({ navigation }) {
-  return (
-    <ScrollView style={styles.container}>
-      <BackHeader title="Writing" navigation={navigation} />
-      <View style={styles.body}>
-        <Section title="FRANK'S WRITING">
-          <View style={styles.grid}>
-            <DestinationCard
-              Icon={FileText}
-              label="Quite Blogly"
-              onPress={() => navigation.navigate('WritingBlog')}
-            />
-            <DestinationCard
-              Icon={Mail}
-              label="Newsletter Archive"
-              onPress={() => WebBrowser.openBrowserAsync('https://www.quitefrankly.tv/newsletter-archives', { dismissButtonStyle: 'close' })}
-            />
-          </View>
-        </Section>
+  const [tab, setTab] = useState('blog');
 
-        <Section title="GUEST APPEARANCES">
-          <View style={styles.comingSoonBadge}>
-            <Text style={styles.comingSoonText}>COMING SOON</Text>
-          </View>
-        </Section>
-      </View>
-    </ScrollView>
+  return (
+    <View style={styles.container}>
+      <BackHeader title="Writing" navigation={navigation} />
+      <SegmentedControl options={TABS} value={tab} onChange={setTab} />
+      {tab === 'blog' ? (
+        <WritingBlog navigation={navigation} />
+      ) : (
+        <WritingNewsletter navigation={navigation} />
+      )}
+    </View>
   );
 }
 
@@ -40,31 +39,5 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surfaceGround,
-  },
-  body: {
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.lg,
-    gap: spacing.xl,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md,
-  },
-  // Matches ScheduleTeaser's "COMING SOON" badge exactly, for the same
-  // placeholder-content meaning app-wide.
-  comingSoonBadge: {
-    alignSelf: 'center',
-    borderWidth: 1,
-    borderColor: colors.inkPrimary,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-  },
-  comingSoonText: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.sm,
-    letterSpacing: 0.5,
   },
 });

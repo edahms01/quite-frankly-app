@@ -3,7 +3,6 @@ import Home from '../screens/home/Home';
 import Shop from '../screens/home/Shop';
 import Community from '../screens/home/Community';
 import Writing from '../screens/home/Writing';
-import WritingBlog from '../screens/home/WritingBlog';
 import Article from '../screens/home/Article';
 import Band from '../screens/home/Band';
 import Calendar from '../screens/home/Calendar';
@@ -19,7 +18,6 @@ export default function HomeStackNavigator() {
       <Stack.Screen name="Shop" component={Shop} options={{ headerShown: false }} />
       <Stack.Screen name="Community" component={Community} options={{ headerShown: false }} />
       <Stack.Screen name="Writing" component={Writing} options={{ headerShown: false }} />
-      <Stack.Screen name="WritingBlog" component={WritingBlog} options={{ headerShown: false }} />
       <Stack.Screen name="Article" component={Article} options={{ headerShown: false }} />
       <Stack.Screen name="Band" component={Band} options={{ headerShown: false }} />
       <Stack.Screen name="Games" component={Games} options={{ headerShown: false }} />

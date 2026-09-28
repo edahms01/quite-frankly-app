@@ -12,7 +12,6 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image as ImageIcon } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
-import BackHeader from '../../components/BackHeader';
 import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
 import EmptyState from '../../components/EmptyState';
@@ -202,8 +201,6 @@ export default function WritingBlog({ navigation }) {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accentGold} />
       }
     >
-      <BackHeader title="Blog" navigation={navigation} />
-
       <View style={styles.body}>
         <Text style={styles.subtitle}>Quite Blogly — Frank's own writing, read right here.</Text>
 
