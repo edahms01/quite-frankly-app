@@ -170,6 +170,19 @@ test('collectRecentPosts: normalizes bodyHtml and computes readMinutes off the n
   assert.equal(posts[0].readMinutes, 1);
 });
 
+test('collectRecentPosts: decodes HTML entities in title/author via the poller path -- proves this isn\'t a backfill-only fix', async () => {
+  const item = {
+    ...makeItem('original-articles', 0),
+    title: 'Pena v VDH Lawsuit &amp; How to Follow',
+    author: { displayName: 'Smith &amp; Jones' },
+  };
+  const fetchImpl = async () => jsonResponse(200, makePage([item], { nextPage: false }));
+  const posts = await collectRecentPosts('original-articles', 10, { fetchImpl, sleepFn: async () => {} });
+  assert.equal(posts.length, 1);
+  assert.equal(posts[0].title, 'Pena v VDH Lawsuit & How to Follow', 'poller must not reintroduce &amp; into a title it re-fetches');
+  assert.equal(posts[0].author, 'Smith & Jones');
+});
+
 // ---- runPollBlog: end-to-end orchestration ----
 
 test('runPollBlog: writes blobs before Sheet rows, and inserts vs. updates by id (already-cached posts are always re-upserted)', async () => {
