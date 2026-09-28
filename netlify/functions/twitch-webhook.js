@@ -63,7 +63,7 @@ export default async (req) => {
         await setJSON('qf-live-status', 'status', {
           isLive: true,
           checkedAt: new Date().toISOString(),
-          recentStreamIds: [streamId, ...recentStreamIds].slice(0, MAX_RECENT_STREAM_IDS),
+          recentStreamIds: isNew ? [streamId, ...recentStreamIds].slice(0, MAX_RECENT_STREAM_IDS) : recentStreamIds,
         });
 
         if (isNew) {
