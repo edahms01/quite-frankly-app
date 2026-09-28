@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { classifyVideo, isTooEarlyForMostRecent, UPCOMING_WINDOW_MS } from './youtube.js';
+import { classifyVideo, pickMostRecentItem, UPCOMING_WINDOW_MS } from './youtube.js';
 
 test('classifyVideo: liveBroadcastContent "upcoming" is upcoming, not live', async () => {
   const result = await classifyVideo({
@@ -44,36 +44,73 @@ test('classifyVideo: regular long-form upload is video', async () => {
 
 const NOW = new Date('2026-09-28T12:00:00Z').getTime();
 
-test('isTooEarlyForMostRecent: upcoming, 4h out (past the 3h window) is too early', () => {
-  const archived = { contentType: 'upcoming', scheduledStartTime: '2026-09-28T16:00:00Z' };
-  assert.equal(isTooEarlyForMostRecent(archived, NOW), true);
+function archiveMap(entries) {
+  const map = new Map(entries.map((e) => [e.id, e]));
+  return (id) => map.get(id);
+}
+
+test('pickMostRecentItem: upcoming item far out (4h) is skipped, newest real item wins', () => {
+  const items = [{ id: 'pre' }, { id: 'real' }];
+  const getArchived = archiveMap([
+    { id: 'pre', contentType: 'upcoming', scheduledStartTime: '2026-09-28T16:00:00Z' },
+    { id: 'real', contentType: 'video' },
+  ]);
+  assert.deepEqual(pickMostRecentItem(items, getArchived, NOW), { id: 'real' });
 });
 
-test('isTooEarlyForMostRecent: upcoming, exactly at the window boundary is not too early', () => {
-  const archived = { contentType: 'upcoming', scheduledStartTime: new Date(NOW + UPCOMING_WINDOW_MS).toISOString() };
-  assert.equal(isTooEarlyForMostRecent(archived, NOW), false);
+test('pickMostRecentItem: upcoming item due soon (1h) wins even though it is not items[0]', () => {
+  // Regression case: a newer, unrelated video (e.g. a Short posted while the
+  // pre-load sits waiting) must not bump the due-soon pre-load out of the slot.
+  const items = [{ id: 'newerReal' }, { id: 'pre' }];
+  const getArchived = archiveMap([
+    { id: 'newerReal', contentType: 'video' },
+    { id: 'pre', contentType: 'upcoming', scheduledStartTime: '2026-09-28T13:00:00Z' },
+  ]);
+  assert.deepEqual(pickMostRecentItem(items, getArchived, NOW), { id: 'pre' });
 });
 
-test('isTooEarlyForMostRecent: upcoming, 1h out (inside the window) is not too early', () => {
-  const archived = { contentType: 'upcoming', scheduledStartTime: '2026-09-28T13:00:00Z' };
-  assert.equal(isTooEarlyForMostRecent(archived, NOW), false);
+test('pickMostRecentItem: upcoming item exactly at the window boundary wins', () => {
+  const items = [{ id: 'real' }, { id: 'pre' }];
+  const getArchived = archiveMap([
+    { id: 'real', contentType: 'video' },
+    { id: 'pre', contentType: 'upcoming', scheduledStartTime: new Date(NOW + UPCOMING_WINDOW_MS).toISOString() },
+  ]);
+  assert.deepEqual(pickMostRecentItem(items, getArchived, NOW), { id: 'pre' });
 });
 
-test('isTooEarlyForMostRecent: upcoming, scheduledStartTime already in the past is not too early', () => {
-  const archived = { contentType: 'upcoming', scheduledStartTime: '2026-09-28T10:00:00Z' };
-  assert.equal(isTooEarlyForMostRecent(archived, NOW), false);
+test('pickMostRecentItem: upcoming item already past its scheduledStartTime still wins over an older real item', () => {
+  const items = [{ id: 'olderReal' }, { id: 'pre' }];
+  const getArchived = archiveMap([
+    { id: 'olderReal', contentType: 'video' },
+    { id: 'pre', contentType: 'upcoming', scheduledStartTime: '2026-09-28T10:00:00Z' },
+  ]);
+  assert.deepEqual(pickMostRecentItem(items, getArchived, NOW), { id: 'pre' });
 });
 
-test('isTooEarlyForMostRecent: upcoming with no scheduledStartTime is never too early', () => {
-  const archived = { contentType: 'upcoming', scheduledStartTime: null };
-  assert.equal(isTooEarlyForMostRecent(archived, NOW), false);
+test('pickMostRecentItem: upcoming item with no scheduledStartTime never wins, falls back to newest real', () => {
+  const items = [{ id: 'pre' }, { id: 'real' }];
+  const getArchived = archiveMap([
+    { id: 'pre', contentType: 'upcoming', scheduledStartTime: null },
+    { id: 'real', contentType: 'video' },
+  ]);
+  assert.deepEqual(pickMostRecentItem(items, getArchived, NOW), { id: 'real' });
 });
 
-test('isTooEarlyForMostRecent: non-upcoming (live/video/short) is never too early', () => {
-  assert.equal(isTooEarlyForMostRecent({ contentType: 'live', scheduledStartTime: '2026-09-29T00:00:00Z' }, NOW), false);
-  assert.equal(isTooEarlyForMostRecent({ contentType: 'video' }, NOW), false);
+test('pickMostRecentItem: no upcoming items at all, picks the newest (first) item', () => {
+  const items = [{ id: 'a' }, { id: 'b' }];
+  const getArchived = archiveMap([
+    { id: 'a', contentType: 'video' },
+    { id: 'b', contentType: 'live' },
+  ]);
+  assert.deepEqual(pickMostRecentItem(items, getArchived, NOW), { id: 'a' });
 });
 
-test('isTooEarlyForMostRecent: missing/undefined archived entry is never too early', () => {
-  assert.equal(isTooEarlyForMostRecent(undefined, NOW), false);
+test('pickMostRecentItem: item missing from the archive entirely is never treated as upcoming', () => {
+  const items = [{ id: 'unarchived' }];
+  const getArchived = archiveMap([]);
+  assert.deepEqual(pickMostRecentItem(items, getArchived, NOW), { id: 'unarchived' });
+});
+
+test('pickMostRecentItem: empty items list returns null', () => {
+  assert.equal(pickMostRecentItem([], archiveMap([]), NOW), null);
 });

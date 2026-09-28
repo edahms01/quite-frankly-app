@@ -3,7 +3,7 @@ import { getJSON, setJSON } from './lib/blobs.js';
 import { appendRow, getColumn } from './lib/sheets.js';
 import { filterNewByKey } from './lib/idempotency.js';
 import { getTokensForPreference, sendExpoPushBatch } from './lib/push.js';
-import { CHANNEL_ID, classifyVideo, isTooEarlyForMostRecent, mergeVideosById, parseISO8601Duration } from './lib/youtube.js';
+import { CHANNEL_ID, classifyVideo, mergeVideosById, parseISO8601Duration, pickMostRecentItem } from './lib/youtube.js';
 import { secondsToTimestamp } from './lib/duration.js';
 
 export const config = { schedule: '*/15 * * * *' };
@@ -132,14 +132,15 @@ export default async () => {
   // a parallel gridItems cache, so this poll's only other job is
   // discovering brand-new videos to classify and archive above.
   //
-  // mostRecent skips a pre-loaded/'upcoming' broadcast until it's within
-  // isTooEarlyForMostRecent's window of its scheduledStartTime — before
-  // that it'd show as "Most Recent" hours before anything real happens.
-  // Once inside the window it's picked like any other video, no separate
-  // state: Home's card already flips its own badge from "MOST RECENT" to
-  // "LIVE NOW" off the Twitch webhook signal, independent of this selection.
+  // mostRecent prioritizes a pre-loaded/'upcoming' broadcast once it's
+  // within pickMostRecentItem's window of its scheduledStartTime — even
+  // over something nominally more recently published — and otherwise
+  // falls back to the newest non-'upcoming' item. No separate UI state
+  // needed either way: Home's card already flips its own badge from
+  // "MOST RECENT" to "LIVE NOW" off the Twitch webhook signal, independent
+  // of this selection.
   const archiveById = new Map(mergedArchive.map((e) => [e.id, e]));
-  const mostRecentItem = items.find((item) => !isTooEarlyForMostRecent(archiveById.get(item.id))) ?? items[0];
+  const mostRecentItem = pickMostRecentItem(items, (id) => archiveById.get(id));
 
   await setJSON('qf-youtube-cache', 'feed', {
     mostRecent: mostRecentItem

@@ -35,15 +35,26 @@ async function isShort(videoId) {
 
 export const UPCOMING_WINDOW_MS = 3 * 60 * 60 * 1000;
 
-// True when an archived item is a pre-loaded/'upcoming' broadcast that's
-// still further than UPCOMING_WINDOW_MS from its scheduledStartTime — used
-// to keep it out of Home's "Most Recent" selection until it's close enough
-// to actually matter. An 'upcoming' item with no scheduledStartTime (or
-// anything not 'upcoming' at all) is never considered too early.
-export function isTooEarlyForMostRecent(archived, now = Date.now()) {
-  if (archived?.contentType !== 'upcoming') return false;
-  if (!archived.scheduledStartTime) return false;
-  return new Date(archived.scheduledStartTime).getTime() - now > UPCOMING_WINDOW_MS;
+// Picks Home's "Most Recent" item from `items` (RSS order, newest first).
+// getArchived(id) looks up that item's archive record (contentType,
+// scheduledStartTime), e.g. a Map's .get bound, or archiveById.get.
+//
+// Priority: a pre-loaded/'upcoming' item due within UPCOMING_WINDOW_MS of
+// its scheduledStartTime wins outright — it's about to be the show, so it
+// takes over even if something else was published more recently (a Short
+// posted while the pre-load sits waiting shouldn't bump it). Otherwise,
+// fall back to the newest item that isn't 'upcoming' at all — a pre-load
+// still more than the window away is invisible to this selection, same as
+// one with no known scheduledStartTime (fails open: never hidden, just
+// never prioritized either).
+export function pickMostRecentItem(items, getArchived, now = Date.now()) {
+  const dueSoon = items.find((item) => {
+    const archived = getArchived(item.id);
+    if (archived?.contentType !== 'upcoming' || !archived.scheduledStartTime) return false;
+    return new Date(archived.scheduledStartTime).getTime() - now <= UPCOMING_WINDOW_MS;
+  });
+  if (dueSoon) return dueSoon;
+  return items.find((item) => getArchived(item.id)?.contentType !== 'upcoming') ?? items[0] ?? null;
 }
 
 // Same guid-keyed merge pattern as lib/soundcloud.js's mergeEpisodesByGuid,
