@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2, Gamepad2 } from 'lucide-react-native';
+import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2, Gamepad2, Sparkles } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
 import DestinationCard from '../../components/DestinationCard';
 import AvatarButton from '../../components/AvatarButton';
@@ -143,10 +143,7 @@ export default function Home({ navigation }) {
             onPress={() => goTo(d.route)}
           />
         ))}
-        <View style={styles.teaserCard}>
-          <Text style={styles.teaserLabel}>AskFrankie AI</Text>
-          <Text style={styles.teaserSubtext}>Coming Soon</Text>
-        </View>
+        <DestinationCard Icon={Sparkles} label="AskFrankie AI" subtext="Coming Soon" />
       </View>
     </ScrollView>
     </SafeAreaView>
@@ -243,29 +240,5 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     gap: spacing.md,
-  },
-  // paddingVertical/gap match DestinationCard's rhythm (spacing.lg/xs)
-  // instead of a much tighter one-off — this card sits directly among
-  // DestinationCards in the same grid.
-  teaserCard: {
-    width: '100%',
-    backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
-    paddingVertical: spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.xs,
-    opacity: 0.6,
-    ...shadows.sm,
-  },
-  teaserLabel: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.md,
-  },
-  teaserSubtext: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.regularItalic,
-    fontSize: fontSize.sm,
   },
 });
