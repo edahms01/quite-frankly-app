@@ -11,6 +11,7 @@ import {
   toBlogPostRow,
   median,
   writeBlobsAndPartition,
+  filterChangedPosts,
   buildPostRecord,
   BLOG_COLLECTIONS,
 } from './squarespaceBlog.js';
@@ -289,4 +290,66 @@ test('writeBlobsAndPartition: empty input returns empty partition, never calls s
   assert.deepEqual(writablePosts, []);
   assert.deepEqual(blobFailures, []);
   assert.equal(called, false);
+});
+
+test('filterChangedPosts: unchanged bodyHtml -> excluded, counted as unchanged', async () => {
+  const a = makePost('a');
+  const getJSONFn = async (storeName, key) => {
+    assert.equal(storeName, 'blog-bodies');
+    if (key === 'a') return { bodyHtml: a.bodyHtml, readMinutes: a.readMinutes };
+    return null;
+  };
+
+  const { changed, unchangedCount } = await filterChangedPosts([a], getJSONFn, 'blog-bodies');
+
+  assert.deepEqual(changed, []);
+  assert.equal(unchangedCount, 1);
+});
+
+test('filterChangedPosts: different bodyHtml -> included as changed, not counted as unchanged', async () => {
+  const a = makePost('a', { bodyHtml: '<p>new content</p>' });
+  const getJSONFn = async () => ({ bodyHtml: '<p>old content</p>', readMinutes: 1 });
+
+  const { changed, unchangedCount } = await filterChangedPosts([a], getJSONFn, 'blog-bodies');
+
+  assert.deepEqual(changed, [a]);
+  assert.equal(unchangedCount, 0);
+});
+
+test('filterChangedPosts: no existing blob -> new post always counts as changed', async () => {
+  const a = makePost('a');
+  const getJSONFn = async () => null;
+
+  const { changed, unchangedCount } = await filterChangedPosts([a], getJSONFn, 'blog-bodies');
+
+  assert.deepEqual(changed, [a]);
+  assert.equal(unchangedCount, 0);
+});
+
+test('filterChangedPosts: existing-blob read failure -> treated as changed, not silently skipped', async () => {
+  const a = makePost('a');
+  const getJSONFn = async () => {
+    throw new Error('Blobs store unreachable');
+  };
+
+  const { changed, unchangedCount } = await filterChangedPosts([a], getJSONFn, 'blog-bodies');
+
+  assert.deepEqual(changed, [a]);
+  assert.equal(unchangedCount, 0);
+});
+
+test('filterChangedPosts: mixed batch -> only the genuinely-changed/new posts pass through, order preserved', async () => {
+  const unchanged = makePost('a');
+  const edited = makePost('b', { bodyHtml: '<p>edited</p>' });
+  const brandNew = makePost('c');
+  const existingByKey = {
+    a: { bodyHtml: unchanged.bodyHtml, readMinutes: unchanged.readMinutes },
+    b: { bodyHtml: '<p>original</p>', readMinutes: 1 },
+  };
+  const getJSONFn = async (storeName, key) => existingByKey[key] ?? null;
+
+  const { changed, unchangedCount } = await filterChangedPosts([unchanged, edited, brandNew], getJSONFn, 'blog-bodies');
+
+  assert.deepEqual(changed.map((p) => p.id), ['b', 'c']);
+  assert.equal(unchangedCount, 1);
 });

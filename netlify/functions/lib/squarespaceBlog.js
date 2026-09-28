@@ -190,6 +190,35 @@ export async function writeBlobsAndPartition(posts, setJSONFn, storeName) {
   return { writablePosts, blobFailures };
 }
 
+// Filters `posts` down to only those whose normalized bodyHtml differs from
+// what's already stored in Blobs (or that have no existing blob at all --
+// genuinely new posts always count as changed). Used by the poller to skip
+// a redundant blob + Sheet-row write for a post it re-fetched but that
+// hasn't actually changed since the last run. `getJSONFn` is an injectable
+// seam (default: the real Blobs getJSON) so this is testable without live
+// credentials, same pattern as writeBlobsAndPartition's `setJSONFn`.
+// Never throws on a per-post read failure -- if the existing-blob lookup
+// itself errors (not just "missing"), the post is treated as changed, so a
+// transient read failure can't silently suppress a real write.
+export async function filterChangedPosts(posts, getJSONFn, storeName) {
+  const changed = [];
+  let unchangedCount = 0;
+  for (const post of posts) {
+    let existing = null;
+    try {
+      existing = await getJSONFn(storeName, post.id, null);
+    } catch {
+      existing = null;
+    }
+    if (existing && existing.bodyHtml === post.bodyHtml) {
+      unchangedCount += 1;
+      continue;
+    }
+    changed.push(post);
+  }
+  return { changed, unchangedCount };
+}
+
 // Builds the full A-H row (sheets.js's BLOG_POSTS_HEADER order -- the
 // 'blog posts' tab is metadata-only as of the post-Task-2 Blobs ruling, no
 // bodyHtml column) for a fully assembled post record: { id, collection,

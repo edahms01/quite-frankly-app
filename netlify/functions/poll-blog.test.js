@@ -7,20 +7,22 @@
 //     RSA-key-service-account pattern sheets.test.js already established
 //     (getAccessToken's real JWT-signing code path runs, just against a
 //     fake key -- no live Google credentials needed).
-//   - Blobs writes go through an injected setJSONFn (no real Netlify Blobs
-//     runtime context needed).
+//   - Blobs reads/writes go through injected getJSONFn/setJSONFn (no real
+//     Netlify Blobs runtime context needed).
 //
 // Coverage matches the brief's ask: the per-collection loop, how the poller
-// decides page 1 is enough vs. needs more, and which posts end up
-// inserted vs. updated (i.e. "genuinely new" vs. "already cached" by id --
-// this poller always re-writes the newest ~10 regardless, so an edit to an
-// already-cached post is caught by unconditionally re-upserting it, not by
-// a separate change-detection step).
+// decides page 1 is enough vs. needs more, which posts end up inserted vs.
+// updated (i.e. "genuinely new" vs. "already cached" by id -- this poller
+// always re-fetches the newest POSTS_PER_COLLECTION regardless, so an edit
+// to an already-cached post is caught by re-checking it, not by a separate
+// webhook/notification), and that a post whose re-fetched content is
+// byte-identical to what's already in Blobs gets no redundant write.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import { collectRecentPosts, runPollBlog } from './poll-blog.js';
 import { BLOG_COLLECTIONS, BLOG_BODIES_STORE } from './lib/squarespaceBlog.js';
+import { normalizeBlogHtml } from './lib/normalizeBlogHtml.js';
 
 const { privateKey } = crypto.generateKeyPairSync('rsa', {
   modulusLength: 2048,
@@ -206,7 +208,7 @@ test('runPollBlog: writes blobs before Sheet rows, and inserts vs. updates by id
   };
 
   try {
-    const result = await runPollBlog({ fetchConfig: { fetchImpl, sleepFn: async () => {} }, setJSONFn });
+    const result = await runPollBlog({ fetchConfig: { fetchImpl, sleepFn: async () => {} }, setJSONFn, getJSONFn: async () => null });
 
     assert.equal(result.fetched, 2);
     assert.equal(result.written, 2);
@@ -263,7 +265,7 @@ test('runPollBlog: a failed blob write skips that post -- it never gets a Sheet 
   };
 
   try {
-    const result = await runPollBlog({ fetchConfig: { fetchImpl, sleepFn: async () => {} }, setJSONFn });
+    const result = await runPollBlog({ fetchConfig: { fetchImpl, sleepFn: async () => {} }, setJSONFn, getJSONFn: async () => null });
     assert.equal(result.fetched, 2);
     assert.equal(result.written, 1);
     assert.equal(result.blobFailures, 1);
@@ -279,6 +281,49 @@ test('runPollBlog: a failed blob write skips that post -- it never gets a Sheet 
   }
 });
 
+test('runPollBlog: a post whose normalized content is unchanged since last run gets no blob write and no Sheet row', async () => {
+  const unchangedItem = makeItem('quite-frankly-originals', 0);
+  const editedItem = makeItem('quite-frankly-originals', 1);
+  const fetchImpl = async (url) => {
+    if (String(url).includes('original-articles')) return jsonResponse(200, makePage([], { nextPage: false }));
+    return jsonResponse(200, makePage([unchangedItem, editedItem], { nextPage: false }));
+  };
+
+  // What's already in Blobs for each id, from a prior run: item 0's body
+  // exactly matches what it'll be re-normalized to now (unchanged); item
+  // 1's stored body is stale/different (a real edit since last time).
+  const { html: unchangedNormalizedHtml } = normalizeBlogHtml(unchangedItem.body);
+  const existingBlobs = {
+    [unchangedItem.id]: { bodyHtml: unchangedNormalizedHtml, readMinutes: 1 },
+    [editedItem.id]: { bodyHtml: '<p>a stale, previously-cached version</p>', readMinutes: 1 },
+  };
+  const getJSONFn = async (storeName, key) => {
+    assert.equal(storeName, BLOG_BODIES_STORE);
+    return existingBlobs[key] ?? null;
+  };
+
+  const blobWriteKeys = [];
+  const setJSONFn = async (storeName, key) => {
+    blobWriteKeys.push(key);
+  };
+
+  const existingIds = ['id', unchangedItem.id, editedItem.id]; // both already have Sheet rows from "last run"
+  const mock = installSheetsFetchMock(defaultSheetsHandlers(existingIds));
+  try {
+    const result = await runPollBlog({ fetchConfig: { fetchImpl, sleepFn: async () => {} }, setJSONFn, getJSONFn });
+
+    assert.equal(result.fetched, 2, 'both posts were re-fetched from Squarespace, per the daily re-check design');
+    assert.equal(result.unchanged, 1, 'exactly one of the two was recognized as unchanged');
+    assert.equal(result.written, 1, 'only the genuinely-edited post gets written');
+    assert.equal(result.updated, 1);
+    assert.equal(result.inserted, 0);
+
+    assert.deepEqual(blobWriteKeys, [editedItem.id], 'the unchanged post never gets a blob write at all');
+  } finally {
+    mock.restore();
+  }
+});
+
 test('runPollBlog: polls every collection in BLOG_COLLECTIONS', async () => {
   const requestedCollections = new Set();
   const fetchImpl = async (url) => {
@@ -289,7 +334,7 @@ test('runPollBlog: polls every collection in BLOG_COLLECTIONS', async () => {
   };
   const mock = installSheetsFetchMock(defaultSheetsHandlers(['id']));
   try {
-    const result = await runPollBlog({ fetchConfig: { fetchImpl, sleepFn: async () => {} }, setJSONFn: async () => {} });
+    const result = await runPollBlog({ fetchConfig: { fetchImpl, sleepFn: async () => {} }, setJSONFn: async () => {}, getJSONFn: async () => null });
     assert.deepEqual([...requestedCollections].sort(), [...BLOG_COLLECTIONS].sort());
     assert.equal(result.fetched, 0);
   } finally {

@@ -1,6 +1,8 @@
 // Scheduled poller (Task 3) for the blog-reading feature: re-fetches the
-// newest ~10 posts per collection on every run and upserts them into the
-// 'blog posts' Sheet tab + 'blog-bodies' Blobs store. Deliberately NOT a
+// newest POSTS_PER_COLLECTION posts per collection on every run and upserts
+// them into the 'blog posts' Sheet tab + 'blog-bodies' Blobs store, skipping
+// any post whose normalized content hasn't actually changed since the last
+// run (filterChangedPosts). Deliberately NOT a
 // "stop at last-cached cutoff" design -- re-fetching the newest posts every
 // run (not just brand-new ones) is what catches edits to a post that was
 // already cached on a previous run. Mostly orchestrates calls into
@@ -32,11 +34,12 @@ import {
   BLOG_POSTS_TAB,
 } from './lib/sheets.js';
 import { partitionForUpsert } from './lib/idempotency.js';
-import { setJSON } from './lib/blobs.js';
+import { getJSON, setJSON } from './lib/blobs.js';
 import {
   BLOG_COLLECTIONS,
   BLOG_BODIES_STORE,
   buildPostRecord,
+  filterChangedPosts,
   iterateCollectionItems,
   toBlogPostRow,
   writeBlobsAndPartition,
@@ -44,10 +47,19 @@ import {
 
 export const config = { schedule: '@daily' };
 
-// "Newest ~10" per the brief. Squarespace's own page size (20/page,
-// confirmed in Task 2) comfortably covers this in a single fetch in the
-// normal case.
-const POSTS_PER_COLLECTION = 10;
+// Netlify Scheduled Functions have a hard 30-second execution limit
+// (docs.netlify.com/build/functions/scheduled-functions -- "Scheduled
+// functions have a 30 second execution limit"). runPollBlog logs its own
+// elapsed time against this on every run so a slow run shows up in the
+// function's own logs, not just as a mysterious timeout.
+const SCHEDULED_FUNCTION_TIME_LIMIT_MS = 30_000;
+
+// Newest posts re-checked per collection, every run. Kept small (3, not the
+// original "~10") since this poller runs daily and re-fetches the newest N
+// unconditionally to catch edits -- a smaller N means less Squarespace
+// traffic and less exposure to the 30s scheduled-function limit above,
+// while still comfortably covering how often Frank publishes.
+const POSTS_PER_COLLECTION = 3;
 
 // Fetches and maps the newest `limit` posts for one collection, delegating
 // the per-item map/normalize/compute-readMinutes/build-record sequence to
@@ -72,7 +84,8 @@ export async function collectRecentPosts(collection, limit, fetchConfig = {}) {
 // access or Netlify Blobs credentials -- Sheets calls are exercised via a
 // global.fetch mock, same pattern sheets.test.js already established for
 // Task 1's getRows/ensureTabExists tests.
-export async function runPollBlog({ fetchConfig = {}, setJSONFn = setJSON } = {}) {
+export async function runPollBlog({ fetchConfig = {}, setJSONFn = setJSON, getJSONFn = getJSON, now = Date.now } = {}) {
+  const startedAt = now();
   await ensureBlogPostsTabExists();
 
   const allPosts = [];
@@ -84,8 +97,13 @@ export async function runPollBlog({ fetchConfig = {}, setJSONFn = setJSON } = {}
     allPosts.push(...posts);
   }
 
-  console.log(`[poll-blog] Writing ${allPosts.length} blobs to "${BLOG_BODIES_STORE}" (blob first, then the matching Sheet row -- a post whose blob write fails is skipped and logged, never given a row with no matching blob)...`);
-  const { writablePosts, blobFailures } = await writeBlobsAndPartition(allPosts, setJSONFn, BLOG_BODIES_STORE);
+  const { changed, unchangedCount } = await filterChangedPosts(allPosts, getJSONFn, BLOG_BODIES_STORE);
+  if (unchangedCount > 0) {
+    console.log(`[poll-blog] ${unchangedCount} post(s) unchanged since the last run -- skipping their blob + Sheet-row write.`);
+  }
+
+  console.log(`[poll-blog] Writing ${changed.length} blobs to "${BLOG_BODIES_STORE}" (blob first, then the matching Sheet row -- a post whose blob write fails is skipped and logged, never given a row with no matching blob)...`);
+  const { writablePosts, blobFailures } = await writeBlobsAndPartition(changed, setJSONFn, BLOG_BODIES_STORE);
   if (blobFailures.length > 0) {
     console.error(`[poll-blog] ${blobFailures.length} post(s) had a failed blob write and were held out of the Sheet write entirely:`);
     for (const f of blobFailures) {
@@ -102,15 +120,20 @@ export async function runPollBlog({ fetchConfig = {}, setJSONFn = setJSON } = {}
   await formatColumnsAsText(BLOG_POSTS_TAB, ['A', 'E']);
 
   console.log('[poll-blog] Accepted gap: an unpublished/deleted post on the live site lingers in the Sheet tab -- no delete-detection this phase.');
-  console.log(`[poll-blog] Done. fetched=${allPosts.length} written=${writablePosts.length} inserted=${toInsert.length} updated=${toUpdate.length} blobFailures=${blobFailures.length}`);
+
+  const durationMs = now() - startedAt;
+  const limitFraction = ((durationMs / SCHEDULED_FUNCTION_TIME_LIMIT_MS) * 100).toFixed(1);
+  console.log(`[poll-blog] Done in ${durationMs}ms (${limitFraction}% of the ${SCHEDULED_FUNCTION_TIME_LIMIT_MS}ms scheduled-function limit). fetched=${allPosts.length} unchanged=${unchangedCount} written=${writablePosts.length} inserted=${toInsert.length} updated=${toUpdate.length} blobFailures=${blobFailures.length}`);
 
   return {
     perCollectionCounts,
     fetched: allPosts.length,
+    unchanged: unchangedCount,
     written: writablePosts.length,
     inserted: toInsert.length,
     updated: toUpdate.length,
     blobFailures: blobFailures.length,
+    durationMs,
   };
 }
 
