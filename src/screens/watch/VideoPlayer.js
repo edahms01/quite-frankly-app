@@ -142,7 +142,10 @@ export default function VideoPlayer({ navigation, route }) {
             )}
           </View>
 
-          <View style={styles.body}>
+          <View
+            style={[styles.body, activeGame && styles.bodyHidden]}
+            pointerEvents={activeGame ? 'none' : 'auto'}
+          >
             <Text style={styles.title}>{title}</Text>
             {video?.publishedAt ? (
               <Text style={styles.meta}>Quite Frankly · {relativeTime(video.publishedAt)}</Text>
@@ -233,6 +236,9 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
+  },
+  bodyHidden: {
+    opacity: 0,
   },
   fab: {
     position: 'absolute',
