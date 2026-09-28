@@ -109,6 +109,7 @@ Full detail, including idempotency requirements for the write-only sheet tabs, i
 
 ## QA and deploy process
 QA is risk-based and lean: live dry-run + diff for data work, one smoke pass on worst-case items, one real deploy, exceptions-only reports. After one failed fix-and-retest loop, stop and ask. Merges to main do not auto-deploy: after merge, trigger a production deploy manually (`netlify api createSiteBuild`) and confirm changed functions are live.
+- **Netlify Blobs stores here are site-wide, not deploy-scoped** — a PR's deploy preview and production read/write the exact same store (`getStore()` in `lib/blobs.js` is site scope, not `getDeployStore()`). Confirmed 2026-09-28: `get-live-status` on a deploy preview returned byte-identical output to prod, same timestamp. A fixture/dry-run POST to a state-writing function (e.g. `twitch-webhook.js`) against a deploy preview is **not isolated** — it writes the real prod-facing blob and can affect real users, same as hitting prod directly. Fixture-test state-writing functions against local `netlify dev` (genuinely isolated local Blobs store) instead, never a preview.
 
 ## Known open items
 - **Calendar's real source** — need to ask Frank (ICS-capable calendar vs. manual).
