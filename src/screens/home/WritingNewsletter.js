@@ -32,12 +32,6 @@ function formatItemDateUTC(isoDate) {
   return `${month} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
 }
 
-function metaLine(post) {
-  const date = formatItemDateUTC(post.publishedAt);
-  const minutes = post.readMinutes ? `${post.readMinutes} min read` : null;
-  return [date, minutes].filter(Boolean).join(' · ');
-}
-
 // yyyyMm is always "YYYY-MM" (get-newsletter-items.js's monthOf output) --
 // construct the UTC-midnight date directly from the parts rather than
 // `new Date(yyyyMm)`, whose parsing behavior for a bare "YYYY-MM" string is
