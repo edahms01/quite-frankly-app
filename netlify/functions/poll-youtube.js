@@ -3,7 +3,7 @@ import { getJSON, setJSON } from './lib/blobs.js';
 import { appendRow, getColumn } from './lib/sheets.js';
 import { filterNewByKey } from './lib/idempotency.js';
 import { getTokensForPreference, sendExpoPushBatch } from './lib/push.js';
-import { CHANNEL_ID, classifyVideo, mergeVideosById, parseISO8601Duration } from './lib/youtube.js';
+import { CHANNEL_ID, classifyVideo, isTooEarlyForMostRecent, mergeVideosById, parseISO8601Duration } from './lib/youtube.js';
 import { secondsToTimestamp } from './lib/duration.js';
 
 export const config = { schedule: '*/15 * * * *' };
@@ -67,9 +67,11 @@ export default async () => {
     let contentType = 'video';
     let durationSeconds = 0;
     let description = '';
+    let scheduledStartTime = null;
     if (video) {
       durationSeconds = parseISO8601Duration(video.contentDetails.duration);
       description = video.snippet.description ?? '';
+      scheduledStartTime = video.liveStreamingDetails?.scheduledStartTime ?? null;
       const hasLiveStreamingDetails = 'liveStreamingDetails' in video;
       try {
         contentType = await classifyVideo({
@@ -108,6 +110,7 @@ export default async () => {
       description,
       thumbnailUrl: item.thumbnailUrl,
       lastSyncedAt,
+      scheduledStartTime,
     });
   }
 
@@ -128,22 +131,38 @@ export default async () => {
   // its whole list from the archive (get-youtube-episodes.js) instead of
   // a parallel gridItems cache, so this poll's only other job is
   // discovering brand-new videos to classify and archive above.
+  //
+  // mostRecent skips a pre-loaded/'upcoming' broadcast until it's within
+  // isTooEarlyForMostRecent's window of its scheduledStartTime — before
+  // that it'd show as "Most Recent" hours before anything real happens.
+  // Once inside the window it's picked like any other video, no separate
+  // state: Home's card already flips its own badge from "MOST RECENT" to
+  // "LIVE NOW" off the Twitch webhook signal, independent of this selection.
   const archiveById = new Map(mergedArchive.map((e) => [e.id, e]));
+  const mostRecentItem = items.find((item) => !isTooEarlyForMostRecent(archiveById.get(item.id))) ?? items[0];
+
   await setJSON('qf-youtube-cache', 'feed', {
-    mostRecent: items[0]
+    mostRecent: mostRecentItem
       ? {
-          ...items[0],
-          description: archiveById.get(items[0].id)?.description ?? '',
-          contentType: archiveById.get(items[0].id)?.contentType,
+          ...mostRecentItem,
+          description: archiveById.get(mostRecentItem.id)?.description ?? '',
+          contentType: archiveById.get(mostRecentItem.id)?.contentType,
         }
       : null,
     updatedAt: new Date().toISOString(),
   });
 
-  if (newItems.length > 0) {
+  // Twitch EventSub is the only live-alert source (real-time, no polling
+  // delay) — never push a "new video" notification for anything the
+  // YouTube poll classified as 'live' or 'upcoming', genuine live start or
+  // pre-load alike. Only a real regular upload/short gets this push.
+  const itemsToNotify = newArchiveItems.filter(
+    (item) => item.contentType !== 'upcoming' && item.contentType !== 'live'
+  );
+  if (itemsToNotify.length > 0) {
     try {
       const tokens = await getTokensForPreference('video');
-      for (const item of newItems) {
+      for (const item of itemsToNotify) {
         await sendExpoPushBatch(tokens, {
           title: 'New video from Quite Frankly',
           body: item.title,

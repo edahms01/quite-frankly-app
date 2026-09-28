@@ -11,7 +11,14 @@ export function parseISO8601Duration(duration) {
 }
 
 export async function classifyVideo({ videoId, durationSeconds, liveBroadcastContent, hasLiveStreamingDetails }) {
-  if (liveBroadcastContent === 'live' || liveBroadcastContent === 'upcoming' || hasLiveStreamingDetails) {
+  // 'upcoming' is a pre-loaded/scheduled broadcast that hasn't actually
+  // started — kept distinct from 'live' so callers (Home's Most Recent
+  // selection, the new-video push) can treat "not real yet" differently
+  // from a genuinely live or already-aired stream.
+  if (liveBroadcastContent === 'upcoming') {
+    return 'upcoming';
+  }
+  if (liveBroadcastContent === 'live' || hasLiveStreamingDetails) {
     return 'live';
   }
   // Shorts have a hard 180s format ceiling (raised from 60s, Oct 2024) — YouTube's
@@ -24,6 +31,19 @@ export async function classifyVideo({ videoId, durationSeconds, liveBroadcastCon
 async function isShort(videoId) {
   const res = await fetch(`https://www.youtube.com/shorts/${videoId}`, { method: 'HEAD', redirect: 'manual' });
   return res.status === 200; // 3xx = redirected to /watch = not actually a Short
+}
+
+export const UPCOMING_WINDOW_MS = 3 * 60 * 60 * 1000;
+
+// True when an archived item is a pre-loaded/'upcoming' broadcast that's
+// still further than UPCOMING_WINDOW_MS from its scheduledStartTime — used
+// to keep it out of Home's "Most Recent" selection until it's close enough
+// to actually matter. An 'upcoming' item with no scheduledStartTime (or
+// anything not 'upcoming' at all) is never considered too early.
+export function isTooEarlyForMostRecent(archived, now = Date.now()) {
+  if (archived?.contentType !== 'upcoming') return false;
+  if (!archived.scheduledStartTime) return false;
+  return new Date(archived.scheduledStartTime).getTime() - now > UPCOMING_WINDOW_MS;
 }
 
 // Same guid-keyed merge pattern as lib/soundcloud.js's mergeEpisodesByGuid,
