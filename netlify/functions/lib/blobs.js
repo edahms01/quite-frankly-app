@@ -4,6 +4,7 @@ import { writeFileSync, unlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { retryAsync } from './fetchWithBackoff.js';
 
 // Opt-in fallback for a bare `netlify dev:exec -- node <script>` one-off
 // script context, where @netlify/blobs's zero-arg getStore() has no
@@ -42,19 +43,30 @@ function cliListAll(storeName) {
   return parsed.blobs ?? [];
 }
 
-export async function getJSON(storeName, key, fallback = null) {
-  const store = getStore(storeName);
-  const value = await store.get(key, { type: 'json' });
+// `retryConfig` (maxAttempts/baseMs/sleepFn/etc., same shape fetchWithBackoff
+// takes) is an injectable last-arg options object, purely a test seam --
+// every real caller (poll-blog.js, get-blog-posts.js, squarespaceBlog.js)
+// keeps calling with just (storeName, key, fallback), unchanged, and gets
+// retryAsync's real timing. Added after a live "can't load text right now"
+// report on individual articles turned out NOT to be the same Sheets-retry
+// gap fixed earlier (`?id=` mode never touches Sheets) -- getJSON/setJSON
+// had no retry wrapping at all, unlike the Sheets read functions, so a
+// single transient Blobs read/write failure surfaced directly with no
+// retry. `storeFactory` (default: the real `getStore`) is the other test
+// seam, letting tests inject a fake Store without real Blobs credentials.
+export async function getJSON(storeName, key, fallback = null, { storeFactory = getStore, ...retryConfig } = {}) {
+  const store = storeFactory(storeName);
+  const value = await retryAsync(() => store.get(key, { type: 'json' }), retryConfig);
   return value ?? fallback;
 }
 
-export async function setJSON(storeName, key, value) {
+export async function setJSON(storeName, key, value, { storeFactory = getStore, ...retryConfig } = {}) {
   if (CLI_FALLBACK) {
     cliSetJSON(storeName, key, value);
     return;
   }
-  const store = getStore(storeName);
-  await store.setJSON(key, value);
+  const store = storeFactory(storeName);
+  await retryAsync(() => store.setJSON(key, value), retryConfig);
 }
 
 export async function deleteKey(storeName, key) {

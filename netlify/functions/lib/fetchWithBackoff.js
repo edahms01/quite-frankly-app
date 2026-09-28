@@ -84,3 +84,28 @@ export async function fetchWithBackoff(url, fetchOptions = {}, config = {}) {
   // iteration) -- kept for control-flow clarity/static analysis.
   throw lastError || new Error('fetchWithBackoff: exhausted retries');
 }
+
+// Same backoff timing/jitter as fetchWithBackoff (reuses backoffDelayMs),
+// for callers that aren't calling fetch directly -- e.g. blobs.js's
+// getJSON/setJSON, which go through @netlify/blobs's SDK (a thrown Error,
+// not a Response with a status to branch on). Unlike fetchWithBackoff there
+// is no response status to distinguish "retryable" from "not" -- the SDK
+// doesn't expose one -- so any thrown error is treated as retryable, same
+// posture fetchWithBackoff itself takes for a raw transport-error throw.
+export async function retryAsync(fn, config = {}) {
+  const opts = { ...DEFAULTS, ...config };
+  const sleep = opts.sleepFn || defaultSleep;
+
+  let lastError = null;
+  for (let attempt = 1; attempt <= opts.maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      if (attempt === opts.maxAttempts) throw err;
+      await sleep(backoffDelayMs(attempt, opts));
+    }
+  }
+
+  throw lastError || new Error('retryAsync: exhausted retries');
+}

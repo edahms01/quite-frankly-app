@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { fetchWithBackoff, parseRetryAfterMs, backoffDelayMs } from './fetchWithBackoff.js';
+import { fetchWithBackoff, parseRetryAfterMs, backoffDelayMs, retryAsync } from './fetchWithBackoff.js';
 
 function makeResponse(status, { retryAfter } = {}) {
   const headers = new Map();
@@ -118,6 +118,49 @@ test('default exponential backoff doubles each attempt up to the cap, within jit
     assert.ok(delay >= expectedRaw * 0.8 - 1e-6, `attempt ${attempt}: ${delay} below jitter floor`);
     assert.ok(delay <= expectedRaw * 1.2 + 1e-6, `attempt ${attempt}: ${delay} above jitter ceiling`);
   }
+});
+
+// ---- retryAsync (blobs.js's getJSON/setJSON reuse this) ----
+
+test('retryAsync: returns the result immediately on success (first attempt)', async () => {
+  let calls = 0;
+  const fn = async () => { calls++; return 'ok'; };
+  const result = await retryAsync(fn, { sleepFn: fakeSleep([]) });
+  assert.equal(result, 'ok');
+  assert.equal(calls, 1);
+});
+
+test('retryAsync: retries a thrown error, then succeeds', async () => {
+  let calls = 0;
+  const fn = async () => {
+    calls++;
+    if (calls < 3) throw new Error('transient');
+    return 'recovered';
+  };
+  const sleeps = [];
+  const result = await retryAsync(fn, { sleepFn: fakeSleep(sleeps) });
+  assert.equal(result, 'recovered');
+  assert.equal(calls, 3);
+  assert.equal(sleeps.length, 2, 'slept before the 2nd and 3rd attempts');
+});
+
+test('retryAsync: rejects with the last error once maxAttempts is exhausted', async () => {
+  let calls = 0;
+  const fn = async () => { calls++; throw new Error('down'); };
+  const sleeps = [];
+  await assert.rejects(
+    () => retryAsync(fn, { sleepFn: fakeSleep(sleeps), maxAttempts: 3 }),
+    /down/
+  );
+  assert.equal(calls, 3);
+  assert.equal(sleeps.length, 2);
+});
+
+test('retryAsync: does not retry at all when maxAttempts is 1', async () => {
+  let calls = 0;
+  const fn = async () => { calls++; throw new Error('nope'); };
+  await assert.rejects(() => retryAsync(fn, { sleepFn: fakeSleep([]), maxAttempts: 1 }), /nope/);
+  assert.equal(calls, 1);
 });
 
 test('parseRetryAfterMs handles seconds, HTTP-date, and invalid input', () => {
