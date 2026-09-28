@@ -16,13 +16,11 @@ export default function Writing({ navigation }) {
             <DestinationCard
               Icon={FileText}
               label="Quite Blogly"
-              fixedHeight
               onPress={() => WebBrowser.openBrowserAsync('https://www.quitefrankly.tv/blog', { dismissButtonStyle: 'close' })}
             />
             <DestinationCard
               Icon={Mail}
               label="Newsletter Archive"
-              fixedHeight
               onPress={() => WebBrowser.openBrowserAsync('https://www.quitefrankly.tv/newsletter-archives', { dismissButtonStyle: 'close' })}
             />
           </View>
