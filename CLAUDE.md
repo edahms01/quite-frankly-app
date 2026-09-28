@@ -106,6 +106,9 @@ Full detail, including idempotency requirements for the write-only sheet tabs, i
 
 ---
 
+## QA and deploy process
+QA is risk-based and lean: live dry-run + diff for data work, one smoke pass on worst-case items, one real deploy, exceptions-only reports. After one failed fix-and-retest loop, stop and ask. Merges to main do not auto-deploy: after merge, trigger a production deploy manually (`netlify api createSiteBuild`) and confirm changed functions are live.
+
 ## Known open items
 - **Calendar's real source** — need to ask Frank (ICS-capable calendar vs. manual).
 - **EAS project linkage** — done (`app.json` has `extra.eas.projectId`, `eas.json` configured with dev/preview/production build profiles + submit config). Unblocks real push tokens (`getExpoPushTokenAsync`) for live device testing. Expo's push service (`expo-notifications`) is integrated.
@@ -118,6 +121,10 @@ Full detail, including idempotency requirements for the write-only sheet tabs, i
 
 ---
 
+## Git hygiene
+- Branch from `origin/main`, and merge `origin/main` into a feature branch before opening its PR — other chats/branches push small updates to main in parallel, so a branch that's been open a while can drift behind. Never resolve a merge conflict by blindly taking one whole side's version of a file; reconcile so both sides' changes survive.
+- Create worktrees OUTSIDE the repo folder (e.g. `../qf-worktrees/<name>`), not nested inside it (e.g. `.claude/worktrees/<name>`). A worktree nested inside the main checkout breaks `netlify dev`'s function-folder discovery — it walks up looking for a directory-type `.git` (a worktree's `.git` is a file, a gitdir pointer) and lands on the enclosing main checkout instead, silently serving that checkout's `netlify/functions/` instead of the worktree's own. `netlify status`/`netlify link` report the correct (worktree) project root; only function loading is affected. Confirmed 2026-09-28 debugging why `get-newsletter-items.js` 404'd locally despite existing in the worktree.
+
 ## Eric's preferences
 - Direct, short answers; minimal explanatory prose; copy-paste-ready outputs.
 - Surgical edits over full-file rewrites where practical.
@@ -126,7 +133,22 @@ Full detail, including idempotency requirements for the write-only sheet tabs, i
 - **Android/iOS QA**: never run both emulators concurrently — starves the
   host, causes ANRs/phantom reloads. Alternate platforms. Boot Android with
   `-gpu swiftshader_indirect -memory 1536` (not `-gpu auto`), and kill stale
-  gradle/kotlin daemons first if instability resurfaces.
+  gradle/kotlin daemons first if instability resurfaces. `-memory 1536` is
+  guest RAM only — the host-side qemu process uses well more than that
+  (`swiftshader_indirect` is software GPU rendering, itself heavy), so also
+  stop Metro/`netlify dev` while the emulator boots and the native app
+  installs, restarting them only once that's done, and never run a Gradle
+  build at the same time as the emulator either (confirmed 2026-09-28: a
+  disk-full Gradle failure and an OOM-crashed emulator both traced back to
+  everything running at once). If the emulator becomes persistently
+  unresponsive ("System UI isn't responding" loops that don't clear), it's
+  faster to `adb emu kill` and relaunch with `-no-snapshot-load` (cold
+  boot) than to keep waiting — confirmed this fixes it, likely a corrupted
+  snapshot from an earlier crash. A `gradlew assembleDebug`
+  "No space left on device" failure is a real full-disk issue on this
+  machine, not a code problem — check `df -h /` first; `~/.gradle/caches`,
+  Xcode DerivedData, and the Homebrew cache are all safe to clear and
+  regenerate.
 - **Dev-client testing**: the dev-tools floating button overlaps the
   top-right corner in every screen (same spot as the avatar button),
   blocking taps there. Workaround: temporarily point RootNavigator's

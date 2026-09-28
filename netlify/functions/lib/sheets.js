@@ -267,6 +267,37 @@ export async function ensureBlogPostsTabExists() {
   return ensureTabExists(BLOG_POSTS_TAB, BLOG_POSTS_HEADER);
 }
 
+// Newsletter posts -- metadata only, same Blobs-for-body split as blog
+// posts. `category` is the primary category (categories[0]); `categories`
+// holds all of them, comma-separated, for the "matches any" chip filter.
+export const NEWSLETTER_POSTS_TAB = 'newsletter posts';
+export const NEWSLETTER_POSTS_HEADER = [
+  'id',
+  'title',
+  'url',
+  'publishedAt',
+  'heroImageUrl',
+  'readMinutes',
+  'author',
+  'category',
+  'categories',
+];
+
+export async function ensureNewsletterPostsTabExists() {
+  return ensureTabExists(NEWSLETTER_POSTS_TAB, NEWSLETTER_POSTS_HEADER);
+}
+
+// Bulletins -- hand-maintained after the one-time seed (see
+// scripts/seed-bulletins.mjs). No body/author/hero columns: the app never
+// renders a bulletin natively, only opens `url` (the campaign link) in the
+// in-app browser.
+export const BULLETINS_TAB = 'bulletins';
+export const BULLETINS_HEADER = ['id', 'title', 'publishedAt', 'url'];
+
+export async function ensureBulletinsTabExists() {
+  return ensureTabExists(BULLETINS_TAB, BULLETINS_HEADER);
+}
+
 // Sets whole columns' number format to TEXT so Sheets stops flagging
 // numeric-/time-looking TEXT-typed cells (written with valueInputOption:
 // 'RAW') with its "this is explicitly text" apostrophe indicator. Pure

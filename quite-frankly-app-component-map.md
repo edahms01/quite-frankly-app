@@ -34,7 +34,7 @@ Companion to `quite-frankly-app-plan.md` (decisions/reasoning) — this doc is t
 | **Community** | Social links + events | Home card | External: Discord, Telegram, X, Instagram, Tumblr, Forum; Main Event row | `STATIC` | |
 | **Shop** | Real stores + affiliate codes | Home card | Each row → external store/affiliate URL | `SHEET-SHOP` | Two sections: Shop (4 stores) and Affiliates (10 codes) |
 | **Calendar** | Weekly Sun–Sat schedule, regular show + Culture Club unified | Home card | back → Home | `CALENDAR` | Source TBD — open item with Frank |
-| **Writing** | Blog, Newsletter Archive, Guest Appearances | Home card | Blog (external), Newsletter Archive (external); Guest Appearances not live | `STATIC` | Guest Appearances is a future monetization slot, not built |
+| **Writing** | Blog \| Newsletter segmented control, one screen | Home card | Blog and Newsletter tabs, each paginated; posts → Article (shared by both); bulletins → BulletinViewer (native WebView) | `SHEET-BLOG`/`BLOBS-BLOG` (Blog), `SHEET-NEWSLETTER`/`SHEET-BULLETINS`/`BLOBS-NEWSLETTER` (Newsletter) | Native, JSON-cache backed — no longer a link-out to the site. Guest Appearances dropped, covered by the Newsletter tab's Submissions category |
 | **Band** | Frank's band content | Home card | Bandcamp embed itself | `BANDCAMP` | Wireframe shows a styled mockup — this tool can't load real external iframes, but the real app would use the genuine embed |
 | **Account** | Profile/settings hub | Avatar icon, any main screen | → Subscription, Notifications, Donation, Report a Bug; Sign Out | User profile data (once real account exists) | |
 | **Donation** | One-time support options — no subscription | Account | External: PayPal, Amazon Storefront; tap-to-copy: BTC, XRP addresses | `STATIC` | Mail address shown as plain text, not a link |
@@ -150,7 +150,7 @@ All found in a real episode's show notes (`spotify-all` tab, FrankClips sheet) �
 | SubscribeStar | https://www.subscribestar.com/quitefrankly |
 
 ### Writing ✅
-Blog and Newsletter Archive use the site page URLs above.
+Blog | Newsletter segmented control, native for both. Blog reads `blog posts` (Sheet metadata) + `blog-bodies` (Blobs), via `get-blog-posts.js`, backfilled/polled from quitefrankly.tv's Squarespace blog. Newsletter reads `newsletter posts` + `bulletins` (Sheet metadata) + `newsletter-bodies` (Blobs), via `get-newsletter-items.js`; newsletter posts are backfilled/polled the same way, bulletins are seeded once and maintained by hand. Article is shared by both tabs. Bulletins open in BulletinViewer — a native screen rendering the campaign URL in a WebView (not the system browser): links to a newsletter-content post resolve (via `get-newsletter-items.js`'s `?mode=findByUrl`) and open the native Article screen; other http(s) links open the system browser; mailto/unsubscribe links are blocked.
 
 ### Band
 Bandcamp album ID `1087783863` (already confirmed, see plan doc) — no separate URL needed, it's an embed parameter.

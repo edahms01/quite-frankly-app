@@ -78,8 +78,15 @@ Dropped to Home / Watch / Members Only. Reasoning: everything "More" used to agg
 Confirmed not on YouTube, so no embed path applies at all (not even the harder live-YouTube case). Unlocked events link out to wherever Frank actually hosts them (likely Zoom or a private link, matching the rotating-password mechanic) — same pattern as Patreon/SubscribeStar, external open, no in-app player attempted. Still need to ask Frank what platform this actually is — separate open question from Show Schedule (that's *when*, this is *how*).
 - **v1 fallback, decided**: since real membership verification is deprioritized, the "Link your account" teaser is no longer a SOON placeholder — it's now a real, working link out to quitefrankly.tv's own Members Only login. The three event rows now do the same (tap → same site login) rather than trying to gate/unlock per-event in-app. Everything Members Only routes to the website for now.
 
-## QA framework for phase briefs
-Every phase brief includes a QA section, run before Code reports the phase done — not a general "looks good," a specific pass/fail per item. Principles: verify against source docs (wireframes, component map, theme.js), not general judgment; check regression against earlier phases, since an 8-phase build means later work can quietly break earlier work; call out platform parity explicitly for React Native (iOS/Android can silently diverge — shadows already confirmed to); and for phases with many similar units of work (e.g. Phase 2's 19 screens), QA in sub-phase checkpoints (every 4-5 screens) rather than one pass at the end, so a bad pattern gets caught before it's been repeated across all of them. Basis for this was Eric's QA process on the Dirigo Bid System rebuild — specifics of that process weren't available to draw from directly, so this is a reasoned default, open to correction.
+## QA (risk-based, keep it lean)
+1. Automated: unit tests for pure logic (cursor, merge order, month filter, normalizers).
+2. Data: live dry-run on real data first. Before/after diff after any transform (visible text, link/image counts), plus row/blob count parity. Stop and report anything unexpected.
+3. UI: worst-case real items chosen by querying the data (largest post, no hero, oldest month, a month + category with no results, a bulletin), opened on one iOS and one Android device. No per-item checklist.
+4. One real deploy before merge.
+5. Report failures and decisions only. Non-blocking findings go on a follow-up list, not into this PR.
+Time-box it: more than one fix-and-retest loop means stop and ask.
+
+For phases with many similar units of work (e.g. Phase 2's 19 screens), still QA in sub-phase checkpoints (every 4-5 screens) rather than one pass at the end, so a bad pattern gets caught before it's been repeated across all of them.
 
 ## Header wordmark — decided (final)
 Real asset now, not a font recreation: the actual banner's "QUITE FRANKLY" letters (color-extracted from `qf-banner-v2.png`) composited with the actual jester photo (background-removed via rembg), matching the original banner's layout. Replaces the earlier CSS text-stroke approach entirely — no more font/weight guessing. This is the official version, used as the Home header image.
@@ -104,8 +111,8 @@ Confirmed the podcast exists as a real, actively syndicated show (Apple Podcasts
 ## Watch — partial progress (still not fully designed)
 Platform pills (YouTube/Rumble/Twitch/Pilled) moved out of the not-live card to their own row below it. Removed the Zedalza/"Also from Frank" section — good idea, but unnecessary complexity for v1.
 
-## Writing — decided (new)
-New Home destination: Blog, Newsletter Archive (both real, existing site content), and Guest Appearances (SOON-tagged, not yet real) — a possible future slot for guest writers or sponsored partner content that Frank could charge for directly or bundle into ad-partnership deals. Supersedes/absorbs the earlier looser "Reading area" idea from the fun-ideas list.
+## Writing — decided (updated, phase 2)
+Writing is one screen with a Blog | Newsletter segmented control, not three separate destinations. Guest Appearances is dropped — it's covered by the Newsletter tab's Submissions category instead of being its own slot. Home's Writing card goes straight into this screen.
 - **Home layout — reverted to 2x3 grid.** First tried Writing as a full-width row below the 2x2 grid; rejected — went back to a 6-card grid instead: Watch, Members Only, Shop, Community, Writing, and a 6th slot as an empty grayed/dashed placeholder card (no label, just a "···" icon) for whatever gets added next.
 
 ## Shop & Community — decided (now separate pages, linked from Home's cards)

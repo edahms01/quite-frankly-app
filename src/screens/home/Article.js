@@ -157,6 +157,10 @@ const renderersProps = {
 
 export default function Article({ navigation, route }) {
   const post = route?.params?.post ?? {};
+  // 'blog' (default) or 'newsletter' -- selects which read function's ?id=
+  // route the body comes from. WritingBlog.js never passes this (silently
+  // defaults to 'blog'); WritingNewsletter.js always passes 'newsletter'.
+  const source = route?.params?.source ?? 'blog';
   const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
 
@@ -181,8 +185,9 @@ export default function Article({ navigation, route }) {
     (async () => {
       try {
         if (!post.id) throw new Error('Missing post id');
+        const fnName = source === 'newsletter' ? 'get-newsletter-items' : 'get-blog-posts';
         const response = await fetch(
-          `${API_BASE_URL}/.netlify/functions/get-blog-posts?id=${encodeURIComponent(post.id)}`,
+          `${API_BASE_URL}/.netlify/functions/${fnName}?id=${encodeURIComponent(post.id)}`,
           { signal: controller.signal }
         );
         if (!response.ok) throw new Error(`Article body request failed: ${response.status}`);
@@ -205,7 +210,7 @@ export default function Article({ navigation, route }) {
       clearTimeout(timeoutId);
       controller.abort();
     };
-  }, [post.id]);
+  }, [post.id, source]);
 
   // Server writes author as item.author?.displayName ?? '' with no
   // "Quite Frankly" fallback (netlify/functions/lib/squarespaceBlog.js) —
@@ -244,9 +249,10 @@ export default function Article({ navigation, route }) {
 
       <View style={styles.body}>
         <View style={styles.metaRow}>
-          {/* Always "Blog" — collection is write-side-only, never surfaced. */}
+          {/* Blog posts have no category field (always "Blog"); newsletter
+              posts carry their primary category's display label. */}
           <View style={styles.categoryPill}>
-            <Text style={styles.categoryPillText}>Blog</Text>
+            <Text style={styles.categoryPillText}>{post.category || 'Blog'}</Text>
           </View>
           {meta ? <Text style={styles.metaText}>{meta}</Text> : null}
         </View>
