@@ -103,6 +103,25 @@ export async function getColumn(tab, columnLetter) {
   return (data.values || []).flat();
 }
 
+// One GET returning raw row-arrays for a whole range (e.g. 'A:H', 'A2:I').
+// Same "no header handling, that's the caller's job" convention as
+// getColumn/getColumnWithRows: row 1 is included like any other row if the
+// range covers it. `range` is the A1-notation range WITHOUT the tab name
+// (this function prefixes it with 'tab'! itself), matching getColumn's
+// calling convention of passing just the column letter(s).
+export async function getRows(tab, range) {
+  const token = await getAccessToken();
+  const fullRange = `'${tab}'!${range}`;
+  const response = await fetch(sheetsUrl(`/values/${encodeURIComponent(fullRange)}`), {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) {
+    throw new Error(`Sheets read of "${tab}" failed: ${response.status} ${await response.text()}`);
+  }
+  const data = await response.json();
+  return data.values || [];
+}
+
 // Column values WITH 1-based sheet row numbers (reuses the existing GET —
 // no extra API call). No assumption about a header row: row 1 is included
 // like any other row. If it's a header, it simply never matches a real
@@ -170,6 +189,77 @@ export async function getSheetId(tab) {
     throw new Error(`Sheets metadata fetch: no tab named "${tab}" found`);
   }
   return sheet.properties.sheetId;
+}
+
+// Matches the specific "tab doesn't exist" error getSheetId throws above —
+// used by ensureTabExists to distinguish "missing tab, go create it" from
+// any other failure (network error, bad spreadsheet id, etc.), which
+// should propagate instead of being swallowed.
+const NO_TAB_NAMED_RE = /no tab named/;
+
+// Idempotent: creates `tab` (via the spreadsheet-level batchUpdate addSheet
+// request) and writes `headerRow` into A1:{lastCol}1 if the tab doesn't
+// already exist yet; no-ops (does not touch the header row) if it does.
+// Existence is checked via getSheetId — if it resolves, the tab is already
+// there and left untouched (so a pre-existing header is never clobbered by
+// a later ensureTabExists call). Only getSheetId's specific "no tab named"
+// error is treated as "go create it"; any other error propagates.
+export async function ensureTabExists(tab, headerRow) {
+  try {
+    await getSheetId(tab);
+    return { created: false };
+  } catch (err) {
+    if (!NO_TAB_NAMED_RE.test(err.message)) throw err;
+  }
+
+  const token = await getAccessToken();
+  const addResponse = await fetch(sheetsUrl(':batchUpdate'), {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ requests: [{ addSheet: { properties: { title: tab } } }] }),
+  });
+  if (!addResponse.ok) {
+    throw new Error(`Sheets addSheet for "${tab}" failed: ${addResponse.status} ${await addResponse.text()}`);
+  }
+
+  if (headerRow && headerRow.length > 0) {
+    const lastCol = String.fromCharCode(64 + headerRow.length); // A=1..Z=26
+    const range = `'${tab}'!A1:${lastCol}1`;
+    const headerResponse = await fetch(
+      `${sheetsUrl(`/values/${encodeURIComponent(range)}`)}?valueInputOption=RAW`,
+      {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ range, values: [headerRow] }),
+      }
+    );
+    if (!headerResponse.ok) {
+      throw new Error(`Sheets header write for "${tab}" failed: ${headerResponse.status} ${await headerResponse.text()}`);
+    }
+  }
+
+  return { created: true };
+}
+
+// Fixed schema for the blog-reading feature's Sheet tab (Global Constraints:
+// columns A-I, exact order, bodyHtml last). Exported alongside the ensure
+// helper so later tasks (backfill script, poller) import both the tab name
+// and header spec from one place rather than re-typing the column list.
+export const BLOG_POSTS_TAB = 'blog posts';
+export const BLOG_POSTS_HEADER = [
+  'id',
+  'collection',
+  'title',
+  'url',
+  'publishedAt',
+  'heroImageUrl',
+  'readMinutes',
+  'author',
+  'bodyHtml',
+];
+
+export async function ensureBlogPostsTabExists() {
+  return ensureTabExists(BLOG_POSTS_TAB, BLOG_POSTS_HEADER);
 }
 
 // Sets whole columns' number format to TEXT so Sheets stops flagging
