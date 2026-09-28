@@ -10,7 +10,12 @@ import { colors, fontFamily, fontSize, radius, spacing } from '../theme';
 const CELL_SIZE = 16;
 const STATUS_HEIGHT = 28;
 const DPAD_AREA_HEIGHT = 116;
-const TICK_MS = 150;
+// Ramps from a slower, more reactable start speed up to the original
+// 150ms pace over the first few apples, rather than starting at full
+// speed immediately.
+const START_TICK_MS = 220;
+const END_TICK_MS = 150;
+const RAMP_APPLES = 4;
 const INITIAL_LENGTH = 3;
 
 const DIRECTIONS = {
@@ -76,6 +81,10 @@ export default function Snake({ width, height, paused }) {
   foodRef.current = food;
   gameOverRef.current = gameOver;
 
+  const tickMs = Math.round(
+    START_TICK_MS - Math.min(score, RAMP_APPLES) * (START_TICK_MS - END_TICK_MS) / RAMP_APPLES
+  );
+
   useEffect(() => {
     if (paused || gameOver) return undefined;
 
@@ -112,10 +121,10 @@ export default function Snake({ width, height, paused }) {
         setFood(spawnFood(newSnake, cols, rows));
       }
       setSnake(newSnake);
-    }, TICK_MS);
+    }, tickMs);
 
     return () => clearInterval(interval);
-  }, [paused, gameOver, cols, rows]);
+  }, [paused, gameOver, cols, rows, tickMs]);
 
   function handleDirectionPress(newDir) {
     if (paused || gameOverRef.current) return;

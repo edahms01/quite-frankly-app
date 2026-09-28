@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { RotateCcw, X } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, shadows, spacing } from '../../theme';
@@ -37,11 +37,28 @@ function getInitialPosition(screenBounds, avoidRect) {
   };
 }
 
+// Shown once per game per screen-visit (the caller tracks "seen" via
+// showSplash/onDismissSplash) instead of the game itself — the game
+// component only mounts once "Got it — Play" is tapped, so there's nothing
+// to pause or freeze while this is up, and a Restart tap while it's showing
+// just bumps resetKey with no visible effect.
+function Splash({ game, onDismiss }) {
+  return (
+    <View style={styles.splash}>
+      <Text style={styles.splashHeading}>{game.label}</Text>
+      <Text style={styles.splashControls}>{game.controls}</Text>
+      <TouchableOpacity style={styles.splashButton} onPress={onDismiss} activeOpacity={0.85}>
+        <Text style={styles.splashButtonText}>Got it — Play</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 // Draggable floating window chrome, shared by every game. Games plug in via
 // the `game` prop (an entry from GAMES) and never know about dragging,
 // hiding, or restart — GameWindow owns all of that and just passes
 // width/height/paused down.
-export default function GameWindow({ game, screenBounds, avoidRect, hidden, onClose }) {
+export default function GameWindow({ game, screenBounds, avoidRect, hidden, onClose, showSplash, onDismissSplash }) {
   const [position, setPosition] = useState(() => getInitialPosition(screenBounds, avoidRect));
   const [resetKey, setResetKey] = useState(0);
   const dragStartRef = useRef({ left: 0, top: 0 });
@@ -69,12 +86,7 @@ export default function GameWindow({ game, screenBounds, avoidRect, hidden, onCl
     });
   };
 
-  const handleRestartPress = () => {
-    Alert.alert('Restart game?', 'This clears your current progress.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Restart', style: 'destructive', onPress: () => setResetKey((k) => k + 1) },
-    ]);
-  };
+  const handleRestartPress = () => setResetKey((k) => k + 1);
 
   return (
     <View
@@ -101,7 +113,11 @@ export default function GameWindow({ game, screenBounds, avoidRect, hidden, onCl
         </TouchableOpacity>
       </View>
 
-      <game.Component key={resetKey} width={WINDOW_WIDTH} height={WINDOW_GAME_HEIGHT} paused={hidden} />
+      {showSplash ? (
+        <Splash game={game} onDismiss={onDismissSplash} />
+      ) : (
+        <game.Component key={resetKey} width={WINDOW_WIDTH} height={WINDOW_GAME_HEIGHT} paused={hidden} />
+      )}
     </View>
   );
 }
@@ -147,5 +163,37 @@ const styles = StyleSheet.create({
     color: colors.inkPrimary,
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.md,
+  },
+  splash: {
+    width: WINDOW_WIDTH,
+    height: WINDOW_GAME_HEIGHT,
+    backgroundColor: colors.surfaceCard,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.lg,
+    gap: spacing.sm,
+  },
+  splashHeading: {
+    color: colors.inkPrimary,
+    fontFamily: fontFamily.bold,
+    fontSize: fontSize.xxl,
+  },
+  splashControls: {
+    color: colors.inkMuted,
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.md,
+    textAlign: 'center',
+  },
+  splashButton: {
+    marginTop: spacing.md,
+    backgroundColor: colors.accentGold,
+    borderRadius: radius.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+  },
+  splashButtonText: {
+    color: colors.surfaceGround,
+    fontFamily: fontFamily.semiBold,
+    fontSize: fontSize.lg,
   },
 });
