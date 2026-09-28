@@ -106,6 +106,9 @@ Full detail, including idempotency requirements for the write-only sheet tabs, i
 
 ---
 
+## QA and deploy process
+QA is risk-based and lean: live dry-run + diff for data work, one smoke pass on worst-case items, one real deploy, exceptions-only reports. After one failed fix-and-retest loop, stop and ask. Merges to main do not auto-deploy: after merge, trigger a production deploy manually (`netlify api createSiteBuild`) and confirm changed functions are live.
+
 ## Known open items
 - **Calendar's real source** — need to ask Frank (ICS-capable calendar vs. manual).
 - **EAS project linkage** — done (`app.json` has `extra.eas.projectId`, `eas.json` configured with dev/preview/production build profiles + submit config). Unblocks real push tokens (`getExpoPushTokenAsync`) for live device testing. Expo's push service (`expo-notifications`) is integrated.

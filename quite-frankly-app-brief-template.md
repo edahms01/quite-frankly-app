@@ -25,12 +25,20 @@ Reusable skeleton for every Quite Frankly Mobile App phase brief. Fill in the br
 [Explicit scope boundaries — what belongs to a later phase, so Code
 doesn't drift ahead or invent scope.]
 
-## QA
-[Checklist specific to this phase's output. Expect pass/fail per item
-back, not a summary. For phases with multiple similar units of work
-(e.g. building many screens), break QA into sub-phase checkpoints
-rather than one pass at the very end — see quite-frankly-app-plan.md's
-QA framework notes for why.]
+## QA (risk-based, keep it lean)
+1. Automated: unit tests for pure logic (cursor, merge order, month filter, normalizers).
+2. Data: live dry-run on real data first. Before/after diff after any transform (visible
+   text, link/image counts), plus row/blob count parity. Stop and report anything unexpected.
+3. UI: worst-case real items chosen by querying the data (largest post, no hero, oldest
+   month, a month + category with no results, a bulletin), opened on one iOS and one
+   Android device. No per-item checklist.
+4. One real deploy before merge.
+5. Report failures and decisions only. Non-blocking findings go on a follow-up list, not
+   into this PR.
+Time-box it: more than one fix-and-retest loop means stop and ask.
+[Adapt items 1-4 to what this phase actually built. For phases with multiple similar units
+of work (e.g. building many screens), break QA into sub-phase checkpoints rather than one
+pass at the very end — see quite-frankly-app-plan.md's QA notes for why.]
 
 ## Report back
 [What Code should tell Eric when the phase is done — decisions made,
