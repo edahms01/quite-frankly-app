@@ -202,8 +202,6 @@ export default function WritingBlog({ navigation }) {
       }
     >
       <View style={styles.body}>
-        <Text style={styles.subtitle}>Quite Blogly — Frank's own writing, read right here.</Text>
-
         {usingCache ? (
           <Text style={styles.cacheNotice}>Showing last saved version — may be out of date.</Text>
         ) : null}
@@ -257,13 +255,6 @@ const styles = StyleSheet.create({
   body: {
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.lg,
-  },
-  subtitle: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.regular,
-    fontSize: fontSize.base,
-    lineHeight: fontSize.base * 1.5,
-    marginBottom: spacing.md,
   },
   cacheNotice: {
     color: colors.accentGold,
