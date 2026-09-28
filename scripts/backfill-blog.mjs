@@ -40,6 +40,7 @@ import {
   mapItemToPost,
   median,
   toBlogPostRow,
+  writeBlobsAndPartition,
 } from '../netlify/functions/lib/squarespaceBlog.js';
 
 const DRY_RUN = process.argv.includes('--dry-run');
@@ -138,6 +139,9 @@ async function main() {
   // runs even in --dry-run, because getColumnWithRows below needs the tab
   // to exist to be read at all -- there's no way to report an insert/update
   // plan without it. It never touches existing data.
+  if (DRY_RUN) {
+    console.log(`Note: even in --dry-run, this step creates the "${BLOG_POSTS_TAB}" tab + header row if it doesn't exist yet (needed to read column A below) -- it never touches existing data or writes any post rows/blobs.`);
+  }
   console.log(`Ensuring "${BLOG_POSTS_TAB}" tab exists...`);
   await ensureBlogPostsTabExists();
 
@@ -160,21 +164,11 @@ async function main() {
   }
 
   console.log(`Writing ${allPosts.length} blobs to "${BLOG_BODIES_STORE}" (blob first, then the matching Sheet row -- a post whose blob write fails is skipped and logged, never given a Sheet row with no matching blob)...`);
-  const writablePosts = [];
-  const blobFailures = [];
-  for (const post of allPosts) {
-    try {
-      await setJSON(BLOG_BODIES_STORE, post.id, { bodyHtml: post.bodyHtml, readMinutes: post.readMinutes });
-      writablePosts.push(post);
-    } catch (err) {
-      console.error(`Blob write FAILED for ${post.id} ("${post.title}") -- skipping this post's Sheet row: ${err.message}`);
-      blobFailures.push({ id: post.id, title: post.title, url: post.url, error: err.message });
-    }
-  }
+  const { writablePosts, blobFailures } = await writeBlobsAndPartition(allPosts, setJSON, BLOG_BODIES_STORE);
   if (blobFailures.length > 0) {
-    console.log(`${blobFailures.length} post(s) had a failed blob write and were held out of the Sheet write entirely:`);
+    console.error(`${blobFailures.length} post(s) had a failed blob write and were held out of the Sheet write entirely (never given a row with no matching blob):`);
     for (const f of blobFailures) {
-      console.log(`  - ${f.id} "${f.title}" -- ${f.url} -- ${f.error}`);
+      console.error(`  - ${f.id} "${f.title}" -- ${f.url} -- ${f.error}`);
     }
   }
 

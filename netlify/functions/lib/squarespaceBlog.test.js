@@ -10,6 +10,7 @@ import {
   computeReadMinutes,
   toBlogPostRow,
   median,
+  writeBlobsAndPartition,
   BLOG_COLLECTIONS,
 } from './squarespaceBlog.js';
 
@@ -175,4 +176,69 @@ test('median: empty array returns 0, odd-length returns the middle value, even-l
   assert.equal(median([1, 3, 2]), 2);
   assert.equal(median([1, 2, 3, 4]), 2.5);
   assert.equal(median([7, 1, 5, 3]), 4); // unsorted input, sorted -> [1,3,5,7] -> (3+5)/2
+});
+
+// writeBlobsAndPartition is the single load-bearing invariant of the
+// post-Task-2 Blobs ruling: blob first, then the Sheet row; a post whose
+// blob write fails is skipped and logged, never given a row with no
+// matching blob. These tests cover all-succeed / all-fail / mixed, per the
+// reviewer's requested coverage, using a mocked setJSONFn -- no real Blobs
+// credentials needed.
+function makePost(id, overrides = {}) {
+  return { id, title: `Title ${id}`, url: `https://www.quitefrankly.tv/p/${id}`, bodyHtml: `<p>${id}</p>`, readMinutes: 1, ...overrides };
+}
+
+test('writeBlobsAndPartition: all posts succeed -> all writable, no failures', async () => {
+  const calls = [];
+  const setJSONFn = async (storeName, key, value) => {
+    calls.push({ storeName, key, value });
+  };
+  const posts = [makePost('a'), makePost('b'), makePost('c')];
+
+  const { writablePosts, blobFailures } = await writeBlobsAndPartition(posts, setJSONFn, 'blog-bodies');
+
+  assert.deepEqual(writablePosts, posts);
+  assert.deepEqual(blobFailures, []);
+  assert.equal(calls.length, 3);
+  assert.deepEqual(calls[0], { storeName: 'blog-bodies', key: 'a', value: { bodyHtml: '<p>a</p>', readMinutes: 1 } });
+});
+
+test('writeBlobsAndPartition: all posts fail -> none writable, every failure recorded with id/title/url/error', async () => {
+  const setJSONFn = async () => {
+    throw new Error('quota exceeded');
+  };
+  const posts = [makePost('a'), makePost('b')];
+
+  const { writablePosts, blobFailures } = await writeBlobsAndPartition(posts, setJSONFn, 'blog-bodies');
+
+  assert.deepEqual(writablePosts, []);
+  assert.equal(blobFailures.length, 2);
+  assert.deepEqual(blobFailures[0], { id: 'a', title: 'Title a', url: 'https://www.quitefrankly.tv/p/a', error: 'quota exceeded' });
+  assert.deepEqual(blobFailures[1], { id: 'b', title: 'Title b', url: 'https://www.quitefrankly.tv/p/b', error: 'quota exceeded' });
+});
+
+test('writeBlobsAndPartition: mixed success/failure -> correct partition, order preserved within each list, one bad post does not abort the rest', async () => {
+  const setJSONFn = async (storeName, key) => {
+    if (key === 'b') throw new Error('network error');
+  };
+  const posts = [makePost('a'), makePost('b'), makePost('c')];
+
+  const { writablePosts, blobFailures } = await writeBlobsAndPartition(posts, setJSONFn, 'blog-bodies');
+
+  assert.deepEqual(writablePosts.map((p) => p.id), ['a', 'c']);
+  assert.equal(blobFailures.length, 1);
+  assert.deepEqual(blobFailures[0], { id: 'b', title: 'Title b', url: 'https://www.quitefrankly.tv/p/b', error: 'network error' });
+});
+
+test('writeBlobsAndPartition: empty input returns empty partition, never calls setJSONFn', async () => {
+  let called = false;
+  const setJSONFn = async () => {
+    called = true;
+  };
+
+  const { writablePosts, blobFailures } = await writeBlobsAndPartition([], setJSONFn, 'blog-bodies');
+
+  assert.deepEqual(writablePosts, []);
+  assert.deepEqual(blobFailures, []);
+  assert.equal(called, false);
 });

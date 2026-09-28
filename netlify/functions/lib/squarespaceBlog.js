@@ -118,6 +118,38 @@ export function computeReadMinutes(bodyHtml) {
   return Math.max(1, Math.ceil(words.length / 200));
 }
 
+// Writes each post's normalized bodyHtml (+ readMinutes) to a Blobs store,
+// keyed by post id, and splits posts into those whose blob write succeeded
+// vs. failed. This is the single load-bearing invariant of the post-Task-2
+// Blobs ruling: "blob first, then the Sheet row -- if the blob write fails,
+// skip that row and log it, never write a row with no matching blob"
+// (Global Constraints). Extracted here (rather than left inline in the
+// backfill script's main()) so it's unit-testable with a mocked
+// `setJSONFn`, and so the backfill and the poller (Task 3, same
+// blob-then-row/skip-and-log rule) share one implementation instead of
+// risking drift between two copies.
+//
+// `setJSONFn` matches blobs.js's `setJSON(storeName, key, value)` signature
+// -- injected (rather than imported directly) purely as a test seam; real
+// callers pass the real `setJSON`. Returns `{ writablePosts, blobFailures }`
+// in the candidates' original order; `blobFailures` entries carry
+// `{ id, title, url, error }` for reporting. Never throws itself -- a
+// per-post failure is caught and recorded, not propagated, so one bad post
+// can't abort the whole run.
+export async function writeBlobsAndPartition(posts, setJSONFn, storeName) {
+  const writablePosts = [];
+  const blobFailures = [];
+  for (const post of posts) {
+    try {
+      await setJSONFn(storeName, post.id, { bodyHtml: post.bodyHtml, readMinutes: post.readMinutes });
+      writablePosts.push(post);
+    } catch (err) {
+      blobFailures.push({ id: post.id, title: post.title, url: post.url, error: err.message });
+    }
+  }
+  return { writablePosts, blobFailures };
+}
+
 // Builds the full A-H row (sheets.js's BLOG_POSTS_HEADER order -- the
 // 'blog posts' tab is metadata-only as of the post-Task-2 Blobs ruling, no
 // bodyHtml column) for a fully assembled post record: { id, collection,
