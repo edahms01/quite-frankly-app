@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { RotateCcw, X } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, shadows, spacing } from '../../theme';
@@ -69,12 +69,7 @@ export default function GameWindow({ game, screenBounds, avoidRect, hidden, onCl
     });
   };
 
-  const handleRestartPress = () => {
-    Alert.alert('Restart game?', 'This clears your current progress.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Restart', style: 'destructive', onPress: () => setResetKey((k) => k + 1) },
-    ]);
-  };
+  const handleRestartPress = () => setResetKey((k) => k + 1);
 
   return (
     <View
