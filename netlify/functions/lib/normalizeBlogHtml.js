@@ -76,19 +76,32 @@ export function normalizeBlogHtml(html) {
     videoEmbedCount++;
     const raw = extractAttrValue(match, 'data-html');
     const decoded = raw ? decodeEntities(raw) : '';
-    const src = extractAttrValue(decoded, 'src');
+    // extractAttrValue returns the src value exactly as it appears in the
+    // decoded inner markup -- i.e. still HTML-attribute-escaped once
+    // (e.g. a literal "&" is "&amp;" there, same as in any ordinary HTML
+    // attribute). decodeEntities it to get the real URL before it's
+    // re-escaped (once) by watchVideoLink -- otherwise an already-escaped
+    // "&amp;" gets escaped again into "&amp;amp;".
+    const srcRaw = extractAttrValue(decoded, 'src');
+    const src = srcRaw ? decodeEntities(srcRaw) : null;
     return src ? watchVideoLink(src) : '';
   });
 
   result = result.replace(IFRAME_RE, (match) => {
     videoEmbedCount++;
-    const src = extractAttrValue(match, 'src');
+    // Same reasoning as above: extractAttrValue's result is already
+    // attribute-escaped text from the source markup, not the real URL.
+    const srcRaw = extractAttrValue(match, 'src');
+    const src = srcRaw ? decodeEntities(srcRaw) : null;
     return src ? watchVideoLink(src) : '';
   });
 
   result = result.replace(IMG_TAG_RE, (tag) => {
-    const dataSrc = extractAttrValue(tag, 'data-src');
-    if (dataSrc === null) return tag;
+    const dataSrcRaw = extractAttrValue(tag, 'data-src');
+    if (dataSrcRaw === null) return tag;
+    // Decode before re-escaping into the new src= attribute -- same
+    // already-escaped-once-already reasoning as the video embed paths above.
+    const dataSrc = decodeEntities(dataSrcRaw);
     if (/(?<=[\s])src\s*=\s*(?:"[^"]*"|'[^']*')/i.test(tag)) {
       return tag.replace(/(?<=[\s])src\s*=\s*(?:"[^"]*"|'[^']*')/i, `src="${escapeAttr(dataSrc)}"`);
     }

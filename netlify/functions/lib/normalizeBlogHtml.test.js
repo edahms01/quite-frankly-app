@@ -97,6 +97,33 @@ test('handles empty/nullish input without throwing', () => {
   assert.deepEqual(normalizeBlogHtml(undefined), { html: '', videoEmbedCount: 0 });
 });
 
+test('does not double-escape an already entity-escaped ampersand in data-src', () => {
+  const input = '<img data-src="https://images.squarespace-cdn.com/x.jpg?format=1500w&amp;quality=90">';
+  const { html } = normalizeBlogHtml(input);
+  assert.match(html, /src="https:\/\/images\.squarespace-cdn\.com\/x\.jpg\?format=1500w&amp;quality=90"/);
+  assert.doesNotMatch(html, /&amp;amp;/);
+});
+
+test('does not double-escape an already entity-escaped ampersand in a bare iframe src', () => {
+  const input = '<iframe src="https://player.vimeo.com/video/999?a=1&amp;b=2"></iframe>';
+  const { html } = normalizeBlogHtml(input);
+  assert.match(html, /href="https:\/\/player\.vimeo\.com\/video\/999\?a=1&amp;b=2"/);
+  assert.doesNotMatch(html, /&amp;amp;/);
+});
+
+test('does not double-escape an ampersand nested two levels deep inside a data-html embed', () => {
+  // Real Squarespace shape: the inner <iframe src="...&amp;..."> tag is
+  // itself HTML-entity-encoded a second time to live inside the outer
+  // data-html attribute, so the literal ampersand is encoded twice in the
+  // raw source (&amp;amp;) before any normalization touches it.
+  const input =
+    '<div class="sqs-block-video" data-html="&lt;iframe src=&quot;https://player.vimeo.com/video/999?a=1&amp;amp;b=2&quot;&gt;&lt;/iframe&gt;"></div>';
+  const { html, videoEmbedCount } = normalizeBlogHtml(input);
+  assert.equal(videoEmbedCount, 1);
+  assert.match(html, /href="https:\/\/player\.vimeo\.com\/video\/999\?a=1&amp;b=2"/);
+  assert.doesNotMatch(html, /&amp;amp;/);
+});
+
 test('is idempotent-ish: normalizing already-normalized html is a no-op', () => {
   const input = '<p>Hello <a href="https://example.com/v">Watch video</a> world</p>';
   const { html, videoEmbedCount } = normalizeBlogHtml(input);
