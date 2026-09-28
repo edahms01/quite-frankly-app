@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { fetchWithBackoff } from './fetchWithBackoff.js';
 
 let cachedToken = null;
 let cachedTokenExpiry = 0;
@@ -69,7 +70,7 @@ export async function appendRows(tab, rows) {
   if (rows.length === 0) return { updates: { updatedRows: 0 } };
   const token = await getAccessToken();
   const range = `'${tab}'!A1`;
-  const response = await fetch(
+  const response = await fetchWithBackoff(
     `${sheetsUrl(`/values/${encodeURIComponent(range)}:append`)}?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,
     {
       method: 'POST',
@@ -138,7 +139,7 @@ export async function getColumnWithRows(tab, columnLetter) {
 export async function batchUpdateRanges(updates /* [{range, values}] */) {
   if (updates.length === 0) return { totalUpdatedRows: 0 };
   const token = await getAccessToken();
-  const response = await fetch(sheetsUrl('/values:batchUpdate'), {
+  const response = await fetchWithBackoff(sheetsUrl('/values:batchUpdate'), {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
