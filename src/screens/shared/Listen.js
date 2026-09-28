@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { CirclePlay, Pause } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import { relativeTime } from '../../utils/relativeTime';
@@ -28,6 +29,8 @@ const PLATFORMS = [
   { label: 'Audible', url: 'https://www.audible.com/podcast/Quite-Frankly/B08K568X1Q' },
 ];
 
+const RSS_FEED_URL = 'https://feeds.soundcloud.com/users/soundcloud:users:159332929/sounds.rss';
+
 export default function Listen({ navigation }) {
   const { currentTrack, playbackState, play, togglePlayPause } = useAudioPlayer();
   const [episodes, setEpisodes] = useState([]);
@@ -35,8 +38,18 @@ export default function Listen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
+  const [totalEpisodes, setTotalEpisodes] = useState(null);
   const [error, setError] = useState(null);
   const [loadMoreError, setLoadMoreError] = useState(null);
+  const [rssCopied, setRssCopied] = useState(false);
+
+  const copyRssFeed = async () => {
+    await Clipboard.setStringAsync(RSS_FEED_URL);
+    setRssCopied(true);
+    setTimeout(() => {
+      if (mountedRef.current) setRssCopied(false);
+    }, 2000);
+  };
   const [refreshError, setRefreshError] = useState(null);
 
   // Shared across every call site that can outlive the component (initial
@@ -73,6 +86,7 @@ export default function Listen({ navigation }) {
       if (mountedRef.current) {
         setEpisodes(data.episodes);
         setHasMore(data.hasMore);
+        setTotalEpisodes(data.total);
         setError(null);
         // Clear any stale inline error notices so they don't linger under
         // freshly-reloaded content.
@@ -154,6 +168,17 @@ export default function Listen({ navigation }) {
             <Text style={styles.platformText} numberOfLines={1}>{p.label}</Text>
           </TouchableOpacity>
         ))}
+      </View>
+
+      <View style={styles.rssRow}>
+        {totalEpisodes != null ? (
+          <Text style={styles.episodeCount}>Total Episodes Available: {totalEpisodes}</Text>
+        ) : <View />}
+        <TouchableOpacity onPress={copyRssFeed}>
+          <Text style={styles.rssText}>
+            {rssCopied ? 'Copied!' : 'Click to copy RSS feed URL\nfor your own podcast app'}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.list}>
@@ -249,8 +274,27 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: spacing.xs,
     marginTop: spacing.md,
-    marginBottom: spacing.xl,
+    marginBottom: spacing.md,
     paddingHorizontal: spacing.sm,
+  },
+  rssRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.md,
+  },
+  episodeCount: {
+    color: colors.inkMuted,
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.sm,
+  },
+  rssText: {
+    color: colors.accentGold,
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.sm,
+    textAlign: 'right',
+    lineHeight: fontSize.sm * 1.3,
   },
   platformPill: {
     flexShrink: 1,

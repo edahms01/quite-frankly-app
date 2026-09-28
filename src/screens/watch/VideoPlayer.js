@@ -20,6 +20,19 @@ import { GAMES } from '../../games';
 // prop can't drift out of sync with the box it's rendered inside.
 const PLAYER_HEIGHT = 220;
 
+// "Lines" here means raw \n-delimited lines from YouTube's own description
+// text, not visually-wrapped lines (which vary by device width/font and
+// wouldn't give a predictable "10 lines" truncation point).
+const DESCRIPTION_PREVIEW_LINES = 10;
+
+function isDescriptionLong(description) {
+  return description.split('\n').length > DESCRIPTION_PREVIEW_LINES;
+}
+
+function truncateDescription(description) {
+  return description.split('\n').slice(0, DESCRIPTION_PREVIEW_LINES).join('\n');
+}
+
 export default function VideoPlayer({ navigation, route }) {
   const video = route?.params?.video;
   const title = video?.title ?? '[Video title]';
@@ -32,6 +45,7 @@ export default function VideoPlayer({ navigation, route }) {
   // starting stops it back to a tap-to-resume thumbnail.
   const [embedVisible, setEmbedVisible] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   // Unmounting the embed means no fullscreen:exit message will ever arrive,
   // so clear the flag here too — otherwise a game window could stay hidden.
   const { claim } = useVideoActiveSource({
@@ -187,7 +201,16 @@ export default function VideoPlayer({ navigation, route }) {
             {video?.description ? (
               <>
                 <View style={styles.divider} />
-                <Text style={styles.description}>{video.description}</Text>
+                <Text style={styles.description}>
+                  {descriptionExpanded ? video.description : truncateDescription(video.description)}
+                </Text>
+                {isDescriptionLong(video.description) ? (
+                  <TouchableOpacity onPress={() => setDescriptionExpanded((e) => !e)}>
+                    <Text style={styles.descriptionToggle}>
+                      {descriptionExpanded ? 'Show less' : 'Show more'}
+                    </Text>
+                  </TouchableOpacity>
+                ) : null}
               </>
             ) : null}
           </View>
@@ -340,5 +363,11 @@ const styles = StyleSheet.create({
     color: colors.inkMuted,
     fontFamily: fontFamily.regular,
     fontSize: fontSize.sm,
+  },
+  descriptionToggle: {
+    color: colors.accentGold,
+    fontFamily: fontFamily.semiBold,
+    fontSize: fontSize.sm,
+    marginTop: spacing.sm,
   },
 });

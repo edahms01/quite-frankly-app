@@ -161,6 +161,16 @@ export default async () => {
           archived.contentType = newType;
           archived.durationSeconds = durationSeconds;
           archived.durationTimestamp = secondsToTimestamp(durationSeconds);
+          // publishedAt was the pre-load's creation time (hours before air) —
+          // Watch's grid (get-youtube-episodes.js) trusts the archive's
+          // stored order as-is, no re-sort on read, so a stale publishedAt
+          // would leave a just-aired stream buried below whatever was
+          // published later while it sat waiting. actualStartTime is when
+          // it really went live; correct it to that so the archive's own
+          // chronological order (re-sorted below) puts it where it belongs.
+          if (video.liveStreamingDetails?.actualStartTime) {
+            archived.publishedAt = video.liveStreamingDetails.actualStartTime;
+          }
           archiveDirty = true;
         }
       }
@@ -172,6 +182,7 @@ export default async () => {
   }
 
   if (archiveDirty) {
+    mergedArchive.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
     await setJSON('qf-youtube-archive', 'episodes', mergedArchive);
   }
 

@@ -80,9 +80,13 @@ export default function Home({ navigation }) {
           resizeMode="contain"
         />
         <View style={styles.headerRight}>
-          <UpcomingCountdown scheduledStartTime={mostRecent?.scheduledStartTime} />
-          <OnAirBadge />
-          <AvatarButton onPress={() => navigation.navigate('AccountStack')} />
+          <View style={styles.onAirGroup}>
+            <UpcomingCountdown scheduledStartTime={mostRecent?.scheduledStartTime} />
+            <OnAirBadge />
+          </View>
+          <View style={styles.avatarNudge}>
+            <AvatarButton onPress={() => navigation.navigate('AccountStack')} />
+          </View>
         </View>
       </View>
 
@@ -143,7 +147,12 @@ export default function Home({ navigation }) {
             onPress={() => goTo(d.route)}
           />
         ))}
-        <DestinationCard Icon={Sparkles} label="AskFrankie AI" subtext="Coming Soon" />
+        <DestinationCard
+          Icon={Sparkles}
+          label="AskFrankie AI"
+          subtext="Coming Soon"
+          style={styles.askFrankieCard}
+        />
       </View>
     </ScrollView>
     </SafeAreaView>
@@ -183,6 +192,19 @@ const styles = StyleSheet.create({
     height: 40,
   },
   headerRight: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: spacing.sm,
+  },
+  // Static nudge, tuned by eye — just moves AvatarButton down to meet
+  // OnAirBadge's bottom edge, no change to OnAirBadge/onAirGroup at all.
+  avatarNudge: {
+    marginTop: 8,
+  },
+  // OnAirBadge's vertical center lines up with the seam between
+  // UpcomingCountdown's two text lines — centered against the countdown
+  // specifically, not the wordmark (that's headerRight's flex-end job).
+  onAirGroup: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
@@ -240,5 +262,12 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     gap: spacing.md,
+  },
+  // Tighter padding/gap than DestinationCard's default so the extra
+  // "Coming Soon" line fits in roughly the same footprint as a standard
+  // 2-line card, instead of growing taller than its row-mate.
+  askFrankieCard: {
+    paddingVertical: spacing.sm,
+    gap: 2,
   },
 });
