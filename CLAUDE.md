@@ -121,6 +121,10 @@ QA is risk-based and lean: live dry-run + diff for data work, one smoke pass on 
 
 ---
 
+## Git hygiene
+- Branch from `origin/main`, and merge `origin/main` into a feature branch before opening its PR — other chats/branches push small updates to main in parallel, so a branch that's been open a while can drift behind. Never resolve a merge conflict by blindly taking one whole side's version of a file; reconcile so both sides' changes survive.
+- Create worktrees OUTSIDE the repo folder (e.g. `../qf-worktrees/<name>`), not nested inside it (e.g. `.claude/worktrees/<name>`). A worktree nested inside the main checkout breaks `netlify dev`'s function-folder discovery — it walks up looking for a directory-type `.git` (a worktree's `.git` is a file, a gitdir pointer) and lands on the enclosing main checkout instead, silently serving that checkout's `netlify/functions/` instead of the worktree's own. `netlify status`/`netlify link` report the correct (worktree) project root; only function loading is affected. Confirmed 2026-09-28 debugging why `get-newsletter-items.js` 404'd locally despite existing in the worktree.
+
 ## Eric's preferences
 - Direct, short answers; minimal explanatory prose; copy-paste-ready outputs.
 - Surgical edits over full-file rewrites where practical.
