@@ -1,6 +1,6 @@
 import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import { MessageCircle, Send, MessageSquare, Camera, X, Music2, ChevronRight } from 'lucide-react-native';
+import { MessageCircle, Send, MessageSquare, Camera, X, Music2, CirclePlay, ChevronRight } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
 import Section from '../../components/Section';
@@ -17,6 +17,7 @@ const FOLLOW = [
   { label: 'Instagram', Icon: Camera, url: 'https://www.instagram.com/quitefranklyofficial/' },
   { label: 'X', Icon: X, url: 'http://twitter.com/QuiteFranklyTV' },
   { label: 'Tumblr', Icon: Music2, url: 'http://stonedandstudying.tumblr.com' },
+  { label: 'YouTube', Icon: CirclePlay, url: 'https://www.youtube.com/@QuiteFrankly/posts' },
 ];
 
 export default function Community({ navigation }) {
@@ -25,13 +26,12 @@ export default function Community({ navigation }) {
       <BackHeader title="Community" navigation={navigation} />
       <View style={styles.body}>
         <Section title="JOIN THE CONVERSATION">
-          <View style={styles.row}>
+          <View style={styles.grid}>
             {JOIN.map((j) => (
               <DestinationCard
                 key={j.label}
                 Icon={j.Icon}
                 label={j.label}
-                style={styles.tile}
                 onPress={() => (j.inAppBrowser ? WebBrowser.openBrowserAsync(j.url, { dismissButtonStyle: 'close' }) : Linking.openURL(j.url))}
               />
             ))}
@@ -39,13 +39,12 @@ export default function Community({ navigation }) {
         </Section>
 
         <Section title="FOLLOW FRANK">
-          <View style={styles.row}>
+          <View style={styles.grid}>
             {FOLLOW.map((f) => (
               <DestinationCard
                 key={f.label}
                 Icon={f.Icon}
                 label={f.label}
-                style={styles.tile}
                 onPress={() => (f.inAppBrowser ? WebBrowser.openBrowserAsync(f.url, { dismissButtonStyle: 'close' }) : Linking.openURL(f.url))}
               />
             ))}
@@ -76,16 +75,13 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
     gap: spacing.xl,
   },
-  // gap matches the app-wide small-card-grid standard (spacing.md) — see
-  // CLAUDE.md's card taxonomy.
-  row: {
+  // Both sections now use DestinationCard's default width: '47%',
+  // wrapping into a 2-up grid, matching Home's own grid.
+  grid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     gap: spacing.md,
-  },
-  // DestinationCard defaults to width: '47%' (2-up wrapping grids); this
-  // is a fixed 3-up row instead, so it overrides to flex: 1.
-  tile: {
-    flex: 1,
   },
   eventRow: {
     flexDirection: 'row',

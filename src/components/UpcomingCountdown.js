@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { colors, fontFamily, fontSize } from '../theme';
 import { countdownTime } from '../utils/countdownTime';
 
@@ -23,13 +23,22 @@ export default function UpcomingCountdown({ scheduledStartTime }) {
 
   if (!label) return null;
 
-  return <Text style={styles.text}>Live in: {label}</Text>;
+  return (
+    <View style={styles.container}>
+      <Text style={styles.text}>Live in:</Text>
+      <Text style={styles.text}>{label}</Text>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+  },
   text: {
     color: colors.inkMuted,
     fontFamily: fontFamily.regular,
     fontSize: fontSize.xs,
+    lineHeight: 14,
   },
 });
