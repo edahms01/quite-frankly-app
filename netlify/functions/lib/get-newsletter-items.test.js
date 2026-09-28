@@ -7,6 +7,7 @@ import handler, {
   listNewsletterItems,
   listNewsletterMonths,
   listNewsletterCategories,
+  findNewsletterPostByUrl,
   getNewsletterPostById,
   clampLimit,
 } from '../get-newsletter-items.js';
@@ -207,6 +208,41 @@ test('listNewsletterCategories: chips ordered by count desc, display label with 
     { value: 'Exclusives', label: 'Exclusives', count: 1 },
     { value: 'A Brand New Category', label: 'A Brand New Category', count: 1 },
   ]);
+});
+
+// ---- findNewsletterPostByUrl ----
+
+test('findNewsletterPostByUrl: exact match returns the post with the display-label category', async () => {
+  const postRows = [POST_HEADER_ROW, makePostRow({ id: 'p1', url: 'https://www.quitefrankly.tv/newsletter-content/2025/x', publishedAt: '2025-07-01T00:00:00.000Z', categories: ['Recipe'] })];
+  const getRowsFn = makeGetRowsFn({ postRows });
+
+  const post = await findNewsletterPostByUrl('https://www.quitefrankly.tv/newsletter-content/2025/x', { getRowsFn });
+  assert.equal(post.id, 'p1');
+  assert.equal(post.category, 'Recipes');
+});
+
+test('findNewsletterPostByUrl: no match -> null', async () => {
+  const postRows = [POST_HEADER_ROW, makePostRow({ id: 'p1', url: 'https://www.quitefrankly.tv/newsletter-content/2025/x', publishedAt: '2025-07-01T00:00:00.000Z', categories: [] })];
+  const getRowsFn = makeGetRowsFn({ postRows });
+
+  const post = await findNewsletterPostByUrl('https://www.quitefrankly.tv/newsletter-content/2025/does-not-exist', { getRowsFn });
+  assert.equal(post, null);
+});
+
+test('findNewsletterPostByUrl: empty url -> null without I/O', async () => {
+  let called = false;
+  const getRowsFn = async () => { called = true; return [POST_HEADER_ROW]; };
+  const post = await findNewsletterPostByUrl('', { getRowsFn });
+  assert.equal(post, null);
+  assert.equal(called, false);
+});
+
+test('findNewsletterPostByUrl: never matches a bulletin', async () => {
+  const bulletinRows = [BULLETIN_HEADER_ROW, makeBulletinRow({ id: '2025-07', title: 'B', publishedAt: '2025-07-07T00:00:00.000Z', url: 'https://www.quitefrankly.tv/campaigns/view-campaign/abc' })];
+  const getRowsFn = makeGetRowsFn({ bulletinRows });
+
+  const post = await findNewsletterPostByUrl('https://www.quitefrankly.tv/campaigns/view-campaign/abc', { getRowsFn });
+  assert.equal(post, null);
 });
 
 // ---- getNewsletterPostById ----

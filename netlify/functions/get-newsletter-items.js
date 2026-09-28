@@ -16,6 +16,11 @@
 //     without an app update -- the chip list is never hardcoded client-
 //     side). `label` comes from CATEGORY_DISPLAY_LABELS, falling back to
 //     the raw value for anything unmapped.
+//   - GET ?mode=findByUrl&url=<url> -- resolves a full post item by exact
+//     URL match, for BulletinViewer.js's in-email link interception (an
+//     inline newsletter-content link in a bulletin's body only carries a
+//     URL, not the post id Article needs to fetch its body). {post: null}
+//     when nothing matches.
 import { getRows, NEWSLETTER_POSTS_TAB, NEWSLETTER_POSTS_HEADER, BULLETINS_TAB, BULLETINS_HEADER } from './lib/sheets.js';
 import { getJSON } from './lib/blobs.js';
 import { NEWSLETTER_BODIES_STORE, displayLabelForCategory } from './lib/squarespaceNewsletter.js';
@@ -174,6 +179,21 @@ export async function listNewsletterCategories({ getRowsFn = getRows } = {}) {
     .sort((a, b) => b.count - a.count);
 }
 
+// Resolves a full post item (same shape as a list-mode item, display-label
+// mapped) by its exact `url` -- feeds BulletinViewer.js's in-email-link
+// interception: a bulletin's HTML body links to a newsletter-content post
+// by URL, not by id, so Article (which needs post.id to fetch its body)
+// can't be opened from that link without this lookup first. Returns null
+// for no match (a link to something other than a real post, or a stale
+// URL) -- the caller falls back to opening it in the system browser.
+export async function findNewsletterPostByUrl(url, { getRowsFn = getRows } = {}) {
+  if (!url) return null;
+  const merged = await loadMergedItems(getRowsFn);
+  const match = merged.find((item) => item.type === 'post' && item.url === url);
+  if (!match) return null;
+  return { ...match, category: displayLabelForCategory(match.category) };
+}
+
 // Single-post mode's actual logic -- posts only, mirrors
 // get-blog-posts.js's getBlogPostById exactly.
 export async function getNewsletterPostById(id, { getJSONFn = getJSON } = {}) {
@@ -208,6 +228,11 @@ export default async (req) => {
   }
   if (mode === 'categories') {
     return jsonResponse(200, { categories: await listNewsletterCategories() });
+  }
+  if (mode === 'findByUrl') {
+    const targetUrl = url.searchParams.get('url');
+    const post = await findNewsletterPostByUrl(targetUrl);
+    return jsonResponse(200, { post });
   }
 
   const result = await listNewsletterItems({

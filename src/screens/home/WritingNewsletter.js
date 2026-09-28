@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
 import { ExternalLink, Image as ImageIcon, Mail } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import LoadingState from '../../components/LoadingState';
@@ -264,7 +263,7 @@ export default function WritingNewsletter({ navigation }) {
 
   const openItem = (item) => {
     if (item.type === 'bulletin') {
-      WebBrowser.openBrowserAsync(item.url, { dismissButtonStyle: 'close' });
+      navigation.navigate('BulletinViewer', { bulletin: item });
     } else {
       navigation.navigate('Article', { post: item, source: 'newsletter' });
     }
