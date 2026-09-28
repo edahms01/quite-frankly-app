@@ -28,6 +28,13 @@ export const SITE_BASE_URL = 'https://www.quitefrankly.tv';
 
 export const BLOG_COLLECTIONS = ['quite-frankly-originals', 'original-articles'];
 
+// Dedicated Blobs store name for post body content, keyed by Squarespace
+// post id. Exported here (rather than left as a private const in the
+// backfill script) so the backfill script and the poller (Task 3) can both
+// import the identical value instead of risking drift between two
+// hand-typed copies of the same string.
+export const BLOG_BODIES_STORE = 'blog-bodies';
+
 // Delay between successive list-page fetches within one collection, on top
 // of fetchWithBackoff's own per-request retry/backoff -- keeps a full
 // backfill's pagination from hammering Squarespace back-to-back.

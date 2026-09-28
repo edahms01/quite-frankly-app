@@ -34,6 +34,7 @@ import { partitionForUpsert } from '../netlify/functions/lib/idempotency.js';
 import { normalizeBlogHtml } from '../netlify/functions/lib/normalizeBlogHtml.js';
 import { setJSON, blobStore } from '../netlify/functions/lib/blobs.js';
 import {
+  BLOG_BODIES_STORE,
   BLOG_COLLECTIONS,
   computeReadMinutes,
   iterateCollectionItems,
@@ -44,11 +45,6 @@ import {
 } from '../netlify/functions/lib/squarespaceBlog.js';
 
 const DRY_RUN = process.argv.includes('--dry-run');
-
-// Dedicated Blobs store for post body content, keyed by Squarespace post id
-// (Global Constraints: "a dedicated store (e.g. blog-bodies), keyed by post
-// id"). Same shared store name Task 3's poller must write to.
-const BLOG_BODIES_STORE = 'blog-bodies';
 
 // Builds every post for one collection: pages the list JSON (throttled
 // internally by squarespaceBlog.js), normalizes each body at write time
