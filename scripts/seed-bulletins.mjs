@@ -24,9 +24,12 @@
 import { appendRows, ensureBulletinsTabExists, getColumnWithRows, BULLETINS_TAB, updateRows } from '../netlify/functions/lib/sheets.js';
 import { partitionForUpsert } from '../netlify/functions/lib/idempotency.js';
 import { fetchWithBackoff } from '../netlify/functions/lib/fetchWithBackoff.js';
+import { decodeEntities } from '../netlify/functions/lib/normalizeBlogHtml.js';
 import { SITE_BASE_URL } from '../netlify/functions/lib/squarespaceNewsletter.js';
 
 const DRY_RUN = process.argv.includes('--dry-run');
+
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const ARCHIVE_PATH = 'newsletter-archives';
 
 async function fetchArchivePage() {
@@ -55,15 +58,34 @@ export function parseMonthlyArchiveLinks(mainContentHtml) {
   const block = afterHeading.slice(0, pEnd);
   const linkMatches = [...block.matchAll(/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/g)];
 
-  return linkMatches.map(({ 1: href, 2: rawText }) => {
-    const dateText = rawText.replace(/&amp;/g, '&').trim();
-    const parsed = new Date(dateText);
-    if (Number.isNaN(parsed.getTime())) {
+  return linkMatches.map(({ 1: rawHref, 2: rawText }) => {
+    const dateText = decodeEntities(rawText).trim();
+    // Parsed by hand into explicit UTC components, deliberately NOT
+    // `new Date(dateText)`: that legacy free-text format parses in the
+    // HOST MACHINE's local timezone, not UTC -- confirmed as a real bug
+    // (this machine is Europe/London; "July 7, 2025" parsed to
+    // 2025-07-06T23:00:00.000Z, the wrong calendar day, since this script
+    // could run on any machine/server with any timezone, not just this
+    // one). "Month D, YYYY" is the only format ever seen on this page.
+    const match = dateText.match(/^([A-Za-z]+) (\d{1,2}), (\d{4})$/);
+    if (!match) {
       throw new Error(`Could not parse a date from Monthly Archive link text "${dateText}".`);
     }
-    const year = parsed.getUTCFullYear();
-    const month = String(parsed.getUTCMonth() + 1).padStart(2, '0');
-    const monthName = parsed.toLocaleString('en-US', { month: 'long', timeZone: 'UTC' });
+    const [, monthName, dayStr, yearStr] = match;
+    const monthIndex = MONTH_NAMES.findIndex((m) => m.toLowerCase() === monthName.toLowerCase());
+    if (monthIndex === -1) {
+      throw new Error(`Unrecognized month name "${monthName}" in Monthly Archive link text "${dateText}".`);
+    }
+    const year = Number(yearStr);
+    const day = Number(dayStr);
+    const parsed = new Date(Date.UTC(year, monthIndex, day));
+    const month = String(monthIndex + 1).padStart(2, '0');
+    // The href attribute itself is HTML-entity-encoded in the raw page
+    // (query-string `&` becomes `&amp;` on the November/October 2024
+    // links, which carry `ss_campaign_id`/etc. tracking params) -- decode
+    // it too, not just the visible link text, otherwise those bulletins'
+    // URLs would open with a malformed query string.
+    const href = decodeEntities(rawHref);
     const url = href.startsWith('http') ? href : `${SITE_BASE_URL}${href}`;
     return {
       id: `${year}-${month}`,
@@ -111,7 +133,13 @@ async function main() {
   console.log('Done.');
 }
 
-main().catch((err) => {
-  console.error(err.message);
-  process.exit(1);
-});
+// Guarded (unlike this repo's other one-off scripts) so
+// parseMonthlyArchiveLinks can be imported for a unit test
+// (seed-bulletins.test.js) without triggering a live fetch + Sheets calls
+// as a side effect of the import itself.
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((err) => {
+    console.error(err.message);
+    process.exit(1);
+  });
+}
