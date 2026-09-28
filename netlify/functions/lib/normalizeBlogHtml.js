@@ -116,7 +116,19 @@ function isOfficeNamespaceTag(name) {
 }
 
 function hasContent(node) {
-  if (node.type === 'text') return node.data.trim() !== '';
+  // Any non-empty text counts, including whitespace-only text (a lone
+  // &nbsp; is a real character, U+00A0 -- not "empty"). A live-data
+  // verification run (2026-09-28) found 17/142 real posts with a bare
+  // `<em><span>&nbsp;</span></em>`-style element used solely as an
+  // inter-word spacer between two adjacent inline elements (a Squarespace
+  // font-size-transition artifact); JS's String.trim() strips U+00A0 along
+  // with ordinary whitespace, so an earlier `.trim() !== ''` check here
+  // wrongly treated that as "empty" and pruned it, silently merging the two
+  // words on either side (e.g. "actual fraud" -> "actualfraud"). Only a
+  // truly zero-length text node (or an element with no children left at
+  // all, e.g. after an office-namespace child was removed entirely) counts
+  // as empty now.
+  if (node.type === 'text') return node.data.length > 0;
   if (node.type === 'tag') {
     if (node.name === 'img' || node.name === 'br' || node.name === 'hr') return true;
     return (node.children || []).some(hasContent);

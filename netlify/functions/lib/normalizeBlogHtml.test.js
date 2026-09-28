@@ -176,3 +176,21 @@ test('preserves table markup (tables were confirmed present in real post data)',
   const { html } = normalizeBlogHtml(input);
   assert.equal(html, input);
 });
+
+// Real-world regression (found via live-data verification, 2026-09-28,
+// 17/142 real posts affected): a bare inline element whose only content is
+// a non-breaking space, used as a spacer between two adjacent inline
+// elements -- must NOT be pruned as "empty" (whitespace, including
+// &nbsp;/U+00A0, is still real content; losing it merges two words).
+test('keeps a whitespace-only (&nbsp;) inline element intact -- does not merge adjacent words', () => {
+  const input = '<p>reveal <em><span style="font-size:9pt">actual</span></em><em><span style="font-size:9pt">&nbsp;</span></em><span style="font-size:11pt">fraud?</span></p>';
+  const { html } = normalizeBlogHtml(input);
+  assert.equal(html, '<p>reveal <em>actual</em><em>&nbsp;</em>fraud?</p>');
+  assert.doesNotMatch(html, /actualfraud/);
+});
+
+test('still prunes a genuinely empty paragraph (no children at all after office-namespace content is removed)', () => {
+  const input = '<p>Real article text starts here.</p><p class="MsoNormal"><o:p>&nbsp;</o:p></p><p>And more text.</p>';
+  const { html } = normalizeBlogHtml(input);
+  assert.equal(html, '<p>Real article text starts here.</p><p>And more text.</p>');
+});
