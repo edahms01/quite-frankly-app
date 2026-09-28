@@ -43,3 +43,6 @@ yarn-error.*
 
 # Local Netlify folder
 .netlify
+
+# Subagent-driven-development scratch workspace
+.superpowers
