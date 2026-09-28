@@ -233,6 +233,7 @@ const styles = StyleSheet.create({
     borderColor: colors.accentGold,
     borderRadius: radius.md,
     paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
     alignItems: 'center',
   },
   sponsorButtonText: {
