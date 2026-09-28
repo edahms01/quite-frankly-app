@@ -26,6 +26,10 @@ import { MINI_PLAYER_HEIGHT } from '../../components/MiniPlayer';
 export default function Games({ navigation }) {
   const [activeGame, setActiveGame] = useState(null);
   const [bodyLayout, setBodyLayout] = useState(null);
+  // Which games' controls splash has already been dismissed this
+  // screen-visit — see VideoPlayer.js for the full rationale (same pattern,
+  // used identically on both screens that own a GameWindow).
+  const [seenGames, setSeenGames] = useState(() => new Set());
   const { currentTrack } = useAudioPlayer();
   const isFocused = useIsFocused();
   // MiniPlayer renders as an absolute overlay outside the navigator (see
@@ -73,6 +77,8 @@ export default function Games({ navigation }) {
               avoidRect={null}
               hidden={!isFocused}
               onClose={() => setActiveGame(null)}
+              showSplash={!seenGames.has(activeGame.id)}
+              onDismissSplash={() => setSeenGames((prev) => new Set(prev).add(activeGame.id))}
             />
           </View>
         ) : null}
