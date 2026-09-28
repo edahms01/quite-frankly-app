@@ -16,7 +16,7 @@ export default function Writing({ navigation }) {
             <DestinationCard
               Icon={FileText}
               label="Quite Blogly"
-              onPress={() => WebBrowser.openBrowserAsync('https://www.quitefrankly.tv/blog', { dismissButtonStyle: 'close' })}
+              onPress={() => navigation.navigate('WritingBlog')}
             />
             <DestinationCard
               Icon={Mail}
