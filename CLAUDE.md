@@ -1,5 +1,12 @@
 # Quite Frankly Mobile App — Project Context for Claude Code
 
+## Session start protocol (mandatory)
+1. Confirm and state the working directory (pwd) and current branch.
+2. Run git fetch origin. Never work directly on local main.
+3. Start every task from a fresh branch created from origin/main (git worktree add ../qf-worktrees/<task> -b <branch> origin/main), unless continuing an existing branch; then first check it is not behind origin/main.
+4. Commit and push the branch before ending the session, and report any uncommitted files.
+5. After a PR merges, local main is stale. Run git fetch origin and update before starting new work.
+
 ## What this is
 Native-feeling iOS/Android mobile app for the *Quite Frankly* podcast (quitefrankly.tv), hosted by Frank. Built in React Native. Distinct from **QuiteFranklyOS** (the existing Win98-themed desktop web portal, separate project/repo) — this is the mobile companion, with live-show alerts, video/audio browsing, and Culture Club membership access as the core value props.
 
