@@ -3,7 +3,7 @@
 // no width/height constraints and no centerY offset — it renders at
 // whatever implicit size the OS gives it (not the actual asset's real
 // point size) and dead-center. That doesn't match Welcome.js's onboarding
-// wordmark (280x66pt, positioned above center), which is the whole point
+// wordmark (280x59pt, positioned above center), which is the whole point
 // of this splash screen — see CLAUDE.md's "opening page" note.
 //
 // There's no expo-splash-screen config option for exact size/position,
@@ -28,7 +28,7 @@ const fs = require('fs');
 const path = require('path');
 
 const LOGO_WIDTH = 280;
-const LOGO_HEIGHT = 66;
+const LOGO_HEIGHT = 59;
 const CENTER_Y_OFFSET = -69;
 
 const projectRoot = path.join(__dirname, '..');

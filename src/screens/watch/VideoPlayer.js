@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Image, Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View, Share } from 'react-native';
+import { Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View, Share } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { colors, fontFamily, fontSize, radius, shadows, spacing } from '../../theme';
 import { relativeTime } from '../../utils/relativeTime';
@@ -11,6 +11,7 @@ import { useVideoActiveSource } from '../../hooks/useVideoActiveSource';
 import { useAudioPlayer } from '../../context/AudioPlayerContext';
 import { MINI_PLAYER_HEIGHT } from '../../components/MiniPlayer';
 import { Gamepad2 } from 'lucide-react-native';
+import Wordmark from '../../components/Wordmark';
 import GameTray from '../../components/games/GameTray';
 import GameWindow from '../../components/games/GameWindow';
 import { GAMES } from '../../games';
@@ -116,13 +117,7 @@ export default function VideoPlayer({ navigation, route }) {
         <View onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}>
           <BackHeader
             navigation={navigation}
-            titleElement={
-              <Image
-                source={require('../../assets/images/quite-frankly-logo-final.png')}
-                style={styles.wordmark}
-                resizeMode="contain"
-              />
-            }
+            titleElement={<Wordmark width={190} />}
           />
         </View>
 
@@ -283,10 +278,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     ...shadows.md,
     elevation: 6,
-  },
-  wordmark: {
-    width: 172,
-    height: 40,
   },
   // Matches Home.js's sponsorButton exactly (full-width, gold-bordered,
   // centered label) for visual consistency across screens.
