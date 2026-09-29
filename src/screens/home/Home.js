@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { RefreshControl,ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2, Gamepad2, Sparkles } from 'lucide-react-native';
+import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2, Gamepad2, Bot } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
 import DestinationCard from '../../components/DestinationCard';
 import AvatarButton from '../../components/AvatarButton';
+import Wordmark from '../../components/Wordmark';
 import OnAirBadge from '../../components/OnAirBadge';
 import UpcomingCountdown from '../../components/UpcomingCountdown';
 import VideoEmbed from '../../components/VideoEmbed';
@@ -74,11 +75,7 @@ export default function Home({ navigation }) {
       }
     >
       <View style={styles.header}>
-        <Image
-          source={require('../../assets/images/quite-frankly-logo-final.png')}
-          style={styles.wordmark}
-          resizeMode="contain"
-        />
+        <Wordmark width={190} />
         <View style={styles.headerRight}>
           <View style={styles.onAirGroup}>
             <UpcomingCountdown scheduledStartTime={mostRecent?.scheduledStartTime} />
@@ -148,7 +145,7 @@ export default function Home({ navigation }) {
           />
         ))}
         <DestinationCard
-          Icon={Sparkles}
+          Icon={Bot}
           label="AskFrankie AI"
           subtext="Coming Soon"
           style={styles.askFrankieCard}
@@ -186,10 +183,6 @@ const styles = StyleSheet.create({
     color: colors.accentGold,
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.md,
-  },
-  wordmark: {
-    width: 172,
-    height: 40,
   },
   headerRight: {
     flexDirection: 'row',
