@@ -1,13 +1,7 @@
 import { useState } from 'react';
-<<<<<<< ours
-import { Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { RefreshControl,ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2, Gamepad2, Sparkles } from 'lucide-react-native';
-=======
-import { ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2, Gamepad2, Bot } from 'lucide-react-native';
->>>>>>> theirs
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
 import DestinationCard from '../../components/DestinationCard';
 import AvatarButton from '../../components/AvatarButton';
@@ -150,20 +144,12 @@ export default function Home({ navigation }) {
             onPress={() => goTo(d.route)}
           />
         ))}
-<<<<<<< ours
         <DestinationCard
           Icon={Sparkles}
           label="AskFrankie AI"
           subtext="Coming Soon"
           style={styles.askFrankieCard}
         />
-=======
-        <View style={styles.teaserCard}>
-          <Bot color={colors.inkPrimary} size={24} />
-          <Text style={styles.teaserLabel}>AskFrankie AI</Text>
-          <Text style={styles.teaserSubtext}>Coming Soon</Text>
-        </View>
->>>>>>> theirs
       </View>
     </ScrollView>
     </SafeAreaView>
@@ -270,37 +256,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: spacing.md,
   },
-<<<<<<< ours
   // Tighter padding/gap than DestinationCard's default so the extra
   // "Coming Soon" line fits in roughly the same footprint as a standard
   // 2-line card, instead of growing taller than its row-mate.
   askFrankieCard: {
     paddingVertical: spacing.sm,
     gap: 2,
-=======
-  // Matches DestinationCard's Icon Tile shape exactly (width/radius/bg/
-  // paddingVertical/gap/shadow) since it's the 10th tile in the same grid,
-  // sitting next to Games — see CLAUDE.md's Icon Tile card-taxonomy entry.
-  teaserCard: {
-    width: '47%',
-    backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
-    paddingVertical: spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    opacity: 0.6,
-    ...shadows.sm,
-  },
-  teaserLabel: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.md,
-  },
-  teaserSubtext: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.regularItalic,
-    fontSize: fontSize.sm,
->>>>>>> theirs
   },
 });
