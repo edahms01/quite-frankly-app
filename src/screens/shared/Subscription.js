@@ -57,7 +57,15 @@ export default function Subscription({ navigation }) {
                 style={styles.platformCard}
                 onPress={() => Linking.openURL(p.url)}
               >
-                <Image source={p.icon} style={styles.platformIcon} resizeMode="contain" />
+                {p.label === 'Patreon' ? (
+                  <View style={styles.platformIconCircle}>
+                    <View style={styles.patreonCircleBg}>
+                      <Image source={p.icon} style={styles.patreonIcon} resizeMode="contain" />
+                    </View>
+                  </View>
+                ) : (
+                  <Image source={p.icon} style={styles.platformIcon} resizeMode="contain" />
+                )}
                 <Text style={styles.platformLabel}>{p.label}</Text>
               </TouchableOpacity>
             ))}
@@ -65,10 +73,6 @@ export default function Subscription({ navigation }) {
         </Section>
 
         <Section title="ONE-TIME DONATION">
-          <Text style={styles.subtitle}>
-            Prefer a one-time contribution instead?
-          </Text>
-
           <CryptoCardGrid>
             <TouchableOpacity style={styles.gridCard} onPress={() => Linking.openURL(PAYPAL_URL)}>
               <Text style={styles.gridCardTitle}>PayPal</Text>
@@ -81,10 +85,12 @@ export default function Subscription({ navigation }) {
           </CryptoCardGrid>
         </Section>
 
-        <Text style={styles.mail}>
-          Prefer mail? Send letters, cards, or small gifts to: Quite
-          Frankly, 222 Purchase Street, #105, Rye, NY 10580.
-        </Text>
+        <Section title="MAIL">
+          <Text style={styles.mail}>
+            Prefer mail? Send letters, cards, or small gifts to: Quite
+            Frankly, 222 Purchase Street, #105, Rye, NY 10580.
+          </Text>
+        </Section>
       </View>
     </ScrollView>
   );
@@ -100,12 +106,8 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
     gap: spacing.xl,
   },
-  subtitle: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.regular,
-    fontSize: fontSize.base,
-  },
   qfCard: {
+    backgroundColor: colors.surfaceCard,
     borderWidth: 1,
     borderColor: colors.accentGold,
     borderRadius: radius.md,
@@ -164,6 +166,32 @@ const styles = StyleSheet.create({
   platformIcon: {
     width: 40,
     height: 40,
+  },
+  // SubscribeStar's PNG has its own circle baked in, but the source canvas
+  // (300x340, non-square) isn't a clean square — under resizeMode:"contain"
+  // into a 40x40 box, its actual visible circle only renders to ~34px, and
+  // sits a couple px lower than true-centered (measured via `convert -trim`
+  // on the real asset: opaque content is 290x288 at offset 5,41 within the
+  // 300x340 canvas). Patreon's white circle is sized/nudged to match those
+  // real numbers, not a naive 40x40, so the two actually line up.
+  platformIconCircle: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  patreonCircleBg: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#FFFFFF',
+    marginTop: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  patreonIcon: {
+    width: 20,
+    height: 20,
   },
   platformLabel: {
     color: colors.inkPrimary,

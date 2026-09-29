@@ -12,7 +12,10 @@ import {
 const INITIAL = [
   { key: 'live', label: 'Live Alerts' },
   { key: 'video', label: 'New Video Alerts' },
-  { key: 'club', label: 'Culture Club Event Reminders' },
+  // No trigger wired yet (see CLAUDE.md's "Known open items") — kept
+  // visible as a teaser for the feature, grayed out and non-interactive
+  // rather than hidden, since toggling it would have no real effect.
+  { key: 'club', label: 'Culture Club Event Reminders', disabled: true },
 ];
 
 export default function NotificationsSettings({ navigation }) {
@@ -42,10 +45,11 @@ export default function NotificationsSettings({ navigation }) {
       <View style={styles.body}>
         {INITIAL.map((item) => (
           <View key={item.key} style={styles.row}>
-            <Text style={styles.label}>{item.label}</Text>
+            <Text style={[styles.label, item.disabled && styles.labelDisabled]}>{item.label}</Text>
             <Switch
-              value={values[item.key]}
+              value={item.disabled ? false : values[item.key]}
               onValueChange={(v) => handleToggle(item.key, v)}
+              disabled={item.disabled}
               trackColor={{ false: colors.surfaceLine, true: colors.accentGold }}
               thumbColor={colors.inkPrimary}
             />
@@ -77,5 +81,11 @@ const styles = StyleSheet.create({
     color: colors.inkPrimary,
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.md,
+  },
+  // Same muted "coming soon" shade as DestinationCard's — see its
+  // inkMutedDark comment for why this isn't the shared colors.inkMuted
+  // token (that's the app's general secondary-text color).
+  labelDisabled: {
+    color: '#5C554E',
   },
 });
