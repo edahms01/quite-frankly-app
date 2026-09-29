@@ -50,3 +50,4 @@ yarn-error.*
 # Pilled investigation artifacts
 scripts/investigate/*.har
 scripts/investigate/snapshots.jsonl
+scripts/investigate/events.log
