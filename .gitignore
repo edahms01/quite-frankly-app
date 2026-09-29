@@ -46,3 +46,7 @@ yarn-error.*
 
 # Subagent-driven-development scratch workspace
 .superpowers
+
+# Pilled investigation artifacts
+scripts/investigate/*.har
+scripts/investigate/snapshots.jsonl
