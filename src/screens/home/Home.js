@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { RefreshControl,ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2, Gamepad2, Sparkles } from 'lucide-react-native';
+import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2, Gamepad2, Bot } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
 import DestinationCard from '../../components/DestinationCard';
 import AvatarButton from '../../components/AvatarButton';
@@ -145,7 +145,7 @@ export default function Home({ navigation }) {
           />
         ))}
         <DestinationCard
-          Icon={Sparkles}
+          Icon={Bot}
           label="AskFrankie AI"
           subtext="Coming Soon"
           style={styles.askFrankieCard}
