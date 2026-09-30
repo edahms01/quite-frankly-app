@@ -11,7 +11,7 @@ import UpcomingCountdown from '../../components/UpcomingCountdown';
 import VideoEmbed from '../../components/VideoEmbed';
 import VideoThumbnailOverlay from '../../components/VideoThumbnailOverlay';
 import { useYouTubeFeed } from '../../context/YouTubeFeedContext';
-import { useLiveStatus } from '../../hooks/useLiveStatus';
+import { useLiveStatus } from '../../context/LiveStatusContext';
 import { useVideoActiveSource } from '../../hooks/useVideoActiveSource';
 import { relativeTime } from '../../utils/relativeTime';
 import LoadingState from '../../components/LoadingState';
