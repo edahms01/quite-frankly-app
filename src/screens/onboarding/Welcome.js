@@ -17,7 +17,7 @@ export default function Welcome({ navigation }) {
 
       <View style={styles.content}>
         <OnboardingDots total={4} activeIndex={0} />
-        <Wordmark style={styles.wordmark} />
+        <Wordmark centerOnLetters style={styles.wordmark} />
         <Text style={styles.subtitle}>Live weeknights · 7:00 PM ET</Text>
         <Text style={styles.body}>
           The Quite Frankly Universe. All in one place.

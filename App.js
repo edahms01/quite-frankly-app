@@ -55,7 +55,7 @@ export default function App() {
     // pin an exact width like this can.
     return (
       <View style={bootStyles.container}>
-        <Wordmark style={bootStyles.wordmark} />
+        <Wordmark centerOnLetters style={bootStyles.wordmark} />
       </View>
     );
   }

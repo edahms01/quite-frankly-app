@@ -30,6 +30,10 @@ const path = require('path');
 const LOGO_WIDTH = 280;
 const LOGO_HEIGHT = 59;
 const CENTER_Y_OFFSET = -69;
+// Shift right so the red QUITE FRANKLY letters (not the whole file incl. the
+// gold TV) sit on the screen's center axis — same ratio as Wordmark.js's
+// LETTERS_CENTER_SHIFT_RATIO, (630-520)/1260 of the logo width. Keep in sync.
+const CENTER_X_OFFSET = Math.round(LOGO_WIDTH * ((630 - 520) / 1260) * 100) / 100;
 
 const projectRoot = path.join(__dirname, '..');
 const iosDir = path.join(projectRoot, 'ios');
@@ -68,6 +72,11 @@ xml = xml.replace(
 );
 
 xml = xml.replace(
+  /(<constraint firstItem="EXPO-SplashScreen" firstAttribute="centerX" secondItem="EXPO-ContainerView" secondAttribute="centerX")(?: constant="[^"]*")?(\s*id=)/,
+  `$1 constant="${CENTER_X_OFFSET}"$2`
+);
+
+xml = xml.replace(
   /(<constraint firstItem="EXPO-SplashScreen" firstAttribute="centerY" secondItem="EXPO-ContainerView" secondAttribute="centerY")(\s*id=)/,
   `$1 constant="${CENTER_Y_OFFSET}"$2`
 );
@@ -79,4 +88,4 @@ xml = xml.replace(
 
 fs.writeFileSync(storyboardPath, xml);
 
-console.log(`[fix-splash-screen] Patched ${projectName}'s splash logo to ${LOGO_WIDTH}x${LOGO_HEIGHT}pt, centerY offset ${CENTER_Y_OFFSET}.`);
+console.log(`[fix-splash-screen] Patched ${projectName}'s splash logo to ${LOGO_WIDTH}x${LOGO_HEIGHT}pt, centerX offset ${CENTER_X_OFFSET}, centerY offset ${CENTER_Y_OFFSET}.`);
