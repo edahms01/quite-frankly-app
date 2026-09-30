@@ -3,7 +3,7 @@ import { getJSON, setJSON } from './lib/blobs.js';
 import { appendRow, getColumn } from './lib/sheets.js';
 import { filterNewByKey } from './lib/idempotency.js';
 import { getTokensForPreference, sendExpoPushBatch } from './lib/push.js';
-import { CHANNEL_ID, classifyVideo, mergeVideosById, parseISO8601Duration, pickMostRecentItem } from './lib/youtube.js';
+import { CHANNEL_ID, classifyVideo, mergeVideosById, parseISO8601Duration, pickMostRecent, buildFeedCache } from './lib/youtube.js';
 import { secondsToTimestamp } from './lib/duration.js';
 
 export const config = { schedule: '*/15 * * * *' };
@@ -192,27 +192,14 @@ export default async () => {
   // a parallel gridItems cache, so this poll's only other job is
   // discovering brand-new videos to classify and archive above.
   //
-  // mostRecent prioritizes a pre-loaded/'upcoming' broadcast once it's
-  // within pickMostRecentItem's window of its scheduledStartTime — even
-  // over something nominally more recently published — and otherwise
-  // falls back to the newest non-'upcoming' item. No separate UI state
-  // needed either way: Home's card already flips its own badge from
-  // "MOST RECENT" to "LIVE NOW" off the Twitch webhook signal, independent
-  // of this selection.
-  const archiveById = new Map(mergedArchive.map((e) => [e.id, e]));
-  const mostRecentItem = pickMostRecentItem(items, (id) => archiveById.get(id));
+  // Selection rules live in lib/youtube.js's pickMostRecent (shared with
+  // twitch-webhook): Twitch-live pins tonight's stream; otherwise a due-soon
+  // pre-load, else the newest non-'upcoming' item. Home's card flips its own
+  // badge from "MOST RECENT" to "LIVE NOW" off the Twitch signal separately.
+  const { isLive } = await getJSON('qf-live-status', 'status', { isLive: false });
+  const mostRecentItem = pickMostRecent({ items, archive: mergedArchive, isLive });
 
-  await setJSON('qf-youtube-cache', 'feed', {
-    mostRecent: mostRecentItem
-      ? {
-          ...mostRecentItem,
-          description: archiveById.get(mostRecentItem.id)?.description ?? '',
-          contentType: archiveById.get(mostRecentItem.id)?.contentType,
-          scheduledStartTime: archiveById.get(mostRecentItem.id)?.scheduledStartTime ?? null,
-        }
-      : null,
-    updatedAt: new Date().toISOString(),
-  });
+  await setJSON('qf-youtube-cache', 'feed', buildFeedCache(mostRecentItem, mergedArchive));
 
   // Twitch EventSub is the only live-alert source (real-time, no polling
   // delay) — never push a "new video" notification for anything the

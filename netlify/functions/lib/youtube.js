@@ -57,6 +57,63 @@ export function pickMostRecentItem(items, getArchived, now = Date.now()) {
   return items.find((item) => getArchived(item.id)?.contentType !== 'upcoming') ?? items[0] ?? null;
 }
 
+// Tonight's show, for the Twitch-live override: the archive's 'upcoming' or
+// 'live' item whose scheduledStartTime is closest to now, within
+// TONIGHTS_STREAM_WINDOW_MS either side (keeps yesterday's finished 'live'
+// item from ever qualifying). Used while Twitch reports isLive so Home's
+// Most Recent card can't be bumped off the show by anything else.
+export const TONIGHTS_STREAM_WINDOW_MS = 6 * 60 * 60 * 1000;
+
+export function pickTonightsStream(archive, now = Date.now()) {
+  let best = null;
+  let bestDistance = Infinity;
+  for (const entry of archive) {
+    if ((entry.contentType !== 'upcoming' && entry.contentType !== 'live') || !entry.scheduledStartTime) continue;
+    const distance = Math.abs(new Date(entry.scheduledStartTime).getTime() - now);
+    if (distance <= TONIGHTS_STREAM_WINDOW_MS && distance < bestDistance) {
+      best = entry;
+      bestDistance = distance;
+    }
+  }
+  return best;
+}
+
+// Home's "Most Recent" selection, in priority order:
+//   1. Twitch reports live and tonight's stream exists -> that stream (pinned,
+//      so nothing newer can take the slot mid-show).
+//   2./3. Otherwise pickMostRecentItem: a due-soon pre-load, else newest real item.
+// Called by both poll-youtube (items = RSS) and twitch-webhook (items = [],
+// rule 1 only) so the rules live in exactly one place. A null result from the
+// webhook's call means "nothing to pin", never "clear the cache".
+export function pickMostRecent({ items, archive, isLive = false, now = Date.now() }) {
+  if (isLive) {
+    const tonights = pickTonightsStream(archive, now);
+    if (tonights) return items.find((item) => item.id === tonights.id) ?? tonights;
+  }
+  const archiveById = new Map(archive.map((entry) => [entry.id, entry]));
+  return pickMostRecentItem(items, (id) => archiveById.get(id), now);
+}
+
+// The one place the qf-youtube-cache 'feed' shape is defined. `item` may be an
+// RSS item or an archive entry; description/contentType/scheduledStartTime
+// always come from the archive.
+export function buildFeedCache(item, archive, updatedAt = new Date().toISOString()) {
+  if (!item) return { mostRecent: null, updatedAt };
+  const archived = archive.find((entry) => entry.id === item.id);
+  return {
+    mostRecent: {
+      id: item.id,
+      title: item.title,
+      publishedAt: item.publishedAt,
+      thumbnailUrl: item.thumbnailUrl,
+      description: archived?.description ?? '',
+      contentType: archived?.contentType,
+      scheduledStartTime: archived?.scheduledStartTime ?? null,
+    },
+    updatedAt,
+  };
+}
+
 // Same guid-keyed merge pattern as lib/soundcloud.js's mergeEpisodesByGuid,
 // but keyed on video id and applied to the YouTube archive shape.
 export function mergeVideosById(existing, incoming) {
