@@ -5,7 +5,7 @@ import Community from '../screens/home/Community';
 import Writing from '../screens/home/Writing';
 import Article from '../screens/home/Article';
 import BulletinViewer from '../screens/home/BulletinViewer';
-import Band from '../screens/home/Band';
+import Music from '../screens/home/Music';
 import Calendar from '../screens/home/Calendar';
 import Games from '../screens/games/Games';
 import VideoPlayer from '../screens/watch/VideoPlayer';
@@ -21,7 +21,7 @@ export default function HomeStackNavigator() {
       <Stack.Screen name="Writing" component={Writing} options={{ headerShown: false }} />
       <Stack.Screen name="Article" component={Article} options={{ headerShown: false }} />
       <Stack.Screen name="BulletinViewer" component={BulletinViewer} options={{ headerShown: false }} />
-      <Stack.Screen name="Band" component={Band} options={{ headerShown: false }} />
+      <Stack.Screen name="Music" component={Music} options={{ headerShown: false }} />
       <Stack.Screen name="Games" component={Games} options={{ headerShown: false }} />
       <Stack.Screen name="Calendar" component={Calendar} options={{ headerShown: false }} />
       <Stack.Screen name="VideoPlayer" component={VideoPlayer} options={{ headerShown: false }} />

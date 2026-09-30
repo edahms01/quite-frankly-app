@@ -39,7 +39,7 @@ const DESTINATIONS = [
   { label: 'Shop', Icon: ShoppingBag, route: 'Shop' },
   { label: 'Calendar', Icon: CalendarIcon, route: 'Calendar' },
   { label: 'Writing', Icon: FileText, route: 'Writing' },
-  { label: 'Band', Icon: Music2, route: 'Band' },
+  { label: 'Music', Icon: Music2, route: 'Music' },
   { label: 'Games', Icon: Gamepad2, route: 'Games' },
 ];
 
