@@ -55,7 +55,7 @@ Three options, no in-app payment: Quite Frankly (native Squarespace checkout), P
 ## Card pattern — decided
 Square icon cards (Home-style) for destination/browsing grids — Home, and now Shop's "Shop" section (2x2 grid). Long rows for utility/reference lists — Account, Notifications, and Shop's "Affiliates" section (it's a lookup list with codes, not places to browse to).
 
-## Band — decided (new, 6th Home card)
+## Music (formerly "Band") — decided (new, 6th Home card; renamed to Music 2026-09-30)
 Home's placeholder 6th card is now "Band," going to a page for Frank's drumming/band stuff. Starts with a Bandcamp player for Set the Charge (album ID `1087783863` — same one already embedded and working in QF OS). Bandcamp's official embed is a static iframe, not something platform-specific like YouTube Live — same mechanism, same album, so this is easy, arguably easier than the video work already scoped. Note: the wireframe tool itself can't load arbitrary external iframes in its preview, so the Band screen shows a styled mockup of the player, not a live embed — the real app would use the genuine iframe.
 
 ## Icons — decided
@@ -72,7 +72,7 @@ Unified single-source model: since it's replicating Frank's own calendar, Cultur
 - **Blank-state fallback, decided (Sep 22)**: this full weekly-view design is real work worth keeping for once a real calendar source exists (see Show Schedule below — still waiting on Frank), so it isn't deleted. Instead, `Schedule.dc.html`'s visible body is a placeholder message: *"If you'd like to see a show calendar, message Frank and ask him to start using a digital calendar for show times. And we can link it in the app."* The full day-list design sits underneath it in the same file inside a `display: none` wrapper (not an HTML comment — the day-list markup already has its own per-day HTML comments, e.g. `<!-- SUN — Morning Stream -->`, and HTML comments can't nest). Restore by deleting the placeholder block and the `display:none` wrapper around the real design once there's a feed to point it at.
 
 ## Navbar — decided: 3 tabs, not 4
-Dropped to Home / Watch / Members Only. Reasoning: everything "More" used to aggregate (Shop, Community, Writing, Band) is already one tap from Home's card grid, and Account/Settings is one tap from the avatar — there's no genuine 4th destination left to justify a tab, and forcing one back in just recreates the catch-all "More" problem we just eliminated. Main Event (orphaned when More was deleted) now lives under Community's new "EVENTS" section instead.
+Dropped to Home / Watch / Members Only. Reasoning: everything "More" used to aggregate (Shop, Community, Writing, Music) is already one tap from Home's card grid, and Account/Settings is one tap from the avatar — there's no genuine 4th destination left to justify a tab, and forcing one back in just recreates the catch-all "More" problem we just eliminated. Main Event (orphaned when More was deleted) now lives under Community's new "EVENTS" section instead.
 
 ## Members Only content — decided: link out only, never embedded
 Confirmed not on YouTube, so no embed path applies at all (not even the harder live-YouTube case). Unlocked events link out to wherever Frank actually hosts them (likely Zoom or a private link, matching the rotating-password mechanic) — same pattern as Patreon/SubscribeStar, external open, no in-app player attempted. Still need to ask Frank what platform this actually is — separate open question from Show Schedule (that's *when*, this is *how*).
