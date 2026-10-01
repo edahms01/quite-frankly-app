@@ -125,3 +125,82 @@ export function mergeVideosById(existing, incoming) {
     (a, b) => new Date(b.publishedAt) - new Date(a.publishedAt)
   );
 }
+
+// Extra per-video fields stored in the qf-youtube-archive blob (so they can be
+// copied to Supabase later). Pure: takes a videos.list item fetched with parts
+// snippet, liveStreamingDetails, statistics, status and returns only the new,
+// additive fields (null when absent; tags [] when none). Never touches the
+// existing archive fields (publishedAt, contentType, ...) or the Sheet row.
+function toCount(value) {
+  if (value === undefined || value === null || value === '') return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+export const ARCHIVE_EXTRA_KEYS = [
+  'startedAt',
+  'endedAt',
+  'scheduledStartTime',
+  'viewCount',
+  'likeCount',
+  'commentCount',
+  'tags',
+  'categoryId',
+  'privacyStatus',
+  'liveBroadcastContent',
+  'defaultAudioLanguage',
+];
+
+export function buildArchiveExtras(item) {
+  const live = item?.liveStreamingDetails;
+  const stats = item?.statistics;
+  const snippet = item?.snippet;
+  return {
+    startedAt: live?.actualStartTime ?? null,
+    endedAt: live?.actualEndTime ?? null,
+    scheduledStartTime: live?.scheduledStartTime ?? null,
+    viewCount: toCount(stats?.viewCount),
+    likeCount: toCount(stats?.likeCount),
+    commentCount: toCount(stats?.commentCount),
+    tags: Array.isArray(snippet?.tags) ? snippet.tags : [],
+    categoryId: snippet?.categoryId ?? null,
+    privacyStatus: item?.status?.privacyStatus ?? null,
+    liveBroadcastContent: snippet?.liveBroadcastContent ?? null,
+    defaultAudioLanguage: snippet?.defaultAudioLanguage ?? null,
+  };
+}
+
+// Merge for the one-off archive backfill. Never drops or rewrites anything:
+//  - existing id: every existing field is kept verbatim; only fields the item
+//    lacks are added (scheduledStartTime also when it is null/absent);
+//  - API item not in the blob: appended in full;
+//  - blob-only item (API no longer returns it): kept untouched.
+// Result is sorted newest-first by publishedAt (stable, so ties keep order).
+export function mergeArchiveBackfill(existing, apiItems) {
+  const apiById = new Map(apiItems.map((v) => [v.id, v]));
+  const existingIds = new Set(existing.map((v) => v.id));
+  let enriched = 0;
+  let blobOnly = 0;
+  const merged = existing.map((old) => {
+    const api = apiById.get(old.id);
+    if (!api) {
+      blobOnly += 1;
+      return old;
+    }
+    const next = { ...old };
+    let changed = false;
+    for (const key of ARCHIVE_EXTRA_KEYS) {
+      const missing = !(key in old) || (key === 'scheduledStartTime' && old[key] == null);
+      if (missing && api[key] !== undefined) {
+        next[key] = api[key];
+        changed = true;
+      }
+    }
+    if (changed) enriched += 1;
+    return next;
+  });
+  const appended = apiItems.filter((v) => !existingIds.has(v.id));
+  const all = [...merged, ...appended];
+  all.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+  return { merged: all, stats: { enriched, appended: appended.length, blobOnly } };
+}

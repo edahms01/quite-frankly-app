@@ -89,3 +89,30 @@ test('setJSON: exhausts retries and propagates the error', async () => {
   );
   assert.equal(store.calls.set(), 2);
 });
+
+test('getJSON: CLI fallback path reads via cliGetFn and never touches the store', async () => {
+  let storeUsed = false;
+  const storeFactory = () => { storeUsed = true; return {}; };
+  const seen = [];
+  const cliGetFn = (storeName, key) => { seen.push([storeName, key]); return [{ id: 'a' }]; };
+  const result = await getJSON('qf-youtube-archive', 'episodes', [], { storeFactory, cliFallback: true, cliGetFn });
+  assert.deepEqual(result, [{ id: 'a' }]);
+  assert.deepEqual(seen, [['qf-youtube-archive', 'episodes']]);
+  assert.equal(storeUsed, false);
+});
+
+test('getJSON: CLI fallback returns the fallback when the key is missing (null)', async () => {
+  const result = await getJSON('s', 'missing', [], { cliFallback: true, cliGetFn: () => null });
+  assert.deepEqual(result, []);
+});
+
+test('getJSON: without cliFallback, cliGetFn is not used', async () => {
+  const store = makeFlakyStore({ resolveValue: { ok: 1 } });
+  const result = await getJSON('s', 'k', null, {
+    storeFactory: () => store,
+    cliFallback: false,
+    cliGetFn: () => { throw new Error('should not be called'); },
+    sleepFn: fakeSleep([]),
+  });
+  assert.deepEqual(result, { ok: 1 });
+});

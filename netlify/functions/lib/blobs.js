@@ -1,6 +1,6 @@
 import { getStore } from '@netlify/blobs';
 import { execFileSync } from 'node:child_process';
-import { writeFileSync, unlinkSync } from 'node:fs';
+import { writeFileSync, unlinkSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -35,6 +35,30 @@ function cliSetJSON(storeName, key, value) {
   }
 }
 
+// Read counterpart to cliSetJSON, same opt-in CLI_FALLBACK path. Writes to a
+// temp file via --output (a large blob would overflow execFileSync's default
+// stdout buffer). A missing key, or anything that isn't valid JSON, yields
+// null so getJSON falls back to its `fallback` arg exactly as store.get does.
+function cliGetJSON(storeName, key) {
+  const tmpFile = join(tmpdir(), `blobs-cli-${randomUUID()}.json`);
+  try {
+    execFileSync('netlify', ['blobs:get', storeName, key, '--output', tmpFile], {
+      stdio: 'pipe',
+      maxBuffer: 64 * 1024 * 1024,
+    });
+    if (!existsSync(tmpFile)) return null;
+    const text = readFileSync(tmpFile, 'utf8');
+    if (!text.trim()) return null;
+    try {
+      return JSON.parse(text);
+    } catch {
+      return null;
+    }
+  } finally {
+    if (existsSync(tmpFile)) unlinkSync(tmpFile);
+  }
+}
+
 function cliListAll(storeName) {
   const out = execFileSync('netlify', ['blobs:list', storeName, '--json'], {
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -54,7 +78,18 @@ function cliListAll(storeName) {
 // single transient Blobs read/write failure surfaced directly with no
 // retry. `storeFactory` (default: the real `getStore`) is the other test
 // seam, letting tests inject a fake Store without real Blobs credentials.
-export async function getJSON(storeName, key, fallback = null, { storeFactory = getStore, ...retryConfig } = {}) {
+// `cliFallback`/`cliGetFn` are test seams for the CLI_FALLBACK read path
+// (default: the module-level env flag and the real `netlify blobs:get` shim).
+export async function getJSON(
+  storeName,
+  key,
+  fallback = null,
+  { storeFactory = getStore, cliFallback = CLI_FALLBACK, cliGetFn = cliGetJSON, ...retryConfig } = {}
+) {
+  if (cliFallback) {
+    const value = cliGetFn(storeName, key);
+    return value ?? fallback;
+  }
   const store = storeFactory(storeName);
   const value = await retryAsync(() => store.get(key, { type: 'json' }), retryConfig);
   return value ?? fallback;

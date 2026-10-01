@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { classifyVideo, buildFeedCache, pickMostRecent, pickMostRecentItem, pickTonightsStream, UPCOMING_WINDOW_MS } from './youtube.js';
+import { buildArchiveExtras, mergeArchiveBackfill, ARCHIVE_EXTRA_KEYS, classifyVideo, buildFeedCache, pickMostRecent, pickMostRecentItem, pickTonightsStream, UPCOMING_WINDOW_MS } from './youtube.js';
 
 test('classifyVideo: liveBroadcastContent "upcoming" is upcoming, not live', async () => {
   const result = await classifyVideo({
@@ -186,4 +186,121 @@ test('buildFeedCache: same shape whether the item came from RSS or the archive',
     updatedAt: 'now',
   });
   assert.deepEqual(buildFeedCache(null, archive, 'now'), { mostRecent: null, updatedAt: 'now' });
+});
+
+// ---- buildArchiveExtras ----
+
+test('buildArchiveExtras: completed livestream carries actual start/end, scheduled start and stats', () => {
+  const extras = buildArchiveExtras({
+    snippet: { tags: ['a', 'b'], categoryId: '24', liveBroadcastContent: 'none', defaultAudioLanguage: 'en' },
+    liveStreamingDetails: {
+      scheduledStartTime: '2026-09-30T23:00:00Z',
+      actualStartTime: '2026-09-30T23:05:00Z',
+      actualEndTime: '2026-10-01T01:10:00Z',
+    },
+    statistics: { viewCount: '1234', likeCount: '56', commentCount: '7' },
+    status: { privacyStatus: 'public' },
+  });
+  assert.deepEqual(extras, {
+    startedAt: '2026-09-30T23:05:00Z',
+    endedAt: '2026-10-01T01:10:00Z',
+    scheduledStartTime: '2026-09-30T23:00:00Z',
+    viewCount: 1234,
+    likeCount: 56,
+    commentCount: 7,
+    tags: ['a', 'b'],
+    categoryId: '24',
+    privacyStatus: 'public',
+    liveBroadcastContent: 'none',
+    defaultAudioLanguage: 'en',
+  });
+});
+
+test('buildArchiveExtras: hidden/absent likeCount and commentCount are null; numbers parsed from strings', () => {
+  const extras = buildArchiveExtras({ statistics: { viewCount: '10' }, snippet: {} });
+  assert.equal(extras.viewCount, 10);
+  assert.equal(extras.likeCount, null);
+  assert.equal(extras.commentCount, null);
+  assert.equal(typeof extras.viewCount, 'number');
+});
+
+test('buildArchiveExtras: "0" counts stay 0, not null', () => {
+  const extras = buildArchiveExtras({ statistics: { viewCount: '0', likeCount: '0', commentCount: '0' } });
+  assert.deepEqual([extras.viewCount, extras.likeCount, extras.commentCount], [0, 0, 0]);
+});
+
+test('buildArchiveExtras: no tags -> []', () => {
+  assert.deepEqual(buildArchiveExtras({ snippet: {} }).tags, []);
+  assert.deepEqual(buildArchiveExtras({ snippet: { tags: undefined } }).tags, []);
+});
+
+test('buildArchiveExtras: plain upload with no liveStreamingDetails -> null times', () => {
+  const extras = buildArchiveExtras({ snippet: { categoryId: '22' }, statistics: { viewCount: '5' } });
+  assert.equal(extras.startedAt, null);
+  assert.equal(extras.endedAt, null);
+  assert.equal(extras.scheduledStartTime, null);
+});
+
+test('buildArchiveExtras: missing optional snippet/status fields -> null; every key always present', () => {
+  const extras = buildArchiveExtras({});
+  assert.equal(extras.categoryId, null);
+  assert.equal(extras.privacyStatus, null);
+  assert.equal(extras.liveBroadcastContent, null);
+  assert.equal(extras.defaultAudioLanguage, null);
+  assert.deepEqual(Object.keys(extras).sort(), [...ARCHIVE_EXTRA_KEYS].sort());
+});
+
+// ---- mergeArchiveBackfill ----
+
+const ex = (over = {}) => ({
+  startedAt: null, endedAt: null, scheduledStartTime: null, viewCount: 1, likeCount: 2, commentCount: 3,
+  tags: [], categoryId: '24', privacyStatus: 'public', liveBroadcastContent: 'none', defaultAudioLanguage: null,
+  ...over,
+});
+
+test('mergeArchiveBackfill: existing fields preserved verbatim, only new fields added', () => {
+  const old = { id: 'a', title: 'Old title', contentType: 'live', publishedAt: '2026-09-01T00:00:00Z', lastSyncedAt: 'L0', description: 'd' };
+  const api = { id: 'a', title: 'NEW title', contentType: 'video', publishedAt: '2026-01-01T00:00:00Z', lastSyncedAt: 'L1', ...ex({ startedAt: 'S' }) };
+  const { merged, stats } = mergeArchiveBackfill([old], [api]);
+  assert.equal(merged.length, 1);
+  for (const k of Object.keys(old)) assert.equal(merged[0][k], old[k]);
+  assert.equal(merged[0].startedAt, 'S');
+  assert.equal(merged[0].viewCount, 1);
+  assert.deepEqual(stats, { enriched: 1, appended: 0, blobOnly: 0 });
+});
+
+test('mergeArchiveBackfill: scheduledStartTime filled only when absent or null', () => {
+  const kept = { id: 'k', publishedAt: '2026-03-01T00:00:00Z', scheduledStartTime: 'KEEP' };
+  const nulled = { id: 'n', publishedAt: '2026-02-01T00:00:00Z', scheduledStartTime: null };
+  const absent = { id: 'z', publishedAt: '2026-01-01T00:00:00Z' };
+  const api = ['k', 'n', 'z'].map((id) => ({ id, publishedAt: 'x', ...ex({ scheduledStartTime: 'API' }) }));
+  const { merged } = mergeArchiveBackfill([kept, nulled, absent], api);
+  const by = Object.fromEntries(merged.map((v) => [v.id, v]));
+  assert.equal(by.k.scheduledStartTime, 'KEEP');
+  assert.equal(by.n.scheduledStartTime, 'API');
+  assert.equal(by.z.scheduledStartTime, 'API');
+});
+
+test('mergeArchiveBackfill: an already-present extra key (even null) is not overwritten', () => {
+  const old = { id: 'a', publishedAt: '2026-01-01T00:00:00Z', viewCount: null };
+  const { merged } = mergeArchiveBackfill([old], [{ id: 'a', ...ex({ viewCount: 99 }) }]);
+  assert.equal(merged[0].viewCount, null);
+});
+
+test('mergeArchiveBackfill: appends API items missing from blob, keeps blob-only items, newest-first, no dupes', () => {
+  const blobOnly = { id: 'gone', publishedAt: '2026-02-01T00:00:00Z', title: 'gone' };
+  const have = { id: 'have', publishedAt: '2026-03-01T00:00:00Z' };
+  const fresh = { id: 'new', title: 'N', publishedAt: '2026-04-01T00:00:00Z', ...ex() };
+  const { merged, stats } = mergeArchiveBackfill([have, blobOnly], [{ id: 'have', ...ex() }, fresh]);
+  assert.deepEqual(merged.map((v) => v.id), ['new', 'have', 'gone']);
+  assert.deepEqual(merged.find((v) => v.id === 'gone'), blobOnly);
+  assert.equal(merged.find((v) => v.id === 'new').title, 'N');
+  assert.deepEqual(stats, { enriched: 1, appended: 1, blobOnly: 1 });
+});
+
+test('mergeArchiveBackfill: does not mutate its inputs', () => {
+  const old = { id: 'a', publishedAt: '2026-01-01T00:00:00Z' };
+  const snap = JSON.stringify(old);
+  mergeArchiveBackfill([old], [{ id: 'a', ...ex() }]);
+  assert.equal(JSON.stringify(old), snap);
 });
