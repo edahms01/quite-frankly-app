@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import { getJSON, setJSON } from './lib/blobs.js';
 import { getTokensForPreference, sendExpoPushBatch } from './lib/push.js';
 import { isGenuineLiveEvent, isNewStreamId } from './lib/twitch.js';
+import { buildFeedCache, pickMostRecent } from './lib/youtube.js';
 
 // Recent-processed-id list kept short — only needs to survive a retried
 // webhook delivery for the same stream, not serve as a long-term history.
@@ -84,6 +85,17 @@ export default async (req) => {
           checkedAt: new Date().toISOString(),
           recentStreamIds: isNew ? [streamId, ...recentStreamIds].slice(0, MAX_RECENT_STREAM_IDS) : recentStreamIds,
         });
+
+        // Go-live is the trigger to put tonight's YouTube stream in Home's
+        // Most Recent slot right now, not at the next 15-min poll. Best-effort:
+        // poll-youtube applies the same rule while isLive, so a miss self-heals.
+        try {
+          const archive = await getJSON('qf-youtube-archive', 'episodes', []);
+          const tonights = pickMostRecent({ items: [], archive, isLive: true });
+          if (tonights) await setJSON('qf-youtube-cache', 'feed', buildFeedCache(tonights, archive));
+        } catch (err) {
+          console.error('Pinning tonight\'s stream as Most Recent failed', err);
+        }
 
         if (isNew) {
           let pushError = null;

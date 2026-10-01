@@ -1,6 +1,6 @@
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../theme';
-import { useLiveStatus } from '../hooks/useLiveStatus';
+import { useLiveStatus } from '../context/LiveStatusContext';
 
 // Classic studio "ON AIR" sign — dim/unlit border when not live, lit
 // solid-red with a glow when live. Android can't carry shadow color via

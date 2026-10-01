@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { RefreshControl,ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2, Gamepad2, Bot } from 'lucide-react-native';
@@ -11,7 +11,7 @@ import UpcomingCountdown from '../../components/UpcomingCountdown';
 import VideoEmbed from '../../components/VideoEmbed';
 import VideoThumbnailOverlay from '../../components/VideoThumbnailOverlay';
 import { useYouTubeFeed } from '../../context/YouTubeFeedContext';
-import { useLiveStatus } from '../../hooks/useLiveStatus';
+import { useLiveStatus } from '../../context/LiveStatusContext';
 import { useVideoActiveSource } from '../../hooks/useVideoActiveSource';
 import { relativeTime } from '../../utils/relativeTime';
 import LoadingState from '../../components/LoadingState';
@@ -46,6 +46,11 @@ const DESTINATIONS = [
 export default function Home({ navigation }) {
   const { mostRecent, loading, error, refetch } = useYouTubeFeed();
   const { isLive } = useLiveStatus();
+  // The feed is otherwise fetched once at launch — when Twitch flips live, the
+  // backend has just re-pinned tonight's stream as Most Recent, so pull it.
+  useEffect(() => {
+    if (isLive) refetch();
+  }, [isLive]); // eslint-disable-line react-hooks/exhaustive-deps
   const [embedVisible, setEmbedVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { claim } = useVideoActiveSource({ onForcedStop: () => setEmbedVisible(false) });

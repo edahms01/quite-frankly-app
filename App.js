@@ -22,6 +22,7 @@ import { colors, spacing } from './src/theme';
 import { YouTubeFeedProvider } from './src/context/YouTubeFeedContext';
 import { AudioPlayerProvider } from './src/context/AudioPlayerContext';
 import { NetworkProvider } from './src/context/NetworkContext';
+import { LiveStatusProvider } from './src/context/LiveStatusContext';
 import { navigationRef } from './src/navigation/navigationRef';
 
 // Keep the native splash screen up until fonts are actually ready —
@@ -65,6 +66,7 @@ export default function App() {
       <SafeAreaProvider>
         <NetworkProvider>
           <YouTubeFeedProvider>
+            <LiveStatusProvider>
             <AudioPlayerProvider>
               <View style={{ flex: 1 }}>
                 <NavigationContainer ref={navigationRef}>
@@ -74,6 +76,7 @@ export default function App() {
                 <OfflineBanner />
               </View>
             </AudioPlayerProvider>
+            </LiveStatusProvider>
           </YouTubeFeedProvider>
         </NetworkProvider>
       </SafeAreaProvider>
