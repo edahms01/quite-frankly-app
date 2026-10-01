@@ -3,7 +3,7 @@ import { getJSON, setJSON } from './lib/blobs.js';
 import { appendRow, getColumn } from './lib/sheets.js';
 import { filterNewByKey } from './lib/idempotency.js';
 import { getTokensForPreference, sendExpoPushBatch } from './lib/push.js';
-import { CHANNEL_ID, classifyVideo, mergeVideosById, parseISO8601Duration, pickMostRecent, buildFeedCache } from './lib/youtube.js';
+import { CHANNEL_ID, buildArchiveExtras, classifyVideo, mergeVideosById, parseISO8601Duration, pickMostRecent, buildFeedCache } from './lib/youtube.js';
 import { secondsToTimestamp } from './lib/duration.js';
 
 export const config = { schedule: '*/15 * * * *' };
@@ -48,7 +48,7 @@ export default async () => {
   let enrichedById = new Map();
   if (newItems.length > 0 && YOUTUBE_API_KEY) {
     const ids = newItems.map((item) => item.id).join(',');
-    const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,liveStreamingDetails&id=${ids}&key=${YOUTUBE_API_KEY}`);
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,liveStreamingDetails,statistics,status&id=${ids}&key=${YOUTUBE_API_KEY}`);
     if (res.ok) {
       const data = await res.json();
       for (const video of data.items ?? []) {
@@ -68,7 +68,9 @@ export default async () => {
     let durationSeconds = 0;
     let description = '';
     let scheduledStartTime = null;
+    let extras = buildArchiveExtras({});
     if (video) {
+      extras = buildArchiveExtras(video);
       durationSeconds = parseISO8601Duration(video.contentDetails.duration);
       description = video.snippet.description ?? '';
       scheduledStartTime = video.liveStreamingDetails?.scheduledStartTime ?? null;
@@ -110,6 +112,7 @@ export default async () => {
       description,
       thumbnailUrl: item.thumbnailUrl,
       lastSyncedAt,
+      ...extras,
       scheduledStartTime,
     });
   }
@@ -136,7 +139,7 @@ export default async () => {
   const upcomingArchived = mergedArchive.filter((v) => v.contentType === 'upcoming');
   if (upcomingArchived.length > 0 && YOUTUBE_API_KEY) {
     const ids = upcomingArchived.map((v) => v.id).join(',');
-    const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,liveStreamingDetails&id=${ids}&key=${YOUTUBE_API_KEY}`);
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,liveStreamingDetails,statistics,status&id=${ids}&key=${YOUTUBE_API_KEY}`);
     if (res.ok) {
       const data = await res.json();
       const refreshedById = new Map((data.items ?? []).map((v) => [v.id, v]));
@@ -161,6 +164,10 @@ export default async () => {
           archived.contentType = newType;
           archived.durationSeconds = durationSeconds;
           archived.durationTimestamp = secondsToTimestamp(durationSeconds);
+          // Refresh the additive extras (actual start/end, scheduled start,
+          // stats, ...) from the same response; existing fields above and the
+          // publishedAt overwrite below are unchanged.
+          Object.assign(archived, buildArchiveExtras(video));
           // publishedAt was the pre-load's creation time (hours before air) —
           // Watch's grid (get-youtube-episodes.js) trusts the archive's
           // stored order as-is, no re-sort on read, so a stale publishedAt
