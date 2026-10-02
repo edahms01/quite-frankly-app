@@ -1,6 +1,6 @@
 import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import { MessageCircle, Send, MessageSquare, Camera, X, Music2, CirclePlay, ChevronRight } from 'lucide-react-native';
+import { MessageCircle, Send, MessageSquare, Camera, X, Music2, CirclePlay, Flag, ChevronRight } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
 import Section from '../../components/Section';
@@ -18,6 +18,7 @@ const FOLLOW = [
   { label: 'X', Icon: X, url: 'http://twitter.com/QuiteFranklyTV' },
   { label: 'Tumblr', Icon: Music2, url: 'http://stonedandstudying.tumblr.com' },
   { label: 'YouTube', Icon: CirclePlay, url: 'https://www.youtube.com/@QuiteFrankly/posts' },
+  { label: 'Truth', Icon: Flag, url: 'https://truthsocial.com/@QuiteFrankly' },
 ];
 
 export default function Community({ navigation }) {

@@ -1,0 +1,60 @@
+import { Alert, Linking, ScrollView, StyleSheet, View } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
+import { PhoneCall, Voicemail } from 'lucide-react-native';
+import { colors, spacing } from '../../theme';
+import BackHeader from '../../components/BackHeader';
+import Section from '../../components/Section';
+import DestinationCard from '../../components/DestinationCard';
+
+// E.164 with the +1 country code: dials as a normal domestic call for US
+// callers (the + prefix is just the carrier-agnostic form of "1" + area code)
+// and works for international callers too.
+const CALL_IN_NUMBER = '+19142000269';
+const CALL_IN_DISPLAY = '+1-914-200-0269';
+const VOICEMAIL_URL = 'https://www.speakpipe.com/QuiteFrankly';
+
+// Devices with no Phone app (iPad, simulator) reject tel: URLs — fall back to
+// showing the number so it can still be dialed elsewhere.
+const callIn = () =>
+  Linking.openURL(`tel:${CALL_IN_NUMBER}`).catch(() =>
+    Alert.alert('Call-In Live', `Dial ${CALL_IN_DISPLAY} from a phone.`)
+  );
+
+export default function PhoneLines({ navigation }) {
+  return (
+    <ScrollView style={styles.container}>
+      <BackHeader title="Phone Lines" navigation={navigation} />
+      <View style={styles.body}>
+        <Section title="REACH THE SHOW">
+          <View style={styles.grid}>
+            <DestinationCard Icon={PhoneCall} label="Call-In Live" onPress={callIn} />
+            <DestinationCard
+              Icon={Voicemail}
+              label="Leave a Voicemail"
+              onPress={() => WebBrowser.openBrowserAsync(VOICEMAIL_URL, { dismissButtonStyle: 'close' })}
+            />
+          </View>
+        </Section>
+      </View>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.surfaceGround,
+  },
+  body: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.lg,
+    gap: spacing.xl,
+  },
+  // Same 2-up wrapping grid as Community/Home (DestinationCard default 47%).
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+});
