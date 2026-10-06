@@ -68,14 +68,6 @@ export default function Account({ navigation }) {
             <Text style={styles.rowLabel}>Report a Bug / Request Features</Text>
             <ChevronRight color={colors.inkMuted} size={18} />
           </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.row}
-            onPress={() => navigation.navigate('DonateToApp')}
-          >
-            <Text style={styles.rowLabel}>Donate to App</Text>
-            <ChevronRight color={colors.inkMuted} size={18} />
-          </TouchableOpacity>
         </View>
 
         <View style={styles.menuGroup}>
