@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ChevronRight, Eye, EyeOff, User } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
 import { useAccountEmail } from '../../hooks/useAccountEmail';
+import { signOut } from '../../lib/account';
 
 const ROWS = [
   { label: 'Become a Sponsor', route: 'Subscription' },
@@ -15,6 +16,12 @@ export default function Account({ navigation }) {
   const [emailVisible, setEmailVisible] = useState(false);
 
   const emailDisplay = email ?? 'No email on file';
+
+  const confirmSignOut = () =>
+    Alert.alert('Sign out?', 'You can sign back in with your email any time.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Sign Out', style: 'destructive', onPress: () => signOut() },
+    ]);
 
   return (
     <View style={styles.container}>
@@ -71,9 +78,15 @@ export default function Account({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.signOutRow}>
-          <Text style={styles.signOutText}>Sign Out</Text>
-        </TouchableOpacity>
+        <View style={styles.menuGroup}>
+          <TouchableOpacity style={styles.signOutRow} onPress={confirmSignOut}>
+            <Text style={styles.signOutText}>Sign Out</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.signOutRow} onPress={() => navigation.navigate('DeleteAccount')}>
+            <Text style={styles.signOutText}>Delete Account</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );

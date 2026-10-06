@@ -4,6 +4,7 @@ import Subscription from '../screens/shared/Subscription';
 import NotificationsSettings from '../screens/account/NotificationsSettings';
 import ReportBug from '../screens/account/ReportBug';
 import DonateToApp from '../screens/account/DonateToApp';
+import DeleteAccount from '../screens/account/DeleteAccount';
 
 const Stack = createNativeStackNavigator();
 
@@ -15,6 +16,7 @@ export default function AccountStackNavigator() {
       <Stack.Screen name="NotificationsSettings" component={NotificationsSettings} options={{ headerShown: false }} />
       <Stack.Screen name="ReportBug" component={ReportBug} options={{ headerShown: false }} />
       <Stack.Screen name="DonateToApp" component={DonateToApp} options={{ headerShown: false }} />
+      <Stack.Screen name="DeleteAccount" component={DeleteAccount} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }
