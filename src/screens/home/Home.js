@@ -12,6 +12,7 @@ import VideoEmbed from '../../components/VideoEmbed';
 import VideoThumbnailOverlay from '../../components/VideoThumbnailOverlay';
 import { useYouTubeFeed } from '../../context/YouTubeFeedContext';
 import { useLiveStatus } from '../../context/LiveStatusContext';
+import { useFeatureFlags } from '../../context/FeatureFlagsContext';
 import { useVideoActiveSource } from '../../hooks/useVideoActiveSource';
 import { relativeTime } from '../../utils/relativeTime';
 import LoadingState from '../../components/LoadingState';
@@ -46,6 +47,7 @@ const DESTINATIONS = [
 export default function Home({ navigation }) {
   const { mostRecent, loading, error, refetch } = useYouTubeFeed();
   const { isLive } = useLiveStatus();
+  const { askfrankie_enabled: askFrankieEnabled } = useFeatureFlags();      // remote switch: off = the old "Coming Soon" tile, nothing else changes
   // The feed is otherwise fetched once at launch — when Twitch flips live, the
   // backend has just re-pinned tonight's stream as Most Recent, so pull it.
   useEffect(() => {
@@ -149,12 +151,21 @@ export default function Home({ navigation }) {
             onPress={() => goTo(d.route)}
           />
         ))}
-        <DestinationCard
-          Icon={Bot}
-          label="AskFrankie AI"
-          subtext="Coming Soon"
-          style={styles.askFrankieCard}
-        />
+        {askFrankieEnabled ? (
+          <DestinationCard
+            Icon={Bot}
+            label="AskFrankie AI"
+            onPress={() => navigation.navigate('AskFrankie')}
+            style={styles.askFrankieCard}
+          />
+        ) : (
+          <DestinationCard
+            Icon={Bot}
+            label="AskFrankie AI"
+            subtext="Coming Soon"
+            style={styles.askFrankieCard}
+          />
+        )}
       </View>
     </ScrollView>
     </SafeAreaView>

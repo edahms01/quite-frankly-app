@@ -60,3 +60,18 @@ export async function registerForPushNotifications(preferences) {
   await setStoredPreferences(preferences);
   return { registered: true, pushToken };
 }
+
+// Best effort: this device's own Expo push token (or null), without registering anything. Account deletion sends it so the server can delete this device's
+// registration (push tokens are not stored against an email).
+export async function getOwnPushToken() {
+  try {
+    const { status } = await Notifications.getPermissionsAsync();
+    if (status !== 'granted') return null;
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+    if (!projectId) return null;
+    const tokenResponse = await Notifications.getExpoPushTokenAsync({ projectId });
+    return typeof tokenResponse?.data === 'string' ? tokenResponse.data : null;
+  } catch {
+    return null;
+  }
+}

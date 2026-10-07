@@ -1,6 +1,5 @@
-import crypto from 'node:crypto';
 import { getOtpRecord, setOtpRecord, clearOtpRecord, MAX_ATTEMPTS } from './lib/otp.js';
-import { setJSON } from './lib/blobs.js';
+import { sessions } from './lib/session.js';
 
 export default async (req) => {
   if (req.method !== 'POST') {
@@ -64,8 +63,7 @@ export default async (req) => {
 
   await clearOtpRecord(email);
 
-  const sessionToken = crypto.randomBytes(32).toString('hex');
-  await setJSON('qf-sessions', sessionToken, { email, createdAt: new Date().toISOString() });
+  const sessionToken = await sessions.createSession(email);      // also indexes it by email so account deletion can find every session
 
   return new Response(JSON.stringify({ verified: true, sessionToken }), {
     headers: { 'Content-Type': 'application/json' },
