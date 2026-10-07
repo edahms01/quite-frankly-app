@@ -8,8 +8,11 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "tv.quitefrankly.app"
+      "supportsTablet": false,
+      "bundleIdentifier": "tv.quitefrankly.app",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "tv.quitefrankly.app",
