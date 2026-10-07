@@ -38,10 +38,11 @@ const DESTINATIONS = [
   { label: 'Culture Club', Icon: Crown, route: 'CultureClubTab' },
   { label: 'Community', Icon: MessageSquare, route: 'Community' },
   { label: 'Shop', Icon: ShoppingBag, route: 'Shop' },
-  { label: 'Calendar', Icon: CalendarIcon, route: 'Calendar' },
+  { label: 'AskFrankie AI', askFrankie: true },   // rendered by the grid below (flag-dependent tile)
   { label: 'Writing', Icon: FileText, route: 'Writing' },
   { label: 'Music', Icon: Music2, route: 'Music' },
   { label: 'Games', Icon: Gamepad2, route: 'Games' },
+  { label: 'Calendar', Icon: CalendarIcon, route: 'Calendar' },
 ];
 
 export default function Home({ navigation }) {
@@ -143,29 +144,35 @@ export default function Home({ navigation }) {
       </TouchableOpacity>
 
       <View style={styles.grid}>
-        {DESTINATIONS.map((d) => (
-          <DestinationCard
-            key={d.label}
-            Icon={d.Icon}
-            label={d.label}
-            onPress={() => goTo(d.route)}
-          />
-        ))}
-        {askFrankieEnabled ? (
-          <DestinationCard
-            Icon={Bot}
-            label="AskFrankie AI"
-            onPress={() => navigation.navigate('AskFrankie')}
-            style={styles.askFrankieCard}
-          />
-        ) : (
-          <DestinationCard
-            Icon={Bot}
-            label="AskFrankie AI"
-            subtext="Coming Soon"
-            style={styles.askFrankieCard}
-          />
-        )}
+        {DESTINATIONS.map((d) => {
+          if (!d.askFrankie) {
+            return (
+              <DestinationCard
+                key={d.label}
+                Icon={d.Icon}
+                label={d.label}
+                onPress={() => goTo(d.route)}
+              />
+            );
+          }
+          return askFrankieEnabled ? (
+            <DestinationCard
+              key={d.label}
+              Icon={Bot}
+              label="AskFrankie AI"
+              onPress={() => navigation.navigate('AskFrankie')}
+              style={styles.askFrankieCard}
+            />
+          ) : (
+            <DestinationCard
+              key={d.label}
+              Icon={Bot}
+              label="AskFrankie AI"
+              subtext="Coming Soon"
+              style={styles.askFrankieCard}
+            />
+          );
+        })}
       </View>
     </ScrollView>
     </SafeAreaView>
