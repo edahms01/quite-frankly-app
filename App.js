@@ -23,6 +23,7 @@ import { YouTubeFeedProvider } from './src/context/YouTubeFeedContext';
 import { AudioPlayerProvider } from './src/context/AudioPlayerContext';
 import { NetworkProvider } from './src/context/NetworkContext';
 import { LiveStatusProvider } from './src/context/LiveStatusContext';
+import { FeatureFlagsProvider } from './src/context/FeatureFlagsContext';
 import { navigationRef } from './src/navigation/navigationRef';
 
 // Keep the native splash screen up until fonts are actually ready —
@@ -65,6 +66,7 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <NetworkProvider>
+          <FeatureFlagsProvider>
           <YouTubeFeedProvider>
             <LiveStatusProvider>
             <AudioPlayerProvider>
@@ -78,6 +80,7 @@ export default function App() {
             </AudioPlayerProvider>
             </LiveStatusProvider>
           </YouTubeFeedProvider>
+          </FeatureFlagsProvider>
         </NetworkProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

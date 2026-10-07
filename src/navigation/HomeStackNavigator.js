@@ -9,6 +9,7 @@ import Music from '../screens/home/Music';
 import Calendar from '../screens/home/Calendar';
 import Games from '../screens/games/Games';
 import VideoPlayer from '../screens/watch/VideoPlayer';
+import AskFrankie from '../screens/home/AskFrankie';
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +26,7 @@ export default function HomeStackNavigator() {
       <Stack.Screen name="Games" component={Games} options={{ headerShown: false }} />
       <Stack.Screen name="Calendar" component={Calendar} options={{ headerShown: false }} />
       <Stack.Screen name="VideoPlayer" component={VideoPlayer} options={{ headerShown: false }} />
+      <Stack.Screen name="AskFrankie" component={AskFrankie} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }

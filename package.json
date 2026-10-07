@@ -44,7 +44,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "prebuild:ios": "expo prebuild --platform ios && node scripts/fix-splash-screen.js",
-    "test": "node --test netlify/functions/lib"
+    "test": "node --test netlify/functions/lib src/lib"
   },
   "private": true
 }

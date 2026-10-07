@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Delete your Quite Frankly account</title>
+<style>
+  :root{--bg:#121014;--card:#1e1b1f;--line:#2a2422;--ink:#f3eee4;--muted:#a69c93;--red:#9e1b22}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+  main{max-width:520px;margin:0 auto;padding:32px 20px 64px}
+  h1{font-size:24px;margin:0 0 12px}
+  p{color:var(--muted);margin:0 0 14px}
+  form{display:flex;flex-direction:column;gap:12px;margin-top:20px}
+  label{color:var(--ink);font-weight:600}
+  input{background:var(--card);border:1px solid var(--line);border-radius:12px;color:var(--ink);font:inherit;padding:12px 14px}
+  button{background:var(--red);border:0;border-radius:12px;color:var(--ink);font:inherit;font-weight:600;padding:13px 14px;cursor:pointer}
+  button:disabled{opacity:.45;cursor:default}
+  .msg{min-height:1.4em;color:#e8a0a4}
+  .ok{color:var(--ink)}
+  a{color:#c9974a}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <h1>Delete your Quite Frankly account</h1>
+  <p>Use this page if you can't get into the app. We email a 6-digit code to prove the address is yours, then delete your account for good.</p>
+
+  <form id="emailForm" novalidate>
+    <label for="email">Your email address</label>
+    <input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" maxlength="254" required>
+    <button type="submit" id="emailBtn">Email me a code</button>
+  </form>
+
+  <form id="codeForm" novalidate hidden>
+    <p id="codeNote"></p>
+    <label for="code">6-digit code</label>
+    <input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" required>
+    <button type="submit" id="codeBtn">Continue</button>
+  </form>
+
+  <form id="confirmForm" novalidate hidden>
+    <p>This permanently deletes your email address, your sign-in sessions on all devices, and your AskFrankie AI account with its saved questions. It can't be undone.
+       Bug reports you sent aren't linked to your email, so they are not deleted. AskFrankie keeps a record with no email in it of how many questions you used this month.</p>
+    <label for="confirm">Type DELETE to confirm</label>
+    <input id="confirm" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    <button type="submit" id="deleteBtn" disabled>Delete my account</button>
+  </form>
+
+  <p class="msg" id="msg" role="alert"></p>
+  <p id="done" class="ok" hidden>Your account has been deleted. You can close this page.</p>
+  <p><a href="privacy.html">Privacy policy</a></p>
+</main>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var email = '', session = '';
+  function say(t) { $('msg').textContent = t || ''; }
+  function post(fn, body, token) {
+    return fetch('/.netlify/functions/' + fn, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, token ? { Authorization: 'Bearer ' + token } : {}), body: JSON.stringify(body || {}) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, body: j }; }); })
+      .catch(function () { return { status: 0, body: {} }; });
+  }
+  $('emailForm').addEventListener('submit', function (e) {
+    e.preventDefault(); say('');
+    email = $('email').value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { say('Enter a valid email address.'); return; }
+    $('emailBtn').disabled = true;
+    post('send-code', { email: email }).then(function (r) {
+      $('emailBtn').disabled = false;
+      if (r.status === 200) { $('emailForm').hidden = true; $('codeForm').hidden = false; $('codeNote').textContent = 'If ' + email + ' can receive email, a 6-digit code is on its way. It lasts 10 minutes.'; $('code').focus(); }
+      else if (r.status === 429) say('Please wait a minute before asking for another code.');
+      else if (r.status === 0) say("Couldn't reach the server. Check your connection and try again.");
+      else say('Something went wrong. Please try again in a moment.');
+    });
+  });
+  $('code').addEventListener('input', function () { this.value = this.value.replace(/\D/g, '').slice(0, 6); });
+  $('codeForm').addEventListener('submit', function (e) {
+    e.preventDefault(); say('');
+    var code = $('code').value.trim();
+    if (!/^\d{6}$/.test(code)) { say('Enter the 6-digit code from the email.'); return; }
+    $('codeBtn').disabled = true;
+    post('verify-code', { email: email, code: code }).then(function (r) {
+      $('codeBtn').disabled = false;
+      if (r.status === 200 && r.body && typeof r.body.sessionToken === 'string') { session = r.body.sessionToken; $('codeForm').hidden = true; $('confirmForm').hidden = false; $('confirm').focus(); }
+      else if (r.body && r.body.reason === 'locked') say('Too many attempts. Start again and request a new code.');
+      else if (r.body && r.body.reason === 'expired') say('That code expired. Start again to get a new one.');
+      else if (r.status === 0) say("Couldn't reach the server. Check your connection and try again.");
+      else say("That code didn't work. Check it and try again.");
+    });
+  });
+  $('confirm').addEventListener('input', function () { $('deleteBtn').disabled = this.value.trim() !== 'DELETE'; });
+  $('confirmForm').addEventListener('submit', function (e) {
+    e.preventDefault(); say('');
+    if ($('confirm').value.trim() !== 'DELETE') return;
+    $('deleteBtn').disabled = true;
+    post('delete-account', {}, session).then(function (r) {
+      if (r.status === 200) { session = ''; $('confirmForm').hidden = true; $('done').hidden = false; return; }
+      $('deleteBtn').disabled = false;
+      if (r.status === 401) say('That sign-in expired. Start again.');
+      else if (r.status === 429) say('Too many attempts. Please wait a while and try again. Nothing was deleted.');
+      else if (r.status === 0) say("Couldn't reach the server. Nothing was deleted. Check your connection and try again.");
+      else say("Something went wrong and your account wasn't fully deleted. Please try again.");
+    });
+  });
+})();
+</script>
+</body>
+</html>
