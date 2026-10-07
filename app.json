@@ -63,7 +63,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#121014"
         }
-      ]
+      ],
+      "./plugins/withSplashWordmark"
     ],
     "extra": {
       "eas": {
