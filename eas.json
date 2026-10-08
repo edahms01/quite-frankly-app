@@ -6,16 +6,20 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal",
-      "prebuildCommand": "expo prebuild && node scripts/fix-splash-screen.js"
+      "distribution": "internal"
     },
     "preview": {
       "distribution": "internal",
-      "prebuildCommand": "expo prebuild && node scripts/fix-splash-screen.js"
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://stage5c--quite-frankly-app.netlify.app",
+        "EXPO_PUBLIC_ASKFRANKIE_URL": "https://stage5a--askfrankie.netlify.app/?app=1"
+      },
+      "android": {
+        "buildType": "apk"
+      }
     },
     "production": {
-      "autoIncrement": true,
-      "prebuildCommand": "expo prebuild && node scripts/fix-splash-screen.js"
+      "autoIncrement": true
     }
   },
   "submit": {

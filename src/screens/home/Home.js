@@ -12,6 +12,7 @@ import VideoEmbed from '../../components/VideoEmbed';
 import VideoThumbnailOverlay from '../../components/VideoThumbnailOverlay';
 import { useYouTubeFeed } from '../../context/YouTubeFeedContext';
 import { useLiveStatus } from '../../context/LiveStatusContext';
+import { useFeatureFlags } from '../../context/FeatureFlagsContext';
 import { useVideoActiveSource } from '../../hooks/useVideoActiveSource';
 import { relativeTime } from '../../utils/relativeTime';
 import LoadingState from '../../components/LoadingState';
@@ -37,15 +38,17 @@ const DESTINATIONS = [
   { label: 'Culture Club', Icon: Crown, route: 'CultureClubTab' },
   { label: 'Community', Icon: MessageSquare, route: 'Community' },
   { label: 'Shop', Icon: ShoppingBag, route: 'Shop' },
-  { label: 'Calendar', Icon: CalendarIcon, route: 'Calendar' },
+  { label: 'AskFrankie AI', askFrankie: true },   // rendered by the grid below (flag-dependent tile)
   { label: 'Writing', Icon: FileText, route: 'Writing' },
   { label: 'Music', Icon: Music2, route: 'Music' },
   { label: 'Games', Icon: Gamepad2, route: 'Games' },
+  { label: 'Calendar', Icon: CalendarIcon, route: 'Calendar' },
 ];
 
 export default function Home({ navigation }) {
   const { mostRecent, loading, error, refetch } = useYouTubeFeed();
   const { isLive } = useLiveStatus();
+  const { askfrankie_enabled: askFrankieEnabled } = useFeatureFlags();      // remote switch: off = the old "Coming Soon" tile, nothing else changes
   // The feed is otherwise fetched once at launch — when Twitch flips live, the
   // backend has just re-pinned tonight's stream as Most Recent, so pull it.
   useEffect(() => {
@@ -141,20 +144,35 @@ export default function Home({ navigation }) {
       </TouchableOpacity>
 
       <View style={styles.grid}>
-        {DESTINATIONS.map((d) => (
-          <DestinationCard
-            key={d.label}
-            Icon={d.Icon}
-            label={d.label}
-            onPress={() => goTo(d.route)}
-          />
-        ))}
-        <DestinationCard
-          Icon={Bot}
-          label="AskFrankie AI"
-          subtext="Coming Soon"
-          style={styles.askFrankieCard}
-        />
+        {DESTINATIONS.map((d) => {
+          if (!d.askFrankie) {
+            return (
+              <DestinationCard
+                key={d.label}
+                Icon={d.Icon}
+                label={d.label}
+                onPress={() => goTo(d.route)}
+              />
+            );
+          }
+          return askFrankieEnabled ? (
+            <DestinationCard
+              key={d.label}
+              Icon={Bot}
+              label="AskFrankie AI"
+              onPress={() => navigation.navigate('AskFrankie')}
+              style={styles.askFrankieCard}
+            />
+          ) : (
+            <DestinationCard
+              key={d.label}
+              Icon={Bot}
+              label="AskFrankie AI"
+              subtext="Coming Soon"
+              style={styles.askFrankieCard}
+            />
+          );
+        })}
         <DestinationCard
           Icon={Phone}
           label="Phone Lines"
