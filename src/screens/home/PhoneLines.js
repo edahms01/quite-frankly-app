@@ -13,12 +13,19 @@ const CALL_IN_NUMBER = '+19142000269';
 const CALL_IN_DISPLAY = '+1-914-200-0269';
 const VOICEMAIL_URL = 'https://www.speakpipe.com/QuiteFrankly';
 
-// Devices with no Phone app (iPad, simulator) reject tel: URLs — fall back to
-// showing the number so it can still be dialed elsewhere.
-const callIn = () =>
-  Linking.openURL(`tel:${CALL_IN_NUMBER}`).catch(() =>
-    Alert.alert('Call-In Live', `Dial ${CALL_IN_DISPLAY} from a phone.`)
-  );
+// Devices with no Phone app (iPad, simulator) don't reject openURL for tel:
+// — it resolves and nothing happens (confirmed on the iOS Simulator) — so
+// check canOpenURL first and fall back to showing the number.
+const callIn = async () => {
+  const url = `tel:${CALL_IN_NUMBER}`;
+  try {
+    if (await Linking.canOpenURL(url)) {
+      await Linking.openURL(url);
+      return;
+    }
+  } catch {}
+  Alert.alert('Call-In Live', `Dial ${CALL_IN_DISPLAY} from a phone.`);
+};
 
 export default function PhoneLines({ navigation }) {
   return (
