@@ -67,6 +67,7 @@ Native-feeling iOS/Android mobile app for the *Quite Frankly* podcast (quitefran
   - **Large** (2+ fields) — ticker header, then one row per field below it, each independently copyable, no max field count. Covers two distinct cases off the same `fields` array (no separate prop/branch):
     - **Multiple addresses** (USDT, USDC) — one field per blockchain, each with its own gold bullet and its address indented below.
     - **One address + a tag/code the coin requires** (XRP's destination tag) — the address is its own bulleted field as usual; the tag is a second field with `bullet: false`. Use this for any future coin needing a memo/tag/extra number alongside a single address.
+  - The gold "Copy" pill is the shared `CopyBadge` component (`src/components/CopyBadge.js`), also used by `PhoneLines.js`'s Call-In number intro text — use it for any new copy-to-clipboard affordance.
   - Used on Become a Sponsor (`Subscription.js`, BTC/XRP — both Regular) and Donate to App (`DonateToApp.js`, BTC/SOL/ETH/DOGE as Regular; XRP/USDT/USDC as Large).
   - **Standing rules — both sizes were built to match each other and the page's other cards. If you touch spacing, keep these true:**
     - *Card size*: Regular and Large are the same height and have the same padding-to-text ratio as the page's other button-style cards (PayPal, Amazon, tip apps) — `cryptoCardRegular.paddingVertical` and `cryptoCardLarge.paddingVertical` both equal `gridCard`/`tipCard`'s. Keep the two crypto-card values equal to each other if either changes.

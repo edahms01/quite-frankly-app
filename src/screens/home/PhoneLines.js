@@ -1,10 +1,12 @@
-import { Alert, Linking, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import * as WebBrowser from 'expo-web-browser';
 import { PhoneCall, Voicemail } from 'lucide-react-native';
-import { colors, spacing } from '../../theme';
+import { colors, fontFamily, fontSize, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
 import Section from '../../components/Section';
 import DestinationCard from '../../components/DestinationCard';
+import CopyBadge from '../../components/CopyBadge';
 
 // E.164 with the +1 country code: dials as a normal domestic call for US
 // callers (the + prefix is just the carrier-agnostic form of "1" + area code)
@@ -27,12 +29,27 @@ const callIn = async () => {
   Alert.alert('Call-In Live', `Dial ${CALL_IN_DISPLAY} from a phone.`);
 };
 
+// For callers who'd rather dial from another app (WhatsApp, Google Voice…).
+const copyNumber = async () => {
+  await Clipboard.setStringAsync(CALL_IN_DISPLAY);
+  Alert.alert('Copied', 'Call-In number copied to clipboard.');
+};
+
 export default function PhoneLines({ navigation }) {
   return (
     <ScrollView style={styles.container}>
       <BackHeader title="Phone Lines" navigation={navigation} />
       <View style={styles.body}>
         <Section title="REACH THE SHOW">
+          <View style={styles.intro}>
+            <Text style={styles.introText}>
+              Prefer to call from another app? Copy the Call-In number:
+            </Text>
+            <TouchableOpacity style={styles.numberRow} onPress={copyNumber}>
+              <Text style={styles.numberValue}>{CALL_IN_DISPLAY}</Text>
+              <CopyBadge />
+            </TouchableOpacity>
+          </View>
           <View style={styles.grid}>
             <DestinationCard Icon={PhoneCall} label="Call-In Live" onPress={callIn} />
             <DestinationCard
@@ -56,6 +73,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.lg,
     gap: spacing.xl,
+  },
+  // Plain intro text under the section label (no card): a muted sentence,
+  // then the number with the standard Copy badge inline beside it.
+  intro: {
+    gap: spacing.sm,
+  },
+  introText: {
+    color: colors.inkMuted,
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.base,
+  },
+  numberRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  numberValue: {
+    color: colors.inkPrimary,
+    fontFamily: fontFamily.semiBold,
+    fontSize: fontSize.md,
   },
   // Same 2-up wrapping grid as Community/Home (DestinationCard default 47%).
   grid: {

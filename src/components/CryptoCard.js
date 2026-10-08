@@ -2,6 +2,7 @@ import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { colors, fontFamily, fontSize, radius, spacing } from '../theme';
 import { truncateAddress } from '../utils/truncateAddress';
+import CopyBadge from './CopyBadge';
 
 // Grid container for CryptoCard: cards are width: '47%' each, so two per
 // row with flexWrap, matching the "narrow crypto card grid" layout used
@@ -38,9 +39,7 @@ export default function CryptoCard({ title, fields }) {
               {f.truncate === false ? f.value : truncateAddress(f.value)}
             </Text>
           </View>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>Copy</Text>
-          </View>
+          <CopyBadge />
         </TouchableOpacity>
       </View>
     );
@@ -68,9 +67,7 @@ export default function CryptoCard({ title, fields }) {
               {f.truncate === false ? f.value : truncateAddress(f.value)}
             </Text>
           </View>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>Copy</Text>
-          </View>
+          <CopyBadge />
         </TouchableOpacity>
       ))}
     </View>
@@ -188,22 +185,5 @@ const styles = StyleSheet.create({
   singleFieldValueText: {
     marginTop: 0,
     textAlign: 'center',
-  },
-  // Shared by every card type (small and large) so both stay aligned by
-  // construction. Its right edge is pinned to the card's content edge
-  // regardless of padding, so narrowing it only moves its left edge
-  // rightward (freeing width for the address) — it can never cross the
-  // card boundary.
-  badge: {
-    flexShrink: 0,
-    backgroundColor: colors.surfaceLine,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.xs,
-    paddingVertical: 2,
-  },
-  badgeText: {
-    color: colors.accentGold,
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.xs,
   },
 });
