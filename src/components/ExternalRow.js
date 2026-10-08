@@ -31,8 +31,18 @@ export default function ExternalRow({ avatarText, title, subtitle, url, badge, o
   );
 }
 
+// Rows with and without a subtitle share one height — the tall (title +
+// subtitle) height is the standard, so short rows are padded up to it.
+// Explicit lineHeights make that height deterministic across fonts.
+const TITLE_LINE_HEIGHT = 20;
+const SUBTITLE_LINE_HEIGHT = 16;
+const SUBTITLE_GAP = 2;
+const ROW_MIN_HEIGHT =
+  spacing.md * 2 + TITLE_LINE_HEIGHT + SUBTITLE_GAP + SUBTITLE_LINE_HEIGHT;
+
 const styles = StyleSheet.create({
   row: {
+    minHeight: ROW_MIN_HEIGHT,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.surfaceCard,
@@ -60,12 +70,14 @@ const styles = StyleSheet.create({
     color: colors.inkPrimary,
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.md,
+    lineHeight: TITLE_LINE_HEIGHT,
   },
   subtitle: {
     color: colors.inkMuted,
     fontFamily: fontFamily.regular,
     fontSize: fontSize.sm,
-    marginTop: 2,
+    lineHeight: SUBTITLE_LINE_HEIGHT,
+    marginTop: SUBTITLE_GAP,
   },
   badge: {
     backgroundColor: colors.surfaceLine,
