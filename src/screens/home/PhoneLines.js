@@ -42,9 +42,7 @@ export default function PhoneLines({ navigation }) {
       <View style={styles.body}>
         <Section title="REACH THE SHOW">
           <View style={styles.intro}>
-            <Text style={styles.introText}>
-              Prefer to call from another app? Copy the Call-In number:
-            </Text>
+            <Text style={styles.introText}>Want to call from another app?</Text>
             <TouchableOpacity style={styles.numberRow} onPress={copyNumber}>
               <Text style={styles.numberValue}>{CALL_IN_DISPLAY}</Text>
               <CopyBadge />
