@@ -6,6 +6,14 @@ import BackHeader from '../../components/BackHeader';
 import Section from '../../components/Section';
 import DestinationCard from '../../components/DestinationCard';
 
+// Truth Social has no lucide glyph: a bold capital T, sized to the same
+// box as the lucide icons so the tile height matches its neighbors.
+const TruthIcon = ({ color, size }) => (
+  <Text style={{ color, width: size, height: size, fontSize: size, lineHeight: size, fontFamily: fontFamily.bold, textAlign: 'center' }}>
+    T
+  </Text>
+);
+
 const JOIN = [
   { label: 'Discord', Icon: MessageCircle, url: 'https://discord.gg/yzzqnGgzEv' },
   { label: 'Telegram', Icon: Send, url: 'https://t.me/quitefranklytv' },
@@ -18,6 +26,7 @@ const FOLLOW = [
   { label: 'X', Icon: X, url: 'http://twitter.com/QuiteFranklyTV' },
   { label: 'Tumblr', Icon: Music2, url: 'http://stonedandstudying.tumblr.com' },
   { label: 'YouTube', Icon: CirclePlay, url: 'https://www.youtube.com/@QuiteFrankly/posts' },
+  { label: 'Truth', Icon: TruthIcon, url: 'https://truthsocial.com/@QuiteFrankly' },
 ];
 
 export default function Community({ navigation }) {
