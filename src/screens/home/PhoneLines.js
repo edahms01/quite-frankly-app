@@ -74,8 +74,14 @@ const styles = StyleSheet.create({
   },
   // Plain intro text under the section label (no card): a muted sentence,
   // then the number with the standard Copy badge inline beside it.
+  // One line on most phones; flexWrap drops the number + Copy to a second
+  // line on narrow screens instead of overflowing.
   intro: {
-    gap: spacing.sm,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    columnGap: spacing.sm,
+    rowGap: spacing.sm,
   },
   introText: {
     color: colors.inkMuted,
@@ -90,7 +96,7 @@ const styles = StyleSheet.create({
   numberValue: {
     color: colors.inkPrimary,
     fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.md,
+    fontSize: fontSize.base,
   },
   // Same 2-up wrapping grid as Community/Home (DestinationCard default 47%).
   grid: {
