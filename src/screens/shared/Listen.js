@@ -21,6 +21,13 @@ import BackHeader from '../../components/BackHeader';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 const PAGE_SIZE = 20;
 
+// Fixed row height so every episode card is identical regardless of title
+// length: padding + 2 title lines + meta line. Titles clamp at 2 lines
+// (same as Watch.js/Home.js video titles).
+const TITLE_LINE_HEIGHT = 18;
+const META_LINE_HEIGHT = 16;
+const ROW_HEIGHT = spacing.md * 2 + TITLE_LINE_HEIGHT * 2 + 2 + META_LINE_HEIGHT;
+
 const PLATFORMS = [
   { label: 'Apple', url: 'https://podcasts.apple.com/us/podcast/quite-frankly/id1043194697' },
   { label: 'Spotify', url: 'https://open.spotify.com/show/1sYwIt24MveakVEEJHWmys' },
@@ -214,9 +221,11 @@ export default function Listen({ navigation }) {
                     )}
                   </View>
                   <View style={styles.textBlock}>
-                    <Text style={styles.episodeTitle}>{ep.title}</Text>
-                    <Text style={styles.episodeMeta}>
-                      {relativeTime(ep.publishedAt)} · {ep.duration}
+                    <Text style={styles.episodeTitle} numberOfLines={2}>{ep.title}</Text>
+                    <Text style={styles.episodeMeta} numberOfLines={1}>
+                      {ep.duration
+                        ? `${relativeTime(ep.publishedAt)} · ${ep.duration}`
+                        : relativeTime(ep.publishedAt)}
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -333,7 +342,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.surfaceCard,
     borderRadius: radius.md,
-    padding: spacing.md,
+    paddingHorizontal: spacing.md,
+    height: ROW_HEIGHT,
     gap: spacing.md,
   },
   iconCircle: {
@@ -351,11 +361,13 @@ const styles = StyleSheet.create({
     color: colors.inkPrimary,
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.md,
+    lineHeight: TITLE_LINE_HEIGHT,
   },
   episodeMeta: {
     color: colors.inkMuted,
     fontFamily: fontFamily.regular,
     fontSize: fontSize.sm,
+    lineHeight: META_LINE_HEIGHT,
     marginTop: 2,
   },
   loadMore: {
