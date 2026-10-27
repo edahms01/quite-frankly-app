@@ -27,15 +27,26 @@ Native-feeling iOS/Android mobile app for the *Quite Frankly* podcast (quitefran
 ---
 
 ## UI standard (read before ANY UI change)
-Design tokens and components: `src/design/` (synced from AskFrankie's `design/`, never edit `qf-tokens.mobile.js` / `qf-presets.js` by hand). Rules: `qf-design-system_v1.md`. `src/theme.js` is only a wrapper that re-exports them under the old key names.
-- No raw colours, radii, font sizes or spacing: use tokens (theme.js keys / presets from `src/design/qf-presets.js`). `npm run lint:design` enforces it (baseline `design-lint-baseline.json`, a ratchet: fix new violations, never raise the baseline).
-- Hover neutral, selected gold, focus red ring, links gold, one filled red button per view, no all-caps, buttons Title Case.
-- Need a value that isn't a token? Add it to AskFrankie's `design/tokens/tokens.json`, run `npm run tokens` there, then `npm run sync:tokens` here, then use it.
-- Cards: 1px hairline, no shadow (`shadows.sm` is gone from cards; Android keeps its edge because the hairline is a border, not elevation). Panels/windows: the hero surface. Radii 6/10/14/22/pill only.
+Design tokens and components: `src/design/` (synced from AskFrankie's `design/`; never edit `qf-tokens.mobile.js` / `qf-presets.js` by hand). Rules: `qf-design-system_v1.md` (in `qf-design-kit/docs/`). `src/theme.js` is only a wrapper that re-exports them under the old key names.
+- No raw colours, radii, font sizes or spacing: use tokens (theme.js keys, or presets from `src/design/qf-presets.js`). Inter is the only typeface (no Bebas Neue, no Oswald).
+- `npm run lint:design` enforces it. Its baseline `design-lint-baseline.json` is a ratchet: fix new violations, never raise a count. Non-games counts today: `literal-radius` 15 (circles and dots sized by half their width keep a hard-coded radius on purpose), `raw-hex` 1 (`VideoPlayer`'s `#000` letterbox), `raw-rgba` 2 (the `VideoThumbnailOverlay` scrim and `Article`'s alpha helper); game boards' own palettes are counted separately (`:games`).
+- Pressed state is `activeOpacity` (no hover on touch), selected is gold, text fields show the red `inputFocused` border, links are gold and underlined, one filled red button per view, no all-caps, buttons Title Case.
+- Need a value that isn't a token? Add it to AskFrankie's `design/tokens/tokens.json`, run `npm run tokens` there, commit `design/dist/`, then `npm run sync:tokens` here, then use it.
+- Cards: 1px hairline, no shadow (Android keeps its edge because the hairline is a border, not elevation). Panels/windows: the `floating` surface. Radii 6/10/14/22/pill only.
 - Type presets (`src/design/qf-presets.js`): screen and sheet headings use `title` (Inter Bold 20; `BackHeader`, checkout, full player, game tray, onboarding), `titleSm` (18) and `titleLg` (28, the article headline); error messages spread `errorText` (Inter Medium 13, `statusError`); inline links use `link` (gold, underlined; `Article`'s `tagsStyles.a`). No literal `fontSize` numbers: use `fontSize.*` tokens (11 = `compact`, 13 = `meta`, 12 = `caption`, 18 = `titleSm`, 10 = `micro`). Standalone action text ("Try again", "Show more", "Load more", "Resend code") is gold semibold, not `link`.
 - Controls (`src/design/qf-presets.js`): primary actions use `buttonPrimary` + `buttonPrimaryText` (red fill, white text, 44 min height; `DeleteAccount`'s destructive button too), secondary actions use `button` + `buttonText` (hairline outline), text fields use `input` with `inputFocused` on focus and `placeholderTextColor={placeholderColor}`. Touch targets under 44dp get `hitSlop` without changing the visual size (`BackHeader` back button, `AvatarButton`, `MiniPlayer` play/pause, `Article`'s back/share circles). One filled red button per view.
-- Error and destructive text uses `colors.statusError` (since the 2026-10-27 token sync it is `#e0332b`, the same red as `statusLive`), never `brandRed` (brand red text is 2.4:1); `brandRed` is for fills.
-- After a token change in AskFrankie: commit `design/dist/`, then in this repo run `npm run sync:tokens` (set `QF_DESIGN_DIR` if the AskFrankie checkout is not at `../AskFrankie`).
+- Error and destructive text uses `colors.statusError` (`#e0332b`, the same red as `statusLive`), never `brandRed` (brand red text is 2.4:1); `brandRed` is for fills.
+- **Run `npm run sync:tokens` after AskFrankie's tokens change.** Set `QF_DESIGN_DIR` (for example `QF_DESIGN_DIR=~/Desktop/Claude/AskFrankieBranded/design`) if the AskFrankie checkout is not at `../AskFrankie`. `npm test` runs `npm run sync:tokens -- --check` (inside `src/design/design.test.js`) and fails if the vendored copy is stale, but it only checks when the source is found: with neither `../AskFrankie/design` nor `QF_DESIGN_DIR` it prints a warning and skips, so run tests with `QF_DESIGN_DIR` set before merging a design change.
+
+## Known differences from AskFrankie
+Kept different on purpose (decided 2026-10-27); do not "fix" these as drift:
+- **Control heights:** on mobile every button and text field is at least 44dp high (`control.lg`); mobile never goes below that, even where the web uses a smaller control (`control.sm` / `control.md`).
+- **Press, not hover:** mobile uses `activeOpacity` (`opacity.pressed`) where the web has a neutral hover edge; no custom focus ring beyond the red `inputFocused` border on text fields.
+- **44pt touch targets:** icon buttons under 44dp (`BackHeader` back button, `AvatarButton`, `MiniPlayer` play/pause, `Article`'s back/share circles) get `hitSlop` so the touch area is 44dp while the visual size stays small.
+- **Game window button:** "Got it, Play" in `GameWindow` stays gold-filled with dark text (the `button` preset filled with `accentGold`); every other secondary button is a hairline outline.
+- **Culture Club sponsor button:** `CultureClub.js`'s "Become a Sponsor to join Culture Club" (`actionCard`) is hand-styled (radius 14, about 37pt tall) rather than `SponsorButton`, so it matches the login card beneath it.
+- **Membership wording held for later:** three "sponsor" lines kept as they are until decided: "Become a Sponsor to join Culture Club" (Culture Club button), "Already a Sponsor? Log in to QuiteFrankly.tv to access the Culture Club." (Culture Club login card), and "Are you a Quite Frankly Sponsor? Use the same email you used for your subscription." (Email onboarding note). "One-Time Donation" (Subscription section label) is also still undecided.
+- **Other platform differences** (glow, floating windows, sponsor ships, safe areas, motion, the AskFrankie WebView seam) are in the "must differ" table of `qf-ui-audit_v1.md`.
 
 ---
 
