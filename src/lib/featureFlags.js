@@ -6,7 +6,7 @@ export const FLAG_DEFAULTS = {
   askfrankie_enabled: false,
   askfrankie_linked_login: false,
   accounts: false,        // account creation, sign-in, Sign Out, Delete Account, the AskFrankie login handoff
-  cultureClub: false,     // the Culture Club tab/page and the Calendar tile/page
+  cultureClub: false,     // the Culture Club tab/page, its Home card, and the club days on Schedule (Schedule itself is always on)
 };
 
 /** Only a literal `true` counts; unknown keys are dropped. */
@@ -53,6 +53,15 @@ export function visibleTabs(flags) {
 export function homeDestinations(all, flags) {
   return all.filter((d) => !d.flag || isEnabled(flags, d.flag));
 }
+
+/** Schedule (the Calendar.js page): with cultureClub OFF every club day shows as a normal show day, so Culture Club never appears; ON: the week as given. */
+export const NORMAL_SHOW_DAY = { title: 'Quite Frankly Live', time: '7:00 PM ET', period: 'evening', club: false };
+export function scheduleWeek(flags, week) {
+  if (isEnabled(flags, 'cultureClub')) return week;
+  return week.map((d) => (d.club ? { day: d.day, ...NORMAL_SHOW_DAY } : d));
+}
+/** The Regular show / Culture Club legend only makes sense while club days are visible. */
+export function showScheduleLegend(flags) { return isEnabled(flags, 'cultureClub'); }
 
 /** Notification toggles: the Culture Club reminder row only while cultureClub is on. */
 export function notificationRows(rows, flags) {

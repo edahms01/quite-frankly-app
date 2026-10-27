@@ -17,7 +17,7 @@ const SPOTIFY_EMBED_URL = `https://open.spotify.com/embed/playlist/${SPOTIFY_PLA
 export default function Music({ navigation }) {
   return (
     <ScrollView style={styles.container}>
-      <BackHeader title="Music" navigation={navigation} />
+      <BackHeader title="Jam" navigation={navigation} />
       <View style={styles.body}>
         <Section title="Quite Frankly Show Playlist">
           <View style={[styles.playerCard, styles.spotifyCard]}>

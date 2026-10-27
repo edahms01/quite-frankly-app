@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import {
   FLAG_DEFAULTS, normalizeFlags, parseCachedFlags, applyOverride, isEnabled,
-  onboardingNextRoute, onboardingDotCount, visibleTabs, homeDestinations, notificationRows, accountEntry, accountScreen, shouldRunAskFrankieHandoff,
+  onboardingNextRoute, onboardingDotCount, visibleTabs, homeDestinations, scheduleWeek, showScheduleLegend, NORMAL_SHOW_DAY, notificationRows, accountEntry, accountScreen, shouldRunAskFrankieHandoff,
 } from './featureFlags.js';
 import { FLAG_DEFAULTS as SERVER_DEFAULTS } from '../../netlify/functions/lib/flags.js';
 
@@ -71,16 +71,44 @@ test('accounts OFF: no AskFrankie login handoff; ON: handoff runs', () => {
   assert.equal(shouldRunAskFrankieHandoff(ACCOUNTS_ON), true);
 });
 
-test('cultureClub OFF: 3 tabs, no Culture Club or Calendar tiles, no Event Reminders row; ON: all back', () => {
+test('cultureClub OFF: 3 tabs, no Culture Club tile, no Event Reminders row; ON: they come back. Schedule is visible in both states', () => {
   assert.deepEqual(visibleTabs(OFF), ['Home', 'Watch', 'Listen']);
   assert.deepEqual(visibleTabs(CLUB_ON), ['Home', 'Watch', 'Listen', 'CultureClub']);
-  const tiles = [{ label: 'Watch' }, { label: 'Culture Club', flag: 'cultureClub' }, { label: 'Calendar', flag: 'cultureClub' }, { label: 'Shop' }];
-  assert.deepEqual(homeDestinations(tiles, OFF).map((t) => t.label), ['Watch', 'Shop']);
-  assert.deepEqual(homeDestinations(tiles, ACCOUNTS_ON).map((t) => t.label), ['Watch', 'Shop']);   // accounts does not bring Culture Club back
-  assert.deepEqual(homeDestinations(tiles, CLUB_ON).map((t) => t.label), ['Watch', 'Culture Club', 'Calendar', 'Shop']);
+  const tiles = [{ label: 'Watch' }, { label: 'Culture Club', flag: 'cultureClub' }, { label: 'Schedule' }, { label: 'Shop' }];
+  assert.deepEqual(homeDestinations(tiles, OFF).map((t) => t.label), ['Watch', 'Schedule', 'Shop']);
+  assert.deepEqual(homeDestinations(tiles, ACCOUNTS_ON).map((t) => t.label), ['Watch', 'Schedule', 'Shop']);   // accounts does not bring Culture Club back
+  assert.deepEqual(homeDestinations(tiles, CLUB_ON).map((t) => t.label), ['Watch', 'Culture Club', 'Schedule', 'Shop']);
   const rows = [{ key: 'live' }, { key: 'video' }, { key: 'club' }];
   assert.deepEqual(notificationRows(rows, OFF).map((r) => r.key), ['live', 'video']);
   assert.deepEqual(notificationRows(rows, CLUB_ON).map((r) => r.key), ['live', 'video', 'club']);
+});
+
+const WEEK = [
+  { day: 'Sun', title: 'Quite Frankly Live', time: '7:00 PM ET', period: 'evening', club: false },
+  { day: 'Wed', title: 'Book Club', time: '7:30 PM ET', period: 'evening', club: true, extra: 'Guest: [Name]' },
+  { day: 'Fri', title: 'Film Club', time: '8:00 PM ET', period: 'evening', club: true },
+  { day: 'Sat', title: 'Morning Stream', time: '10:00 AM ET', period: 'day', club: false },
+];
+
+test('Schedule with cultureClub OFF: club days become normal shows (7 days stay), no club, no extra, no legend', () => {
+  const week = scheduleWeek(OFF, WEEK);
+  assert.equal(week.length, WEEK.length);
+  assert.deepEqual(week.map((d) => d.day), ['Sun', 'Wed', 'Fri', 'Sat']);
+  assert.ok(week.every((d) => d.club === false));
+  assert.ok(week.every((d) => !('extra' in d)));
+  assert.ok(!week.some((d) => /club/i.test(d.title)));
+  assert.deepEqual(week[1], { day: 'Wed', ...NORMAL_SHOW_DAY });
+  assert.deepEqual(week[1], { day: 'Wed', title: 'Quite Frankly Live', time: '7:00 PM ET', period: 'evening', club: false });
+  assert.deepEqual(week[0], WEEK[0]);   // regular days untouched
+  assert.deepEqual(week[3], WEEK[3]);   // including a non-default time/period
+  assert.equal(showScheduleLegend(OFF), false);
+  assert.equal(showScheduleLegend(ACCOUNTS_ON), false);
+  assert.deepEqual(WEEK[1].club, true);   // the input is not mutated
+});
+
+test('Schedule with cultureClub ON: exactly as today (club days, extras and legend)', () => {
+  assert.deepEqual(scheduleWeek(CLUB_ON, WEEK), WEEK);
+  assert.equal(showScheduleLegend(CLUB_ON), true);
 });
 
 test('no code removed: every hidden screen still exists and stays registered', () => {

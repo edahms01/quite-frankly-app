@@ -15,7 +15,7 @@ Superseded (M1, 2026-10-27): the token table that lived here (old `#121014` / `#
 **Main App**: Bottom tab navigator, 3 tabs — Home, Watch, Members Only.
 
 **Per-tab stacks** (screens pushed from within each tab):
-- **Home stack**: Home → Shop, Community, Writing, Music, Calendar, Listen (each a push)
+- **Home stack**: Home → Shop, Community (shown as "Connect"), Writing (shown as "Read"), Music ("Jam"), Games ("Play"), PhoneLines ("Call"), Calendar ("Schedule"), Listen (each a push). Visible names changed 2026-10-27; route and file names did not. All Home cards come from one `DESTINATIONS` list in `Home.js`.
 - **Watch stack**: Watch → Video Player, Listen
 - **Members Only stack**: Culture Club (Members Only tab root) → Subscription
 

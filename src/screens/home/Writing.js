@@ -27,7 +27,7 @@ export default function Writing({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <BackHeader title="Writing" navigation={navigation} />
+      <BackHeader title="Read" navigation={navigation} />
       <SegmentedControl options={TABS} value={tab} onChange={setTab} />
       {tab === 'substack' ? (
         <WritingSubstack navigation={navigation} />

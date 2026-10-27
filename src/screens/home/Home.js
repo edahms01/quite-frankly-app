@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { RefreshControl,ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2, Gamepad2, Bot, Phone } from 'lucide-react-native';
+import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, BookOpen, Music2, Gamepad2, Bot, Phone } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
-import { homeDestinations } from '../../lib/featureFlags';
+import { homeDestinations, isEnabled } from '../../lib/featureFlags';
 import { tag, tagLive, tagLiveText, tagSolid, tagSolidText } from '../../design/qf-presets';
 import SponsorButton from '../../components/SponsorButton';
 import DestinationCard from '../../components/DestinationCard';
@@ -35,24 +35,30 @@ import EmptyState from '../../components/EmptyState';
 // below the clipped bottom edge, making it untappable.
 const VIDEO_HEIGHT = 220;
 
+// EVERY Home card comes from this one list and is rendered by the single
+// map below (no hard-coded cards, no per-card JSX branches). Visible labels
+// are verb-themed (renamed 2026-10-27); routes and files keep their old names
+// (route 'Writing' is the Read screen, 'Community' is Connect, and so on).
+//   flag       shown only while that remote flag is on (Culture Club stays hidden with the flag off)
+//   enabledBy  always shown, but tappable only while that flag is on; otherwise it renders the muted `subtext` and no onPress
 const DESTINATIONS = [
   { label: 'Watch', Icon: CirclePlay, route: 'Watch' },
   { label: 'Listen', Icon: Headphones, route: 'Listen' },
   { label: 'Culture Club', Icon: Crown, route: 'CultureClubTab', flag: 'cultureClub' },   // hidden unless the cultureClub flag is on
-  { label: 'Community', Icon: MessageSquare, route: 'Community' },
+  { label: 'Read', Icon: BookOpen, route: 'Writing' },
   { label: 'Shop', Icon: ShoppingBag, route: 'Shop' },
-  { label: 'AskFrankie AI', askFrankie: true },   // rendered by the grid below (flag-dependent tile)
-  { label: 'Writing', Icon: FileText, route: 'Writing' },
-  { label: 'Music', Icon: Music2, route: 'Music' },
-  { label: 'Games', Icon: Gamepad2, route: 'Games' },
-  { label: 'Calendar', Icon: CalendarIcon, route: 'Calendar', flag: 'cultureClub' },       // the page mixes show and Culture Club days: hidden with the flag
+  { label: 'Connect', Icon: MessageSquare, route: 'Community' },
+  { label: 'Ask', Icon: Bot, route: 'AskFrankie', enabledBy: 'askfrankie_enabled', subtext: 'Coming Soon' },   // the page itself stays "AskFrankie AI"
+  { label: 'Jam', Icon: Music2, route: 'Music' },
+  { label: 'Play', Icon: Gamepad2, route: 'Games' },
+  { label: 'Call', Icon: Phone, route: 'PhoneLines' },
+  { label: 'Schedule', Icon: CalendarIcon, route: 'Calendar' },
 ];
 
 export default function Home({ navigation }) {
   const { mostRecent, loading, error, refetch } = useYouTubeFeed();
   const { isLive } = useLiveStatus();
   const flags = useFeatureFlags();
-  const { askfrankie_enabled: askFrankieEnabled } = flags;      // remote switch: off = the old "Coming Soon" tile, nothing else changes
   // The feed is otherwise fetched once at launch — when Twitch flips live, the
   // backend has just re-pinned tonight's stream as Most Recent, so pull it.
   useEffect(() => {
@@ -144,39 +150,18 @@ export default function Home({ navigation }) {
 
       <View style={styles.grid}>
         {homeDestinations(DESTINATIONS, flags).map((d) => {
-          if (!d.askFrankie) {
-            return (
-              <DestinationCard
-                key={d.label}
-                Icon={d.Icon}
-                label={d.label}
-                onPress={() => goTo(d.route)}
-              />
-            );
-          }
-          return askFrankieEnabled ? (
+          const live = !d.enabledBy || isEnabled(flags, d.enabledBy);
+          return (
             <DestinationCard
               key={d.label}
-              Icon={Bot}
-              label="AskFrankie AI"
-              onPress={() => navigation.navigate('AskFrankie')}
-              style={styles.askFrankieCard}
-            />
-          ) : (
-            <DestinationCard
-              key={d.label}
-              Icon={Bot}
-              label="AskFrankie AI"
-              subtext="Coming Soon"
-              style={styles.askFrankieCard}
+              Icon={d.Icon}
+              label={d.label}
+              subtext={live ? undefined : d.subtext}
+              onPress={live ? () => goTo(d.route) : undefined}
+              style={live ? undefined : styles.comingSoonCard}
             />
           );
         })}
-        <DestinationCard
-          Icon={Phone}
-          label="Phone Lines"
-          onPress={() => navigation.navigate('PhoneLines')}
-        />
       </View>
     </ScrollView>
     </SafeAreaView>
@@ -264,10 +249,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: spacing.md,
   },
-  // Tighter padding/gap than DestinationCard's default so the extra
-  // "Coming Soon" line fits in roughly the same footprint as a standard
-  // 2-line card, instead of growing taller than its row-mate.
-  askFrankieCard: {
+  // Only while a card shows its "Coming Soon" line: tighter padding/gap than
+  // DestinationCard's default so the extra line fits in roughly the same
+  // footprint as a standard card. A live card (e.g. Ask with askfrankie_enabled
+  // on) uses the standard padding, so every card is the same height.
+  comingSoonCard: {
     paddingVertical: spacing.sm,
     gap: 2,
   },

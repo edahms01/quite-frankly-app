@@ -38,7 +38,7 @@ const copyNumber = async () => {
 export default function PhoneLines({ navigation }) {
   return (
     <ScrollView style={styles.container}>
-      <BackHeader title="Phone Lines" navigation={navigation} />
+      <BackHeader title="Call" navigation={navigation} />
       <View style={styles.body}>
         <Section title="Reach the Show">
           <View style={styles.intro}>
