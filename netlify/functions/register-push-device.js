@@ -30,6 +30,7 @@ export default async (req) => {
     live: raw.live !== false,
     video: raw.video !== false,
     club: raw.club !== false,
+    substack: raw.substack !== false,
   };
 
   await setJSON('qf-push-tokens', pushToken, {
