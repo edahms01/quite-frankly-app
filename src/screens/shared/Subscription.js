@@ -30,7 +30,7 @@ export default function Subscription({ navigation }) {
     <ScrollView style={styles.container}>
       <BackHeader title="Become a Sponsor" navigation={navigation} />
       <View style={styles.body}>
-        <Section title="MONTHLY SPONSORSHIP">
+        <Section title="Monthly Sponsorship">
           <TouchableOpacity
             style={styles.qfCard}
             onPress={() => navigation.navigate('SubscriptionCheckout')}
@@ -72,7 +72,7 @@ export default function Subscription({ navigation }) {
           </View>
         </Section>
 
-        <Section title="ONE-TIME DONATION">
+        <Section title="One-Time Donation">
           <CryptoCardGrid>
             <TouchableOpacity style={styles.gridCard} onPress={() => Linking.openURL(PAYPAL_URL)}>
               <Text style={styles.gridCardTitle}>PayPal</Text>
@@ -85,7 +85,7 @@ export default function Subscription({ navigation }) {
           </CryptoCardGrid>
         </Section>
 
-        <Section title="MAIL">
+        <Section title="Mail">
           <Text style={styles.mail}>
             Prefer mail? Send letters, cards, or small gifts to: Quite
             Frankly, 222 Purchase Street, #105, Rye, NY 10580.

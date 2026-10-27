@@ -34,7 +34,7 @@ export default function Community({ navigation }) {
     <ScrollView style={styles.container}>
       <BackHeader title="Community" navigation={navigation} />
       <View style={styles.body}>
-        <Section title="JOIN THE CONVERSATION">
+        <Section title="Join the Conversation">
           <View style={styles.grid}>
             {JOIN.map((j) => (
               <DestinationCard
@@ -47,7 +47,7 @@ export default function Community({ navigation }) {
           </View>
         </Section>
 
-        <Section title="FOLLOW FRANK">
+        <Section title="Follow Frank">
           <View style={styles.grid}>
             {FOLLOW.map((f) => (
               <DestinationCard
@@ -60,7 +60,7 @@ export default function Community({ navigation }) {
           </View>
         </Section>
 
-        <Section title="EVENTS">
+        <Section title="Events">
           <TouchableOpacity
             style={styles.eventRow}
             onPress={() => WebBrowser.openBrowserAsync('https://www.quitefrankly.tv/the-quite-frankly-live-events', { dismissButtonStyle: 'close' })}

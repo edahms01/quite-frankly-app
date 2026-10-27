@@ -18,7 +18,7 @@ export default function Music({ navigation }) {
     <ScrollView style={styles.container}>
       <BackHeader title="Music" navigation={navigation} />
       <View style={styles.body}>
-        <Section title="QUITE FRANKLY SHOW PLAYLIST">
+        <Section title="Quite Frankly Show Playlist">
           <View style={[styles.playerCard, styles.spotifyCard]}>
             <WebView
               source={{ uri: SPOTIFY_EMBED_URL }}
@@ -35,7 +35,7 @@ export default function Music({ navigation }) {
           </TouchableOpacity>
         </Section>
 
-        <Section title="SET THE CHARGE">
+        <Section title="Set the Charge">
           <View style={[styles.playerCard, styles.bandcampCard]}>
             <WebView
               source={{ uri: EMBED_URL }}

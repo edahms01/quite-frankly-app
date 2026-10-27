@@ -2,55 +2,82 @@ import { Platform, StyleSheet, Text, View } from 'react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../theme';
 import { useLiveStatus } from '../context/LiveStatusContext';
 
-// Classic studio "ON AIR" sign — dim/unlit border when not live, lit
-// solid-red with a glow when live. Android can't carry shadow color via
-// elevation, so the border itself becomes the "lit" cue there instead.
+// Studio "ON AIR" sign, same look as the web one: Inter Bold 11px caps,
+// letter-spacing 1. Off air: dim text and a hairline outline. Live: white
+// text and a lit red outline with a red glow. iOS glows with a coloured
+// shadow; Android 9+ with a coloured elevation shadow plus stacked red rings (GLOW_RINGS). Both need a solid shape
+// to blur, so the live badge is filled with the ground colour. Off air has no
+// glow at all.
+// Android's coloured elevation shadow is too faint to read as a glow, so while live a few
+// stacked translucent red rings are drawn behind the badge (offset px, opacity).
+const GLOW_RINGS = [
+  { offset: 10, opacity: 0.07 },
+  { offset: 7, opacity: 0.12 },
+  { offset: 4, opacity: 0.2 },
+];
+
 export default function OnAirBadge() {
   const { isLive } = useLiveStatus();
   return (
-    <View style={[styles.onAirBadge, isLive && styles.onAirBadgeLive]}>
-      <Text style={[styles.onAirText, isLive && styles.onAirTextLive]}>ON AIR</Text>
+    <View>
+      {isLive && Platform.OS === 'android'
+        ? GLOW_RINGS.map(({ offset, opacity }) => (
+            <View
+              key={offset}
+              pointerEvents="none"
+              style={[
+                styles.glowRing,
+                { top: -offset, left: -offset, right: -offset, bottom: -offset, borderRadius: radius.sm + offset, opacity },
+              ]}
+            />
+          ))
+        : null}
+      <View style={[styles.onAirBadge, isLive && styles.onAirBadgeLive]}>
+        <Text style={[styles.onAirText, isLive && styles.onAirTextLive]}>ON AIR</Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  glowRing: {
+    position: 'absolute',
+    backgroundColor: colors.statusLive,
+  },
   onAirBadge: {
     borderWidth: 1,
-    borderColor: colors.surfaceLine,
+    borderColor: colors.borderDefault,
     borderRadius: radius.sm,
     paddingHorizontal: spacing.sm,
     paddingVertical: 3,
   },
+  // The fill matches the ground (invisible as a fill) but gives the shadow a solid shape to blur, so the glow is a real halo and not just a faint blur of the thin border and text.
   onAirBadgeLive: {
-    // A brighter, more saturated red than the app's usual brandRed —
-    // that deep maroon doesn't read as "lit," it just reads as another
-    // button. This one, with a wide soft-opacity glow behind it, is
-    // closer to an actual neon/bulb "ON AIR" sign.
-    backgroundColor: colors.statusLive,
-    borderColor: colors.statusLive,
+    borderColor: colors.brandRedHi,
+    backgroundColor: colors.bgBase,
     ...Platform.select({
       ios: {
         shadowColor: colors.statusLive,
         shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.95,
+        shadowOpacity: 0.9,
         shadowRadius: 12,
       },
-      // Elevation can't carry color on Android — a brighter/thicker
-      // border stands in for the glow there instead.
-      android: { elevation: 6, borderWidth: 1.5 },
+      android: {
+        borderWidth: 1.5,
+        borderColor: colors.statusLive,
+        shadowColor: colors.statusLive,
+        elevation: 10,
+      },
     }),
   },
+  // Off-air text is deliberately dim ("unlit", not just "quieter").
   onAirText: {
-    // Dimmer than the usual inkMuted secondary-text color on purpose —
-    // this needs to read as "unlit," not just "quieter," so it can't be
-    // mistaken for the live state at a glance.
     color: colors.textDisabled,
     fontFamily: fontFamily.bold,
-    fontSize: fontSize.xs,
+    fontSize: fontSize.compact,
     letterSpacing: 1,
   },
   onAirTextLive: {
-    color: colors.inkPrimary,
+    color: colors.textOnRed,
   },
 });

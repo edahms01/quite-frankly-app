@@ -3,6 +3,8 @@ import { RefreshControl,ScrollView, StyleSheet, Text, TouchableOpacity, useWindo
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2, Gamepad2, Bot, Phone } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
+import { tag, tagLive, tagLiveText, tagSolid, tagSolidText } from '../../design/qf-presets';
+import SponsorButton from '../../components/SponsorButton';
 import DestinationCard from '../../components/DestinationCard';
 import AvatarButton from '../../components/AvatarButton';
 import Wordmark from '../../components/Wordmark';
@@ -109,8 +111,8 @@ export default function Home({ navigation }) {
         disabled={embedVisible || !mostRecent}
       >
         {embedVisible ? null : (
-          <View style={[styles.badge, isLive && styles.badgeLive]}>
-            <Text style={styles.badgeText}>{isLive ? 'LIVE NOW' : 'MOST RECENT'}</Text>
+          <View style={[styles.badge, isLive ? styles.badgeLive : styles.badgeRecent]}>
+            <Text style={isLive ? styles.badgeTextLive : styles.badgeTextRecent}>{isLive ? 'Live Now' : 'Most Recent'}</Text>
           </View>
         )}
         <View style={styles.thumbnail}>
@@ -136,12 +138,7 @@ export default function Home({ navigation }) {
         </View>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.sponsorButton}
-        onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })}
-      >
-        <Text style={styles.sponsorButtonText}>Become a Sponsor</Text>
-      </TouchableOpacity>
+      <SponsorButton onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })} />
 
       <View style={styles.grid}>
         {DESTINATIONS.map((d) => {
@@ -198,20 +195,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'space-between',
   },
-  sponsorButton: {
-    backgroundColor: colors.surfaceCard,
-    borderWidth: 1,
-    borderColor: colors.accentGold,
-    borderRadius: radius.md,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    alignItems: 'center',
-  },
-  sponsorButtonText: {
-    color: colors.accentGold,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.md,
-  },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -237,24 +220,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderDefault,
   },
+  // Badge on the video card: tag presets (11px bold). Position is this card's own.
   badge: {
+    ...tag,
     position: 'absolute',
     top: spacing.sm,
     left: spacing.sm,
-    backgroundColor: colors.accentGold,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
     zIndex: 1,
   },
-  badgeLive: {
-    backgroundColor: colors.brandRed,
-  },
-  badgeText: {
-    color: colors.surfaceGround,
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.xs,
-  },
+  badgeRecent: tagSolid,
+  badgeLive: tagLive,
+  badgeTextRecent: tagSolidText,
+  badgeTextLive: tagLiveText,
   thumbnail: {
     height: VIDEO_HEIGHT,
     backgroundColor: colors.surfaceLive,

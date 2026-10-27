@@ -1,5 +1,6 @@
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
+import { floating } from '../../design/qf-presets';
 import { GAMES } from '../../games';
 
 // Pull-up tray for picking a game — opened from a video page or Home
@@ -38,10 +39,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
+  // Bottom sheet: the `floating` surface with a flat bottom edge (it meets the screen edge).
   card: {
-    backgroundColor: colors.surfaceCard,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
+    ...floating,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    borderBottomWidth: 0,
     padding: spacing.md,
   },
   heading: {

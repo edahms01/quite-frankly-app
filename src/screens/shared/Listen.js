@@ -12,10 +12,12 @@ import {
 import * as Clipboard from 'expo-clipboard';
 import { CirclePlay, Pause } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
+import { pill, pillText } from '../../design/qf-presets';
 import { relativeTime } from '../../utils/relativeTime';
 import { useAudioPlayer } from '../../context/AudioPlayerContext';
 import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
+import SponsorButton from '../../components/SponsorButton';
 import BackHeader from '../../components/BackHeader';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
@@ -157,12 +159,7 @@ export default function Listen({ navigation }) {
         navigation={navigation}
         onBack={() => navigation.getParent()?.navigate('Home')}
       >
-        <TouchableOpacity
-          style={styles.sponsorButton}
-          onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })}
-        >
-          <Text style={styles.sponsorButtonText}>Become a Sponsor</Text>
-        </TouchableOpacity>
+        <SponsorButton onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })} />
       </BackHeader>
 
       <View style={styles.platformRow}>
@@ -259,22 +256,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.surfaceGround,
   },
-  // Matches Home.js's sponsorButton exactly (full-width, gold-bordered,
-  // centered label) for visual consistency across screens.
-  sponsorButton: {
-    backgroundColor: colors.surfaceCard,
-    borderWidth: 1,
-    borderColor: colors.accentGold,
-    borderRadius: radius.md,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    alignItems: 'center',
-  },
-  sponsorButtonText: {
-    color: colors.accentGold,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.md,
-  },
   // Matches Watch.js's platformRow/platformPill exactly (the app's one
   // Pill family — radius.pill, no shadow, fontSize.base) for consistency
   // between the two link-out rows.
@@ -306,16 +287,14 @@ const styles = StyleSheet.create({
     lineHeight: fontSize.sm * 1.3,
   },
   platformPill: {
+    ...pill,
     flexShrink: 1,
-    backgroundColor: colors.surfaceCard,
-    borderRadius: radius.pill,
     paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.sm,
+    backgroundColor: colors.bgRaised,
   },
   platformText: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.base,
+    ...pillText,
+    color: colors.textPrimary,
   },
   list: {
     paddingHorizontal: spacing.md,

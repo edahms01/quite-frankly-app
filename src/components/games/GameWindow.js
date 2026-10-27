@@ -2,7 +2,8 @@ import { useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { RotateCcw, X } from 'lucide-react-native';
-import { colors, fontFamily, fontSize, radius, shadows, spacing } from '../../theme';
+import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
+import { floating } from '../../design/qf-presets';
 
 export const WINDOW_WIDTH = 300;
 export const WINDOW_HEADER_HEIGHT = 44;
@@ -130,10 +131,8 @@ const styles = StyleSheet.create({
     // order on Android (paint order there follows elevation), so both are
     // set to the same value rather than relying on sibling JSX order.
     zIndex: 10,
-    borderRadius: radius.xl,
+    ...floating,
     overflow: 'hidden',
-    backgroundColor: colors.surfaceCard,
-    ...shadows.md,
     elevation: 10,
   },
   hidden: {

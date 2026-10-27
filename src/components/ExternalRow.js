@@ -1,6 +1,7 @@
 import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import { colors, fontFamily, fontSize, radius, spacing } from '../theme';
+import { colors, fontFamily, fontSize, spacing } from '../theme';
+import { activeOpacity, avatarChip, row, tag, tagGold, tagText } from '../design/qf-presets';
 
 // inAppBrowser: pass true for destinations with no dedicated mobile app
 // (opens via expo-web-browser instead of kicking out to Safari/the OS).
@@ -11,7 +12,7 @@ export default function ExternalRow({ avatarText, title, subtitle, url, badge, o
     <TouchableOpacity
       style={styles.row}
       onPress={onPress ?? (() => url && (inAppBrowser ? WebBrowser.openBrowserAsync(url, { dismissButtonStyle: 'close' }) : Linking.openURL(url)))}
-      activeOpacity={0.7}
+      activeOpacity={activeOpacity}
     >
       {avatarText != null && (
         <View style={styles.avatar}>
@@ -41,23 +42,14 @@ const ROW_MIN_HEIGHT =
   spacing.md * 2 + TITLE_LINE_HEIGHT + SUBTITLE_GAP + SUBTITLE_LINE_HEIGHT;
 
 const styles = StyleSheet.create({
+  // `row` preset (raised fill, hairline, radius lg); minHeight keeps every row one height, padding is the app's uniform md.
   row: {
+    ...row,
     minHeight: ROW_MIN_HEIGHT,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surfaceCard,
-    borderRadius: radius.lg,
     padding: spacing.md,
     gap: spacing.md,
   },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: radius.sm,
-    backgroundColor: colors.bgRaised2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  avatar: avatarChip,
   avatarText: {
     color: colors.inkPrimary,
     fontFamily: fontFamily.semiBold,
@@ -79,15 +71,15 @@ const styles = StyleSheet.create({
     lineHeight: SUBTITLE_LINE_HEIGHT,
     marginTop: SUBTITLE_GAP,
   },
+  // `tag` with a gold outline; alignSelf reset so it centers in the row instead of the preset's flex-start.
   badge: {
-    backgroundColor: colors.bgRaised2,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
+    ...tag,
+    ...tagGold,
+    alignSelf: 'auto',
   },
   badgeText: {
+    ...tagText,
     color: colors.accentGold,
     fontFamily: fontFamily.bold,
-    fontSize: fontSize.xs,
   },
 });

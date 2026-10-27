@@ -40,7 +40,7 @@ export default function PhoneLines({ navigation }) {
     <ScrollView style={styles.container}>
       <BackHeader title="Phone Lines" navigation={navigation} />
       <View style={styles.body}>
-        <Section title="REACH THE SHOW">
+        <Section title="Reach the Show">
           <View style={styles.intro}>
             <Text style={styles.introText}>Want to call from another app?</Text>
             <TouchableOpacity style={styles.numberRow} onPress={copyNumber}>

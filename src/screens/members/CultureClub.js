@@ -21,7 +21,7 @@ export default function CultureClub({ navigation }) {
       />
 
       <View style={styles.body}>
-        <Section title="ACCESS CULTURE CLUB">
+        <Section title="Access Culture Club">
           <View style={styles.actionCards}>
             <TouchableOpacity
               style={styles.actionCard}
@@ -43,7 +43,7 @@ export default function CultureClub({ navigation }) {
           </View>
         </Section>
 
-        <Section title="CULTURE CLUB CALENDAR">
+        <Section title="Culture Club Calendar">
           <ScheduleTeaser items={CLUB_DAYS} showLegend={false} note={SCHEDULE_NOTE} />
         </Section>
       </View>

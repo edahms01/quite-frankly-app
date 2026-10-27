@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, fontFamily, fontSize, spacing } from '../theme';
+import { spacing } from '../theme';
+import { sectionLabel } from '../design/qf-presets';
 
 // The standard "labeled group of content" primitive for a page body — the
 // label-to-content gap is fixed here (spacing.md) so it can't drift from
@@ -19,10 +20,6 @@ const styles = StyleSheet.create({
   section: {
     gap: spacing.md,
   },
-  label: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.base,
-    letterSpacing: 0.5,
-  },
+  // Title Case string, never all caps, no letterSpacing (see qf-design-system_v1.md).
+  label: sectionLabel,
 });

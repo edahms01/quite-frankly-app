@@ -1,7 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, fontFamily, fontSize, radius, spacing } from '../theme';
+import { colors, fontFamily } from '../theme';
+import { tag, tagGold, tagText } from '../design/qf-presets';
 
-// The app's standard "Copy" pill (gold label on bgRaised2). Presentational
+// The app's standard "Copy" pill (`tag` preset, gold outline and label, 11px bold). Presentational
 // only — wrap it in a TouchableOpacity that does the actual copy. Used by
 // CryptoCard and PhoneLines.
 export default function CopyBadge() {
@@ -15,16 +16,16 @@ export default function CopyBadge() {
 const styles = StyleSheet.create({
   // flexShrink: 0 pins the badge's right edge to its row's content edge;
   // a narrow sibling (e.g. an address) truncates instead of pushing it out.
+  // alignSelf reset: CryptoCard's Large field rows bottom-align this badge with their parent's alignItems, which the preset's flex-start would override.
   badge: {
+    ...tag,
+    ...tagGold,
+    alignSelf: 'auto',
     flexShrink: 0,
-    backgroundColor: colors.bgRaised2,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.xs,
-    paddingVertical: 2,
   },
   badgeText: {
+    ...tagText,
     color: colors.accentGold,
     fontFamily: fontFamily.bold,
-    fontSize: fontSize.xs,
   },
 });

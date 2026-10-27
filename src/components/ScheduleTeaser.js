@@ -64,7 +64,7 @@ export default function ScheduleTeaser({ items, showLegend = true, note }) {
   return (
     <View>
       <View style={styles.comingSoonBadge}>
-        <Text style={styles.comingSoonText}>COMING SOON</Text>
+        <Text style={styles.comingSoonText}>Coming Soon</Text>
       </View>
 
       <View style={styles.teaserBody} pointerEvents="none">
@@ -106,7 +106,6 @@ const styles = StyleSheet.create({
     color: colors.inkPrimary,
     fontFamily: fontFamily.bold,
     fontSize: fontSize.sm,
-    letterSpacing: 0.5,
   },
   note: {
     color: colors.inkMuted,

@@ -3,6 +3,7 @@ import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CirclePlay, Pause } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, spacing } from '../theme';
+import { floating } from '../design/qf-presets';
 import { useAudioPlayer } from '../context/AudioPlayerContext';
 import { isOnMainTabs, navigateToFullPlayer, navigationRef } from '../navigation/navigationRef';
 
@@ -81,7 +82,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    backgroundColor: colors.surfaceCard,
+    // `floating` surface, docked edge to edge: square corners and no side/bottom border, so only the top hairline and shadow remain.
+    ...floating,
+    borderRadius: 0,
+    borderLeftWidth: 0,
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
   },
