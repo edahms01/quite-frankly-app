@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
-import { errorText as errorTextPreset } from '../../design/qf-presets';
+import { errorText as errorTextPreset, buttonPrimary, buttonPrimaryText, input, inputFocused, placeholderColor } from '../../design/qf-presets';
 import BackHeader from '../../components/BackHeader';
 import { deleteAccount } from '../../lib/account';
 
@@ -14,6 +14,7 @@ const MESSAGES = {
 };
 
 export default function DeleteAccount({ navigation }) {
+  const [focused, setFocused] = useState(false);
   const [typed, setTyped] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
@@ -39,13 +40,15 @@ export default function DeleteAccount({ navigation }) {
         <Text style={styles.text}>AskFrankie keeps a record with no email in it of how many questions you used this month, so deleting can't reset your monthly count.</Text>
         <Text style={styles.label}>Type DELETE to confirm</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, focused && inputFocused]}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           value={typed}
           onChangeText={setTyped}
           autoCapitalize="characters"
           autoCorrect={false}
           placeholder="DELETE"
-          placeholderTextColor={colors.inkMuted}
+          placeholderTextColor={placeholderColor}
           editable={!busy}
         />
         {message ? <Text style={styles.error}>{message}</Text> : null}
@@ -63,19 +66,10 @@ const styles = StyleSheet.create({
   heading: { color: colors.inkPrimary, fontFamily: fontFamily.semiBold, fontSize: fontSize.xl },
   text: { color: colors.inkMuted, fontFamily: fontFamily.regular, fontSize: fontSize.md, lineHeight: 20 },
   label: { color: colors.inkPrimary, fontFamily: fontFamily.medium, fontSize: fontSize.md, marginTop: spacing.sm },
-  input: {
-    backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.surfaceLine,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.regular,
-    fontSize: fontSize.xl,
-  },
+  input,
   error: errorTextPreset,
-  button: { backgroundColor: colors.brandRed, borderRadius: radius.md, paddingVertical: spacing.md, alignItems: 'center' },
+  // Destructive: keeps the red fill, on the same preset as the primary buttons.
+  button: buttonPrimary,
   buttonDisabled: { opacity: 0.4 },
-  buttonText: { color: colors.inkPrimary, fontFamily: fontFamily.semiBold, fontSize: fontSize.lg },
+  buttonText: buttonPrimaryText,
 });
