@@ -5,30 +5,8 @@ Two things that don't depend on which framework gets chosen. Companion to `quite
 ## Framework: React Native (decided)
 One codebase for iOS/Android, already the assumed stack for the audio player (`react-native-track-player` v4).
 
-## Design tokens (values, not syntax)
-Pulled from the Design System artifact and used consistently across every wireframe screen. Now translated into a real, importable file — `theme.js` — with the caveats specific to React Native (platform-specific shadows, font linking) noted inline there.
-
-**Colors**
-| Token | Hex | Use |
-|---|---|---|
-| brand-red | `#9E1B22` | Primary actions, live indicators |
-| accent-gold | `#C9974A` | Highlights, "recommended," Culture Club |
-| surface-ground | `#121014` | App background |
-| surface-card | `#1E1B1F` | Card/row backgrounds |
-| surface-line | `#2A2422` | Borders, dividers |
-| surface-live | `#2A1012` | Live-state background accent |
-| ink-primary | `#F3EEE4` | Primary text |
-| ink-muted | `#A69C93` | Secondary text |
-
-**Type**
-- Display: Bebas Neue — splash/hero only (wordmark, onboarding), never body text
-- UI: Inter — everything else, weights 400/500/600/700 used across screens
-
-**Spacing scale**: xs `4px` · sm `8px` · md `16px` · lg `24px`
-
-**Radius scale**: sm `6px` · md `12px` · lg `20px`
-
-**Shadows**: shadow-sm, shadow-md, shadow-glow (gold ring — reserved for live/exclusive states, e.g. the LIVE badge)
+## Design tokens
+Superseded (M1, 2026-10-27): the token table that lived here (old `#121014` / `#1E1B1F` / radius 6-12-20 / Bebas) is out of date. Tokens now come from AskFrankie's shared design files, vendored in `src/design/` and re-exported by `src/theme.js`. Values and rules: `qf-design-system_v1.md` (in `qf-design-kit/docs/`) and `src/design/qf-tokens.mobile.js`.
 
 ## Navigation architecture
 
