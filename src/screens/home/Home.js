@@ -3,6 +3,7 @@ import { RefreshControl,ScrollView, StyleSheet, Text, TouchableOpacity, useWindo
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2, Gamepad2, Bot, Phone } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
+import { homeDestinations } from '../../lib/featureFlags';
 import { tag, tagLive, tagLiveText, tagSolid, tagSolidText } from '../../design/qf-presets';
 import SponsorButton from '../../components/SponsorButton';
 import DestinationCard from '../../components/DestinationCard';
@@ -37,20 +38,21 @@ const VIDEO_HEIGHT = 220;
 const DESTINATIONS = [
   { label: 'Watch', Icon: CirclePlay, route: 'Watch' },
   { label: 'Listen', Icon: Headphones, route: 'Listen' },
-  { label: 'Culture Club', Icon: Crown, route: 'CultureClubTab' },
+  { label: 'Culture Club', Icon: Crown, route: 'CultureClubTab', flag: 'cultureClub' },   // hidden unless the cultureClub flag is on
   { label: 'Community', Icon: MessageSquare, route: 'Community' },
   { label: 'Shop', Icon: ShoppingBag, route: 'Shop' },
   { label: 'AskFrankie AI', askFrankie: true },   // rendered by the grid below (flag-dependent tile)
   { label: 'Writing', Icon: FileText, route: 'Writing' },
   { label: 'Music', Icon: Music2, route: 'Music' },
   { label: 'Games', Icon: Gamepad2, route: 'Games' },
-  { label: 'Calendar', Icon: CalendarIcon, route: 'Calendar' },
+  { label: 'Calendar', Icon: CalendarIcon, route: 'Calendar', flag: 'cultureClub' },       // the page mixes show and Culture Club days: hidden with the flag
 ];
 
 export default function Home({ navigation }) {
   const { mostRecent, loading, error, refetch } = useYouTubeFeed();
   const { isLive } = useLiveStatus();
-  const { askfrankie_enabled: askFrankieEnabled } = useFeatureFlags();      // remote switch: off = the old "Coming Soon" tile, nothing else changes
+  const flags = useFeatureFlags();
+  const { askfrankie_enabled: askFrankieEnabled } = flags;      // remote switch: off = the old "Coming Soon" tile, nothing else changes
   // The feed is otherwise fetched once at launch — when Twitch flips live, the
   // backend has just re-pinned tonight's stream as Most Recent, so pull it.
   useEffect(() => {
@@ -141,7 +143,7 @@ export default function Home({ navigation }) {
       <SponsorButton onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })} />
 
       <View style={styles.grid}>
-        {DESTINATIONS.map((d) => {
+        {homeDestinations(DESTINATIONS, flags).map((d) => {
           if (!d.askFrankie) {
             return (
               <DestinationCard

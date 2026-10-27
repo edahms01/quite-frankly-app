@@ -7,6 +7,8 @@ import ListenStackNavigator from './ListenStackNavigator';
 import CultureClubStackNavigator from './CultureClubStackNavigator';
 import { resetTabStackOnBlur } from './resetStackOnBlur';
 import { colors, spacing } from '../theme';
+import { useFeatureFlags } from '../context/FeatureFlagsContext';
+import { visibleTabs } from '../lib/featureFlags';
 
 const Tab = createBottomTabNavigator();
 
@@ -17,6 +19,7 @@ const Tab = createBottomTabNavigator();
 // instead of trusting the library's default sizing.
 export default function MainTabNavigator() {
   const insets = useSafeAreaInsets();
+  const tabs = visibleTabs(useFeatureFlags());      // CultureClub only while the cultureClub flag is on
   return (
     <Tab.Navigator
       screenOptions={{
@@ -40,7 +43,7 @@ export default function MainTabNavigator() {
           height: 49 + insets.bottom,
           paddingTop: spacing.md,
           paddingBottom: insets.bottom || spacing.xs,
-          // Insets the whole row of 4 tabs from both screen edges equally —
+          // Insets the whole row of tabs (4, or 3 with the cultureClub flag off) from both screen edges equally —
           // without it, "Home" (leftmost) and "Culture Club" (rightmost,
           // and the widest label) sit right at the bar's raw edge, so
           // "Culture Club" in particular reads as crowding the edge.
@@ -67,14 +70,16 @@ export default function MainTabNavigator() {
         component={ListenStackNavigator}
         options={{ tabBarIcon: ({ color, size }) => <Headphones color={color} size={size} /> }}
       />
-      <Tab.Screen
-        name="CultureClub"
-        component={CultureClubStackNavigator}
-        options={{
-          title: 'Culture Club',
-          tabBarIcon: ({ color, size }) => <Crown color={color} size={size} />,
-        }}
-      />
+      {tabs.includes('CultureClub') ? (
+        <Tab.Screen
+          name="CultureClub"
+          component={CultureClubStackNavigator}
+          options={{
+            title: 'Culture Club',
+            tabBarIcon: ({ color, size }) => <Crown color={color} size={size} />,
+          }}
+        />
+      ) : null}
     </Tab.Navigator>
   );
 }
