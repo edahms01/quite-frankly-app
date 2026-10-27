@@ -1,6 +1,7 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fontFamily, fontSize, spacing, radius } from '../../theme';
+import { buttonPrimary, buttonPrimaryText } from '../../design/qf-presets';
 import OnboardingDots from '../../components/OnboardingDots';
 import Wordmark from '../../components/Wordmark';
 
@@ -72,14 +73,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   cta: {
-    backgroundColor: colors.brandRed,
-    borderRadius: radius.md,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
+    ...buttonPrimary,
   },
-  ctaText: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.lg,
-  },
+  ctaText: buttonPrimaryText,
 });

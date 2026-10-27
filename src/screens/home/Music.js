@@ -1,6 +1,7 @@
 import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
+import { button, buttonText } from '../../design/qf-presets';
 import BackHeader from '../../components/BackHeader';
 import Section from '../../components/Section';
 
@@ -76,17 +77,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'transparent',
   },
-  linkButton: {
-    backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    alignItems: 'center',
-  },
-  linkButtonText: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.md,
-  },
+  linkButton: button,
+  linkButtonText: buttonText,
   caption: {
     color: colors.inkMuted,
     fontFamily: fontFamily.regular,

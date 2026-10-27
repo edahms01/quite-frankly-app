@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { KeyRound } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, spacing, radius } from '../../theme';
-import { title as titlePreset, errorText as errorTextPreset } from '../../design/qf-presets';
+import { title as titlePreset, errorText as errorTextPreset, buttonPrimary, buttonPrimaryText, input, inputFocused, placeholderColor } from '../../design/qf-presets';
 import OnboardingDots from '../../components/OnboardingDots';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
@@ -13,6 +13,7 @@ const INITIAL_COOLDOWN_SECONDS = 60;
 export default function CodeEntry({ navigation, route }) {
   const insets = useSafeAreaInsets();
   const email = route.params?.email ?? '';
+  const [focused, setFocused] = useState(false);
   const [code, setCode] = useState('');
   const [status, setStatus] = useState('idle'); // idle | verifying | error
   const [errorMessage, setErrorMessage] = useState('');
@@ -127,9 +128,11 @@ export default function CodeEntry({ navigation, route }) {
         </Text>
 
         <TextInput
-          style={styles.input}
+          style={[styles.input, focused && inputFocused]}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           placeholder="000000"
-          placeholderTextColor={colors.inkMuted}
+          placeholderTextColor={placeholderColor}
           keyboardType="number-pad"
           maxLength={6}
           value={code}
@@ -207,16 +210,10 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     marginBottom: spacing.lg,
   },
+  // Big centered code field: the input preset plus its own size and tracking.
   input: {
+    ...input,
     alignSelf: 'stretch',
-    backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.surfaceLine,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.regular,
     fontSize: fontSize.xxl,
     textAlign: 'center',
     letterSpacing: 8,
@@ -228,20 +225,13 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   cta: {
-    backgroundColor: colors.brandRed,
-    borderRadius: radius.md,
-    paddingVertical: spacing.md,
+    ...buttonPrimary,
     alignSelf: 'stretch',
-    alignItems: 'center',
   },
   ctaDisabled: {
     opacity: 0.6,
   },
-  ctaText: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.lg,
-  },
+  ctaText: buttonPrimaryText,
   resendText: {
     color: colors.accentGold,
     fontFamily: fontFamily.medium,

@@ -1,10 +1,10 @@
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import { User } from 'lucide-react-native';
-import { colors } from '../theme';
+import { colors, spacing } from '../theme';
 
 export default function AvatarButton({ onPress }) {
   return (
-    <TouchableOpacity style={styles.avatar} onPress={onPress}>
+    <TouchableOpacity style={styles.avatar} onPress={onPress} hitSlop={spacing.xs}>
       <User color={colors.inkPrimary} size={18} />
     </TouchableOpacity>
   );

@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Mail } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, spacing, radius } from '../../theme';
-import { title as titlePreset, errorText as errorTextPreset } from '../../design/qf-presets';
+import { title as titlePreset, errorText as errorTextPreset, buttonPrimary, buttonPrimaryText, input, inputFocused, placeholderColor } from '../../design/qf-presets';
 import OnboardingDots from '../../components/OnboardingDots';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
@@ -15,6 +15,7 @@ const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
 export default function Email({ navigation }) {
   const insets = useSafeAreaInsets();
+  const [focused, setFocused] = useState(false);
   const [email, setEmail] = useState('');
   const [sending, setSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -87,9 +88,11 @@ export default function Email({ navigation }) {
           your subscription.
         </Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, focused && inputFocused]}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           placeholder="Email address"
-          placeholderTextColor={colors.inkMuted}
+          placeholderTextColor={placeholderColor}
           keyboardType="email-address"
           autoCapitalize="none"
           value={email}
@@ -166,16 +169,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   input: {
+    ...input,
     alignSelf: 'stretch',
-    backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.surfaceLine,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.regular,
-    fontSize: fontSize.md,
     marginBottom: spacing.md,
   },
   errorText: {
@@ -184,20 +179,13 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   cta: {
-    backgroundColor: colors.brandRed,
-    borderRadius: radius.md,
-    paddingVertical: spacing.md,
+    ...buttonPrimary,
     alignSelf: 'stretch',
-    alignItems: 'center',
   },
   ctaDisabled: {
     opacity: 0.6,
   },
-  ctaText: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.lg,
-  },
+  ctaText: buttonPrimaryText,
   skipLink: {
     marginTop: spacing.md,
     padding: spacing.xs,

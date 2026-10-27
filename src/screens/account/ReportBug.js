@@ -13,13 +13,14 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { ImagePlus, CircleCheck } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
-import { errorText as errorTextPreset } from '../../design/qf-presets';
+import { errorText as errorTextPreset, buttonPrimary, buttonPrimaryText, input, inputFocused, placeholderColor } from '../../design/qf-presets';
 import BackHeader from '../../components/BackHeader';
 import appConfig from '../../../app.json';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 export default function ReportBug({ navigation }) {
+  const [focused, setFocused] = useState(false);
   const [description, setDescription] = useState('');
   const [screenshot, setScreenshot] = useState(null);
   const [status, setStatus] = useState('idle'); // idle | submitting | error
@@ -90,9 +91,11 @@ export default function ReportBug({ navigation }) {
         </Text>
 
         <TextInput
-          style={styles.input}
+          style={[styles.input, focused && inputFocused]}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           placeholder="Describe the bug or feature you'd like to see..."
-          placeholderTextColor={colors.inkMuted}
+          placeholderTextColor={placeholderColor}
           multiline
           numberOfLines={5}
           value={description}
@@ -144,12 +147,8 @@ const styles = StyleSheet.create({
     fontSize: fontSize.base,
   },
   input: {
-    backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
+    ...input,
     padding: spacing.md,
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.regular,
-    fontSize: fontSize.md,
     textAlignVertical: 'top',
     minHeight: 120,
   },
@@ -170,17 +169,10 @@ const styles = StyleSheet.create({
     ...errorTextPreset,
   },
   submitButton: {
-    backgroundColor: colors.brandRed,
-    borderRadius: radius.md,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
+    ...buttonPrimary,
   },
   submitButtonDisabled: {
     opacity: 0.6,
   },
-  submitText: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.lg,
-  },
+  submitText: buttonPrimaryText,
 });
