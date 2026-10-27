@@ -92,7 +92,7 @@ export default function Shop({ navigation }) {
           />
         ) : (
           <>
-            <Section title="SHOP">
+            <Section title="Shop">
               <View style={styles.grid}>
                 {data.stores.map((s) => (
                   <DestinationCard
@@ -105,7 +105,7 @@ export default function Shop({ navigation }) {
               </View>
             </Section>
 
-            <Section title="AFFILIATES & DISCOUNTS">
+            <Section title="Affiliates & Discounts">
               <View style={styles.list}>
                 {data.affiliates.map((a) => (
                   <ExternalRow

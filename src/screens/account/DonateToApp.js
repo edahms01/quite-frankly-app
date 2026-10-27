@@ -42,7 +42,7 @@ export default function DonateToApp({ navigation }) {
           you'd like to support the show instead, see Become a Sponsor.
         </Text>
 
-        <Section title="SEND A TIP">
+        <Section title="Send a Tip">
           <View style={styles.tipGrid}>
             {TIP_APPS.map((app) => (
               <TouchableOpacity
@@ -56,7 +56,7 @@ export default function DonateToApp({ navigation }) {
           </View>
         </Section>
 
-        <Section title="CRYPTO">
+        <Section title="Crypto">
           <CryptoCardGrid>
             {SIMPLE_ADDRESSES.map((c) => (
               <CryptoCard key={c.title} title={c.title} fields={[{ value: c.address }]} />
