@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
   },
   chip: {
     backgroundColor: colors.surfaceCard,
-    borderRadius: 999,
+    borderRadius: radius.pill,
     paddingVertical: 7,
     paddingHorizontal: 14,
   },
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
   monthCard: {
     width: 84,
     height: 84,
-    borderRadius: 12,
+    borderRadius: radius.lg,
     backgroundColor: colors.surfaceCard,
     borderWidth: 1,
     borderColor: colors.borderDefault,
