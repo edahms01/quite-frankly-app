@@ -2,9 +2,10 @@ import { Platform, StyleSheet, Text, View } from 'react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../theme';
 import { useLiveStatus } from '../context/LiveStatusContext';
 
-// Classic studio "ON AIR" sign — dim/unlit border when not live, lit
-// solid-red with a glow when live. Android can't carry shadow color via
-// elevation, so the border itself becomes the "lit" cue there instead.
+// Studio "ON AIR" sign, same look as the web one: Inter Bold 11px caps,
+// letter-spacing 1. Off air: dim text and a hairline outline. Live: white
+// text and a lit red outline (no fill); iOS adds a soft red glow, Android a
+// thicker border instead, since elevation cannot carry a colour.
 export default function OnAirBadge() {
   const { isLive } = useLiveStatus();
   return (
@@ -17,40 +18,31 @@ export default function OnAirBadge() {
 const styles = StyleSheet.create({
   onAirBadge: {
     borderWidth: 1,
-    borderColor: colors.surfaceLine,
+    borderColor: colors.borderDefault,
     borderRadius: radius.sm,
     paddingHorizontal: spacing.sm,
     paddingVertical: 3,
   },
   onAirBadgeLive: {
-    // A brighter, more saturated red than the app's usual brandRed —
-    // that deep maroon doesn't read as "lit," it just reads as another
-    // button. This one, with a wide soft-opacity glow behind it, is
-    // closer to an actual neon/bulb "ON AIR" sign.
-    backgroundColor: colors.statusLive,
-    borderColor: colors.statusLive,
+    borderColor: colors.brandRedHi,
     ...Platform.select({
       ios: {
         shadowColor: colors.statusLive,
         shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.95,
-        shadowRadius: 12,
+        shadowOpacity: 0.6,
+        shadowRadius: 8,
       },
-      // Elevation can't carry color on Android — a brighter/thicker
-      // border stands in for the glow there instead.
-      android: { elevation: 6, borderWidth: 1.5 },
+      android: { borderWidth: 1.5, borderColor: colors.statusLive },
     }),
   },
+  // Off-air text is deliberately dim ("unlit", not just "quieter").
   onAirText: {
-    // Dimmer than the usual inkMuted secondary-text color on purpose —
-    // this needs to read as "unlit," not just "quieter," so it can't be
-    // mistaken for the live state at a glance.
     color: colors.textDisabled,
     fontFamily: fontFamily.bold,
-    fontSize: fontSize.xs,
+    fontSize: fontSize.compact,
     letterSpacing: 1,
   },
   onAirTextLive: {
-    color: colors.inkPrimary,
+    color: colors.textOnRed,
   },
 });

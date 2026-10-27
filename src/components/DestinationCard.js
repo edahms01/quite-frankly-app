@@ -1,5 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { colors, fontFamily, fontSize, radius, spacing } from '../theme';
+import { colors, fontFamily, fontSize, spacing } from '../theme';
+import { activeOpacity, tile } from '../design/qf-presets';
 
 // fixedHeight: opt in only where labels can genuinely vary enough to wrap
 // to 2 lines (Shop's live sheet-driven store names, Writing's one long
@@ -17,7 +18,7 @@ import { colors, fontFamily, fontSize, radius, spacing } from '../theme';
 // wired yet for these, so onPress is typically omitted by the caller.
 export default function DestinationCard({ Icon, label, onPress, fixedHeight = false, style, subtext }) {
   return (
-    <TouchableOpacity style={[styles.card, style]} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity style={[styles.card, style]} onPress={onPress} activeOpacity={activeOpacity}>
       <Icon color={subtext ? colors.textDisabled : colors.inkPrimary} size={24} />
       {fixedHeight ? (
         <View style={styles.labelBox}>
@@ -32,16 +33,13 @@ export default function DestinationCard({ Icon, label, onPress, fixedHeight = fa
 }
 
 const styles = StyleSheet.create({
+  // `tile` preset (raised fill, 1px hairline, radius lg, centered, gap sm); width and the taller vertical padding are this grid's own.
   card: {
+    ...tile,
     width: '47%',
-    backgroundColor: colors.surfaceCard,
-    borderRadius: radius.lg,
     paddingVertical: spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.borderDefault,
+    // The preset's side padding (md) made long labels wrap ("Wise Wolf Gold & Silver"); a hair of side padding keeps them on one line as before.
+    paddingHorizontal: spacing.xs,
   },
   // Fixed height (exactly 2 lines) on the wrapping View, not the Text
   // itself — a Text taller than its content top-aligns by default (no

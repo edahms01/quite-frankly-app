@@ -1,12 +1,10 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { colors } from '../theme';
+import { activeOpacity, segButton, segButtonSelected, segText, segTextSelected, segTrack } from '../design/qf-presets';
 
 // Generic 2-option toggle -- currently only Writing's Blog | Newsletter,
-// but written for any 2-option case. Exact spec (colors/sizes/margins)
-// supplied directly from the wireframe boards, not derived from theme.js
-// tokens -- kept as literal pixel values here to match that spec exactly,
-// same as this component's one consumer needs pixel-perfect parity with
-// the design.
+// but written for any 2-option case. Styled with the seg* presets from
+// src/design/qf-presets.js (translucent track + hairline, gold selected,
+// dark bold selected text); behaviour is unchanged.
 export default function SegmentedControl({ options, value, onChange }) {
   return (
     <View style={styles.track}>
@@ -17,6 +15,7 @@ export default function SegmentedControl({ options, value, onChange }) {
             key={option.key}
             style={[styles.pill, active && styles.pillActive]}
             onPress={() => onChange(option.key)}
+            activeOpacity={activeOpacity}
           >
             <Text style={[styles.label, active && styles.labelActive]}>{option.label}</Text>
           </TouchableOpacity>
@@ -27,32 +26,15 @@ export default function SegmentedControl({ options, value, onChange }) {
 }
 
 const styles = StyleSheet.create({
+  // marginBottom / marginHorizontal are this screen's layout, not part of the preset.
   track: {
-    flexDirection: 'row',
-    backgroundColor: colors.surfaceCard,
-    borderRadius: 999,
-    padding: 3,
+    ...segTrack,
     marginTop: 0,
     marginBottom: 14,
     marginHorizontal: 20,
   },
-  pill: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    borderRadius: 999,
-  },
-  pillActive: {
-    backgroundColor: colors.accentGold,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.inkMuted,
-  },
-  labelActive: {
-    color: colors.textOnGold,
-    fontWeight: '700',
-  },
+  pill: segButton,
+  pillActive: segButtonSelected,
+  label: segText,
+  labelActive: segTextSelected,
 });
