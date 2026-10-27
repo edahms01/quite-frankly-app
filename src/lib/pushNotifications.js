@@ -1,18 +1,19 @@
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { DEFAULT_PREFERENCES, mergePreferences } from './pushPreferences';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 const PREFERENCES_STORAGE_KEY = 'push_notification_preferences';
 
-export const DEFAULT_PREFERENCES = { live: true, video: true, club: true };
+export { DEFAULT_PREFERENCES };
 
 export async function getStoredPreferences() {
   try {
     const raw = await AsyncStorage.getItem(PREFERENCES_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : DEFAULT_PREFERENCES;
+    return mergePreferences(raw);
   } catch {
-    return DEFAULT_PREFERENCES;
+    return { ...DEFAULT_PREFERENCES };
   }
 }
 

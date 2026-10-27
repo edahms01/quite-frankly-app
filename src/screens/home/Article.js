@@ -14,7 +14,7 @@ import * as WebBrowser from 'expo-web-browser';
 import RenderHTML, { defaultSystemFonts } from 'react-native-render-html';
 import { ChevronLeft, ChevronRight, Image as ImageIcon, Share2 } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
-import { errorText as errorTextPreset, link, titleLg } from '../../design/qf-presets';
+import { activeOpacity, buttonGold, buttonGoldText, errorText as errorTextPreset, link, titleLg } from '../../design/qf-presets';
 import LoadingState from '../../components/LoadingState';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
@@ -31,6 +31,29 @@ const SITE_BASE_URL = 'https://www.quitefrankly.tv';
 const HERO_HEIGHT = 220;
 const BODY_FETCH_TIMEOUT_MS = 10000;
 const AUTHOR_FALLBACK = 'Quite Frankly';
+
+// Per-source wording and read function. 'blog' and 'newsletter' keep their
+// existing strings exactly; 'substack' is new.
+const SOURCES = {
+  blog: {
+    fn: 'get-blog-posts',
+    category: 'Blog',
+    fallbackLink: 'Open on quitefrankly.tv',
+    commentsLink: 'View comments & discussion on quitefrankly.tv',
+  },
+  newsletter: {
+    fn: 'get-newsletter-items',
+    category: 'Blog',
+    fallbackLink: 'Open on quitefrankly.tv',
+    commentsLink: 'View comments & discussion on quitefrankly.tv',
+  },
+  substack: {
+    fn: 'get-substack-posts',
+    category: 'Substack',
+    fallbackLink: 'Open on Substack',
+    commentsLink: 'View comments & discussion on Substack',
+  },
+};
 
 // Same "Mon D, YYYY · N min read" formatter as WritingBlog.js — kept as its
 // own local copy rather than extracted to a shared utils file, matching
@@ -147,6 +170,10 @@ export default function Article({ navigation, route }) {
   // route the body comes from. WritingBlog.js never passes this (silently
   // defaults to 'blog'); WritingNewsletter.js always passes 'newsletter'.
   const source = route?.params?.source ?? 'blog';
+  const sourceConfig = SOURCES[source] ?? SOURCES.blog;
+  // Paid Substack post: locked teaser, no body fetch, no paywalled text ever
+  // stored or shown. The one action is "Subscribe to Read" -> Substack.
+  const isLocked = source === 'substack' && post.audience === 'paid';
   const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
 
@@ -168,12 +195,17 @@ export default function Article({ navigation, route }) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), BODY_FETCH_TIMEOUT_MS);
 
+    if (isLocked) {
+      clearTimeout(timeoutId);
+      setBodyLoading(false);
+      return undefined;
+    }
+
     (async () => {
       try {
         if (!post.id) throw new Error('Missing post id');
-        const fnName = source === 'newsletter' ? 'get-newsletter-items' : 'get-blog-posts';
         const response = await fetch(
-          `${API_BASE_URL}/.netlify/functions/${fnName}?id=${encodeURIComponent(post.id)}`,
+          `${API_BASE_URL}/.netlify/functions/${sourceConfig.fn}?id=${encodeURIComponent(post.id)}`,
           { signal: controller.signal }
         );
         if (!response.ok) throw new Error(`Article body request failed: ${response.status}`);
@@ -196,7 +228,7 @@ export default function Article({ navigation, route }) {
       clearTimeout(timeoutId);
       controller.abort();
     };
-  }, [post.id, source]);
+  }, [post.id, source, isLocked]);
 
   // Server writes author as item.author?.displayName ?? '' with no
   // "Quite Frankly" fallback (netlify/functions/lib/squarespaceBlog.js) —
@@ -240,7 +272,7 @@ export default function Article({ navigation, route }) {
           {/* Blog posts have no category field (always "Blog"); newsletter
               posts carry their primary category's display label. */}
           <View style={styles.categoryPill}>
-            <Text style={styles.categoryPillText}>{post.category || 'Blog'}</Text>
+            <Text style={styles.categoryPillText}>{post.category || sourceConfig.category}</Text>
           </View>
           {meta ? <Text style={styles.metaText}>{meta}</Text> : null}
         </View>
@@ -254,7 +286,20 @@ export default function Article({ navigation, route }) {
 
         <View style={styles.divider} />
 
-        {bodyLoading ? (
+        {isLocked ? (
+          <View style={styles.locked}>
+            {post.blurb ? <Text style={styles.lockedBlurb}>{post.blurb}</Text> : null}
+            {isHttpUrl(post.url) ? (
+              <TouchableOpacity
+                style={styles.subscribeButton}
+                onPress={() => openOutbound(post.url)}
+                activeOpacity={activeOpacity}
+              >
+                <Text style={styles.subscribeButtonText}>Subscribe to Read</Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        ) : bodyLoading ? (
           <LoadingState message="Loading article…" />
         ) : bodyError || !bodyHtml ? (
           <View style={styles.bodyFallback}>
@@ -263,7 +308,7 @@ export default function Article({ navigation, route }) {
             </Text>
             {isHttpUrl(post.url) ? (
               <TouchableOpacity onPress={() => openOutbound(post.url)} hitSlop={8}>
-                <Text style={styles.bodyFallbackLink}>Open on quitefrankly.tv</Text>
+                <Text style={styles.bodyFallbackLink}>{sourceConfig.fallbackLink}</Text>
               </TouchableOpacity>
             ) : null}
           </View>
@@ -278,12 +323,16 @@ export default function Article({ navigation, route }) {
           />
         )}
 
-        <View style={styles.divider} />
+        {isLocked ? null : (
+          <>
+            <View style={styles.divider} />
 
-        <TouchableOpacity style={styles.commentsLink} onPress={() => openOutbound(post.url)}>
-          <Text style={styles.commentsLinkText}>View comments & discussion on quitefrankly.tv</Text>
-          <ChevronRight color={colors.inkMuted} size={16} />
-        </TouchableOpacity>
+            <TouchableOpacity style={styles.commentsLink} onPress={() => openOutbound(post.url)}>
+              <Text style={styles.commentsLinkText}>{sourceConfig.commentsLink}</Text>
+              <ChevronRight color={colors.inkMuted} size={16} />
+            </TouchableOpacity>
+          </>
+        )}
       </View>
     </ScrollView>
   );
@@ -396,6 +445,17 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.base,
   },
+  locked: {
+    gap: spacing.lg,
+  },
+  lockedBlurb: {
+    color: colors.inkMuted,
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.md,
+    lineHeight: fontSize.md * 1.6,
+  },
+  subscribeButton: buttonGold,
+  subscribeButtonText: buttonGoldText,
   commentsLink: {
     flexDirection: 'row',
     alignItems: 'center',
