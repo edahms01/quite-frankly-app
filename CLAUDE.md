@@ -32,6 +32,7 @@ Design tokens and components: `src/design/` (synced from AskFrankie's `design/`,
 - Hover neutral, selected gold, focus red ring, links gold, one filled red button per view, no all-caps, buttons Title Case.
 - Need a value that isn't a token? Add it to AskFrankie's `design/tokens/tokens.json`, run `npm run tokens` there, then `npm run sync:tokens` here, then use it.
 - Cards: 1px hairline, no shadow (`shadows.sm` is gone from cards; Android keeps its edge because the hairline is a border, not elevation). Panels/windows: the hero surface. Radii 6/10/14/22/pill only.
+- Type presets (`src/design/qf-presets.js`): screen and sheet headings use `title` (Inter Bold 20; `BackHeader`, checkout, full player, game tray, onboarding), `titleSm` (18) and `titleLg` (28, the article headline); error messages spread `errorText` (Inter Medium 13, `statusError`); inline links use `link` (gold, underlined; `Article`'s `tagsStyles.a`). No literal `fontSize` numbers: use `fontSize.*` tokens (11 = `compact`, 13 = `meta`, 12 = `caption`, 18 = `titleSm`, 10 = `micro`). Standalone action text ("Try again", "Show more", "Load more", "Resend code") is gold semibold, not `link`.
 - Error and destructive text uses `colors.statusError` (since the 2026-10-27 token sync it is `#e0332b`, the same red as `statusLive`), never `brandRed` (brand red text is 2.4:1); `brandRed` is for fills.
 - After a token change in AskFrankie: commit `design/dist/`, then in this repo run `npm run sync:tokens` (set `QF_DESIGN_DIR` if the AskFrankie checkout is not at `../AskFrankie`).
 

@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
 import { Bell } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, spacing, radius } from '../../theme';
+import { title as titlePreset } from '../../design/qf-presets';
 import OnboardingDots from '../../components/OnboardingDots';
 import { registerForPushNotifications, DEFAULT_PREFERENCES } from '../../lib/pushNotifications';
 
@@ -93,9 +94,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   title: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.xxl,
+    ...titlePreset,
     textAlign: 'center',
   },
   body: {

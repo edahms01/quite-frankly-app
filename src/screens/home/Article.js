@@ -14,6 +14,7 @@ import * as WebBrowser from 'expo-web-browser';
 import RenderHTML, { defaultSystemFonts } from 'react-native-render-html';
 import { ChevronLeft, ChevronRight, Image as ImageIcon, Share2 } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
+import { errorText as errorTextPreset, link, titleLg } from '../../design/qf-presets';
 import LoadingState from '../../components/LoadingState';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
@@ -103,10 +104,7 @@ const tagsStyles = {
     marginTop: 0,
     marginBottom: spacing.md,
   },
-  a: {
-    color: colors.accentGold,
-    textDecorationLine: 'underline',
-  },
+  a: link,
   // Wireframe: border-left: 3px solid #C9974A; padding: 4px 0 4px 16px;
   // font-style: italic. #C9974A is colors.accentGold by exact hex value.
   blockquote: {
@@ -362,17 +360,10 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.regular,
     fontSize: fontSize.sm,
   },
-  // 28px/700 title — no fontSize token reaches 28 (fontSize.xxl=20 is the
-  // largest below fontSize.display=40, which is reserved for the splash
-  // wordmark only per theme.js's own comment). Hardcoded literal, same
-  // precedent as Task 5's non-token pixel dimensions (160px hero, 56px
-  // thumbnail) — extending theme.js's scale is out of scope for a single
-  // screen file.
+  // titleLg preset (Inter Bold 28) for the article headline.
   title: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.bold,
-    fontSize: 28,
-    lineHeight: 28 * 1.2,
+    ...titleLg,
+    lineHeight: fontSize.titleLg * 1.2,
     marginBottom: spacing.sm,
   },
   bylineRow: {
@@ -407,9 +398,7 @@ const styles = StyleSheet.create({
   // directly since it hardcodes "Try again" as its action label and this
   // screen needs "Open on quitefrankly.tv" instead.
   bodyFallbackMessage: {
-    color: colors.statusError,
-    fontFamily: fontFamily.medium,
-    fontSize: fontSize.base,
+    ...errorTextPreset,
     textAlign: 'center',
   },
   bodyFallbackLink: {

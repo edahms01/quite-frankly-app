@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { KeyRound } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, spacing, radius } from '../../theme';
+import { title as titlePreset, errorText as errorTextPreset } from '../../design/qf-presets';
 import OnboardingDots from '../../components/OnboardingDots';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
@@ -195,9 +196,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   title: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.xxl,
+    ...titlePreset,
     textAlign: 'center',
   },
   body: {
@@ -224,9 +223,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   errorText: {
-    color: colors.statusError,
-    fontFamily: fontFamily.medium,
-    fontSize: fontSize.base,
+    ...errorTextPreset,
     textAlign: 'center',
     marginBottom: spacing.md,
   },
