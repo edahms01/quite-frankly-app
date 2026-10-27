@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   errorText: {
-    color: colors.statusLive,
+    color: colors.statusError,
     fontFamily: fontFamily.medium,
     fontSize: fontSize.base,
     textAlign: 'center',
