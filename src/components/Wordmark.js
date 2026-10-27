@@ -3,8 +3,8 @@ import { Image } from 'react-native';
 // Onboarding/boot wordmark ("QUITE FRANKLY TV", gold TV). Native asset is
 // 1260x264 (downscaled from assets/wordmark - TV logo gold.png, 4160x872) —
 // height is derived from width here so every call site's aspect ratio can't
-// drift out of sync with the real image. Opaque #121014 bg baked in, same as
-// colors.surfaceGround, so it's only safe on that background. Home, VideoPlayer,
+// drift out of sync with the real image. Transparent background (keyed out by
+// scripts/key-wordmark.py), so it works on any ground. Home, VideoPlayer,
 // Welcome and the App.js boot screen all render this component.
 //
 // `centerOnLetters`: the file is centered on its full bounds, but the gold "TV"

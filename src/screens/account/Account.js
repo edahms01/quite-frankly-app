@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.md,
   },
   rowLabel: {
@@ -135,11 +135,11 @@ const styles = StyleSheet.create({
   },
   signOutRow: {
     backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.md,
   },
   signOutText: {
-    color: colors.brandRed,
+    color: colors.statusLive,
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.md,
   },

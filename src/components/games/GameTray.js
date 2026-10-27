@@ -40,8 +40,8 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: colors.surfaceCard,
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
     padding: spacing.md,
   },
   heading: {
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
   tile: {
     width: '47%',
     backgroundColor: colors.surfaceGround,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     paddingVertical: spacing.lg,
     alignItems: 'center',
     justifyContent: 'center',

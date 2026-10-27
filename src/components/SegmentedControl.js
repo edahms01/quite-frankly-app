@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     color: colors.inkMuted,
   },
   labelActive: {
-    color: '#121014',
+    color: colors.textOnGold,
     fontWeight: '700',
   },
 });

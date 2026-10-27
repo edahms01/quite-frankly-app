@@ -41,10 +41,10 @@ function metaLine(post) {
 // Gradient placeholder for the featured card, matching the wireframe's
 // linear-gradient(135deg, #2a2422 0%, #1E1B1F 60%, #3a1416 100%) treatment.
 // RN's StyleSheet has no native gradient primitive, and this repo has no
-// expo-linear-gradient dependency — approximate with a flat surfaceLine
+// expo-linear-gradient dependency — approximate with a flat bgRaised2
 // background (the gradient's dominant middle-to-start tone) rather than
 // pull in a new dependency for a placeholder-only visual. Row thumbnails
-// use the same flat surfaceLine block, matching the wireframe's row
+// use the same flat bgRaised2 block, matching the wireframe's row
 // treatment (which is already flat, not gradient).
 function ImagePlaceholder({ style, iconSize }) {
   return (
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   imagePlaceholder: {
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
     marginTop: spacing.xs,
     marginBottom: spacing.md,
   },
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
     backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.md,
   },
   rowThumb: {

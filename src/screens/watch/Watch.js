@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Image, Linking, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { CirclePlay } from 'lucide-react-native';
-import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
+import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
 import VideoTypePill from '../../components/VideoTypePill';
 import { relativeTime } from '../../utils/relativeTime';
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
   },
   platformPill: {
     backgroundColor: colors.surfaceCard,
-    borderRadius: radius.lg,
+    borderRadius: radius.pill,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
@@ -247,9 +247,10 @@ const styles = StyleSheet.create({
   videoCard: {
     width: '47%',
     backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     overflow: 'hidden',
-    ...shadows.sm,
+    borderWidth: 1,
+    borderColor: colors.borderDefault,
   },
   thumbnail: {
     height: 80,

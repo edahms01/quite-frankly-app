@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     color: colors.inkPrimary,
   },
   chipTextSelected: {
-    color: '#121014',
+    color: colors.textOnGold,
     fontWeight: '700',
   },
   monthsRow: {
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: colors.surfaceCard,
     borderWidth: 1,
-    borderColor: '#2a2422',
+    borderColor: colors.borderDefault,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
     color: colors.inkMuted,
   },
   imagePlaceholder: {
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
     backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.md,
   },
   rowThumb: {
@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
   bulletinThumb: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
   },
   rowText: {
     flex: 1,
@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
   categoryPill: {
     borderWidth: 1,
     borderColor: colors.accentGold,
-    borderRadius: radius.lg,
+    borderRadius: radius.pill,
     paddingVertical: 1,
     paddingHorizontal: 6,
   },

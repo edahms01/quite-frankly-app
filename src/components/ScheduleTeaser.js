@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   },
   dayCard: {
     backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.sm,
     borderWidth: 1,
     borderColor: colors.surfaceLine,

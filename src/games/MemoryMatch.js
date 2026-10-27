@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cardFaceDown: {
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
   },
   cardFaceUp: {
     backgroundColor: colors.surfaceCard,

@@ -50,7 +50,7 @@ export default function NotificationsSettings({ navigation }) {
               value={item.disabled ? false : values[item.key]}
               onValueChange={(v) => handleToggle(item.key, v)}
               disabled={item.disabled}
-              trackColor={{ false: colors.surfaceLine, true: colors.accentGold }}
+              trackColor={{ false: colors.bgRaised2, true: colors.accentGold }}
               thumbColor={colors.inkPrimary}
             />
           </View>
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.md,
   },
   label: {
@@ -82,10 +82,8 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.md,
   },
-  // Same muted "coming soon" shade as DestinationCard's — see its
-  // inkMutedDark comment for why this isn't the shared colors.inkMuted
-  // token (that's the app's general secondary-text color).
+  // Same muted "coming soon" shade as DestinationCard's (colors.textDisabled).
   labelDisabled: {
-    color: '#5C554E',
+    color: colors.textDisabled,
   },
 });

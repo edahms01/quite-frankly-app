@@ -1,11 +1,5 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../theme';
-
-// A shade darker than colors.inkMuted, specifically for a "coming soon"
-// tile's icon/label/subtext — inkMuted itself is a shared token used all
-// over as the app's general secondary-text color, so it stays untouched;
-// this is scoped to this one darker use case.
-const inkMutedDark = '#5C554E';
+import { colors, fontFamily, fontSize, radius, spacing } from '../theme';
 
 // fixedHeight: opt in only where labels can genuinely vary enough to wrap
 // to 2 lines (Shop's live sheet-driven store names, Writing's one long
@@ -24,7 +18,7 @@ const inkMutedDark = '#5C554E';
 export default function DestinationCard({ Icon, label, onPress, fixedHeight = false, style, subtext }) {
   return (
     <TouchableOpacity style={[styles.card, style]} onPress={onPress} activeOpacity={0.7}>
-      <Icon color={subtext ? inkMutedDark : colors.inkPrimary} size={24} />
+      <Icon color={subtext ? colors.textDisabled : colors.inkPrimary} size={24} />
       {fixedHeight ? (
         <View style={styles.labelBox}>
           <Text style={[styles.label, subtext && styles.labelMuted]} numberOfLines={2}>{label}</Text>
@@ -41,12 +35,13 @@ const styles = StyleSheet.create({
   card: {
     width: '47%',
     backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     paddingVertical: spacing.lg,
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
-    ...shadows.sm,
+    borderWidth: 1,
+    borderColor: colors.borderDefault,
   },
   // Fixed height (exactly 2 lines) on the wrapping View, not the Text
   // itself — a Text taller than its content top-aligns by default (no
@@ -68,10 +63,10 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   labelMuted: {
-    color: inkMutedDark,
+    color: colors.textDisabled,
   },
   subtext: {
-    color: inkMutedDark,
+    color: colors.textDisabled,
     fontFamily: fontFamily.regularItalic,
     fontSize: fontSize.sm,
     textAlign: 'center',

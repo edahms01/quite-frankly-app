@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.md,
   },
   attachText: {
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     fontSize: fontSize.base,
   },
   errorText: {
-    color: colors.brandRed,
+    color: colors.statusLive,
     fontFamily: fontFamily.medium,
     fontSize: fontSize.base,
   },

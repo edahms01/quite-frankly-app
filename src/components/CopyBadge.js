@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../theme';
 
-// The app's standard "Copy" pill (gold label on surfaceLine). Presentational
+// The app's standard "Copy" pill (gold label on bgRaised2). Presentational
 // only — wrap it in a TouchableOpacity that does the actual copy. Used by
 // CryptoCard and PhoneLines.
 export default function CopyBadge() {
@@ -17,7 +17,7 @@ const styles = StyleSheet.create({
   // a narrow sibling (e.g. an address) truncates instead of pushing it out.
   badge: {
     flexShrink: 0,
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
     borderRadius: radius.sm,
     paddingHorizontal: spacing.xs,
     paddingVertical: 2,

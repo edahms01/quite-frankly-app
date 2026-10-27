@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   scrubTrack: {
     height: 4,
     borderRadius: 2,
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
     justifyContent: 'center',
   },
   scrubFill: {

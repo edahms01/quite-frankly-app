@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceCard,
     borderWidth: 1,
     borderColor: colors.accentGold,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.md,
   },
   qfHeader: {
@@ -122,8 +122,8 @@ const styles = StyleSheet.create({
   qfAvatar: {
     width: 40,
     height: 40,
-    borderRadius: radius.lg,
-    backgroundColor: colors.surfaceLine,
+    borderRadius: radius.pill,
+    backgroundColor: colors.bgRaised2,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   platformCard: {
     flex: 1,
     backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.md,
     alignItems: 'center',
     gap: spacing.sm,
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.textOnRed,
     marginTop: 2,
     alignItems: 'center',
     justifyContent: 'center',
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   gridCard: {
     width: '47%',
     backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.md,
     alignItems: 'center',
     gap: spacing.xs,

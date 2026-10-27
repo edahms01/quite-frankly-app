@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   iconCircle: {
     width: 72,
     height: 72,
-    borderRadius: radius.lg,
+    borderRadius: radius.pill,
     borderWidth: 1,
     borderColor: colors.accentGold,
     alignItems: 'center',
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   errorText: {
-    color: colors.brandRed,
+    color: colors.statusLive,
     fontFamily: fontFamily.medium,
     fontSize: fontSize.base,
     textAlign: 'center',

@@ -75,7 +75,7 @@ function openOutbound(url) {
 }
 
 // Same missing-heroImageUrl treatment as WritingBlog.js's ImagePlaceholder:
-// a flat surfaceLine block + centered lucide image icon (no gradient
+// a flat bgRaised2 block + centered lucide image icon (no gradient
 // primitive available in RN's StyleSheet, no gradient lib installed —
 // same deviation Task 5 already flagged and Eric signed off on).
 function HeroImage({ post }) {
@@ -120,7 +120,7 @@ const tagsStyles = {
     fontStyle: 'italic',
   },
   img: {
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
   },
   // Inter's weights are separate font families here (not one family
   // toggled via fontWeight) -- a plain CSS `font-weight` on a single-weight
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
   heroWrap: {
     width: '100%',
     height: HERO_HEIGHT,
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
   },
   hero: {
     width: '100%',
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
   categoryPill: {
     borderWidth: 1,
     borderColor: colors.accentGold,
-    borderRadius: radius.lg,
+    borderRadius: radius.pill,
     paddingVertical: 2,
     paddingHorizontal: spacing.sm,
   },
@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
   },
   bylineText: {
     color: colors.inkMuted,
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
     marginBottom: spacing.lg,
   },
   bodyFallback: {
@@ -402,12 +402,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
   },
-  // Matches ErrorState.js's message/retryText styling exactly (brandRed
+  // Matches ErrorState.js's message/retryText styling exactly (red
   // message, accentGold semibold link) — not reusing that shared component
   // directly since it hardcodes "Try again" as its action label and this
   // screen needs "Open on quitefrankly.tv" instead.
   bodyFallbackMessage: {
-    color: colors.brandRed,
+    color: colors.statusLive,
     fontFamily: fontFamily.medium,
     fontSize: fontSize.base,
     textAlign: 'center',

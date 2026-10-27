@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
   cryptoCard: {
     width: '47%',
     backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     paddingHorizontal: spacing.sm,
     gap: spacing.sm,
   },

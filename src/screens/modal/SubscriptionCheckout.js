@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     fontSize: fontSize.base,
   },
   errorText: {
-    color: colors.brandRed,
+    color: colors.statusLive,
     fontFamily: fontFamily.regular,
     fontSize: fontSize.sm,
     marginTop: spacing.md,
