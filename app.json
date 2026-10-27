@@ -61,7 +61,7 @@
         {
           "image": "./assets/splash-icon.png",
           "resizeMode": "contain",
-          "backgroundColor": "#121014"
+          "backgroundColor": "#0c0f14"
         }
       ],
       "./plugins/withSplashWordmark"

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DarkTheme } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import {
@@ -12,7 +12,6 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
-import { BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
 
 import RootNavigator from './src/navigation/RootNavigator';
 import MiniPlayer from './src/components/MiniPlayer';
@@ -25,6 +24,19 @@ import { NetworkProvider } from './src/context/NetworkContext';
 import { LiveStatusProvider } from './src/context/LiveStatusContext';
 import { FeatureFlagsProvider } from './src/context/FeatureFlagsContext';
 import { navigationRef } from './src/navigation/navigationRef';
+
+// Dark navigation theme on the app's own surfaces, so no default light-theme flash shows between screens.
+const navTheme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    background: colors.bgBase,
+    card: colors.bgRaised,
+    border: colors.borderDefault,
+    primary: colors.accentGold,
+    text: colors.textPrimary,
+  },
+};
 
 // Keep the native splash screen up until fonts are actually ready —
 // without this, it auto-hides as soon as the native view mounts (well
@@ -39,7 +51,6 @@ export default function App() {
     Inter_500Medium,
     Inter_600SemiBold,
     Inter_700Bold,
-    BebasNeue_400Regular,
   });
 
   useEffect(() => {
@@ -71,7 +82,7 @@ export default function App() {
             <LiveStatusProvider>
             <AudioPlayerProvider>
               <View style={{ flex: 1 }}>
-                <NavigationContainer ref={navigationRef}>
+                <NavigationContainer ref={navigationRef} theme={navTheme}>
                   <RootNavigator />
                 </NavigationContainer>
                 <MiniPlayer />
