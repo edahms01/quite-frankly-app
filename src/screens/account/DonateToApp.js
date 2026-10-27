@@ -39,7 +39,7 @@ export default function DonateToApp({ navigation }) {
           This app is built and maintained independently, separate from the
           show itself. Support here goes toward keeping it running and
           building new features, not to Quite Frankly directly. If
-          you'd like to support the show instead, see Become a Sponsor.
+          you'd like to support the show instead, see Support the Show.
         </Text>
 
         <Section title="Send a Tip">

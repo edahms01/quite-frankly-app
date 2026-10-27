@@ -6,7 +6,7 @@ import CopyBadge from './CopyBadge';
 
 // Grid container for CryptoCard: cards are width: '47%' each, so two per
 // row with flexWrap, matching the "narrow crypto card grid" layout used
-// on both Donate to App and Become a Sponsor's crypto sections.
+// on both Donate to App and Support the Show's crypto sections.
 export function CryptoCardGrid({ children }) {
   return <View style={styles.grid}>{children}</View>;
 }

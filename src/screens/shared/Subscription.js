@@ -28,9 +28,9 @@ const XRP_ADDRESS = 'rnES2vQV6d2jLpavzf7y97XD4AfK1MjePu';
 export default function Subscription({ navigation }) {
   return (
     <ScrollView style={styles.container}>
-      <BackHeader title="Become a Sponsor" navigation={navigation} />
+      <BackHeader title="Support the Show" navigation={navigation} />
       <View style={styles.body}>
-        <Section title="Monthly Sponsorship">
+        <Section title="Monthly Support">
           <TouchableOpacity
             style={styles.qfCard}
             onPress={() => navigation.navigate('SubscriptionCheckout')}
@@ -47,7 +47,7 @@ export default function Subscription({ navigation }) {
                 <Text style={styles.recommendedText}>RECOMMENDED</Text>
               </View>
             </View>
-            <Text style={styles.qfTitle}>Sponsor Frank Directly</Text>
+            <Text style={styles.qfTitle}>Support Frank Directly</Text>
           </TouchableOpacity>
 
           <View style={styles.platformRow}>
