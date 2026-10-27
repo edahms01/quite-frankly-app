@@ -3,7 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { RotateCcw, X } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
-import { floating, title as titlePreset } from '../../design/qf-presets';
+import { floating, title as titlePreset, button, buttonText } from '../../design/qf-presets';
 
 export const WINDOW_WIDTH = 300;
 export const WINDOW_HEADER_HEIGHT = 44;
@@ -180,15 +180,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   splashButton: {
+    ...button,
     marginTop: spacing.md,
-    backgroundColor: colors.accentGold,
-    borderRadius: radius.md,
-    paddingVertical: spacing.sm,
     paddingHorizontal: spacing.lg,
   },
-  splashButtonText: {
-    color: colors.surfaceGround,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.lg,
-  },
+  splashButtonText: buttonText,
 });

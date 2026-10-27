@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View, Share } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { colors, fontFamily, fontSize, radius, shadows, spacing } from '../../theme';
+import { button, buttonText } from '../../design/qf-presets';
 import { relativeTime } from '../../utils/relativeTime';
 import VideoEmbed from '../../components/VideoEmbed';
 import VideoThumbnailOverlay from '../../components/VideoThumbnailOverlay';
@@ -307,21 +308,13 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   actionButton: {
-    backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
-    paddingVertical: spacing.sm,
+    ...button,
     paddingHorizontal: spacing.md,
   },
-  actionText: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.base,
-  },
-  // Matches actionButton/actionText's box+text size exactly, so the pill
-  // reads as the same size as "Watch on YouTube"/"Share" next to it.
-  // borderRadius overrides the base pill's radius.sm — deliberately more
-  // rounded than actionButton's own radius.md, so it still reads as a
-  // pill/label next to the real buttons, not a third button.
+  actionText: buttonText,
+  // Same text size as the action buttons next to it. borderRadius overrides
+  // the base pill's radius.sm — deliberately more rounded than the buttons'
+  // radius.md, so it still reads as a pill/label, not a third button.
   typePill: {
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.md,
