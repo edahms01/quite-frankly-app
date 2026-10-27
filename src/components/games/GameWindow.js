@@ -179,10 +179,16 @@ const styles = StyleSheet.create({
     fontSize: fontSize.md,
     textAlign: 'center',
   },
+  // Stays the gold call to action: the `button` preset (44 high) filled with accentGold, the same gold fill + dark text as tagSolid / segButtonSelected (there is no gold-filled button preset).
   splashButton: {
     ...button,
+    backgroundColor: colors.accentGold,
+    borderColor: colors.accentGold,
     marginTop: spacing.md,
     paddingHorizontal: spacing.lg,
   },
-  splashButtonText: buttonText,
+  splashButtonText: {
+    ...buttonText,
+    color: colors.textOnGold,
+  },
 });
