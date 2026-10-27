@@ -14,6 +14,7 @@ import {
 const INITIAL = [
   { key: 'live', label: 'Live Alerts' },
   { key: 'video', label: 'New Video Alerts' },
+  { key: 'substack', label: 'New Substack Post Alerts' },
   // No trigger wired yet (see CLAUDE.md's "Known open items") — kept
   // visible as a teaser for the feature, grayed out and non-interactive
   // rather than hidden, since toggling it would have no real effect.

@@ -1,8 +1,8 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { activeOpacity, segButton, segButtonSelected, segText, segTextSelected, segTrack } from '../design/qf-presets';
 
-// Generic 2-option toggle -- currently only Writing's Blog | Newsletter,
-// but written for any 2-option case. Styled with the seg* presets from
+// Generic toggle -- currently only Writing's Substack | Blog | Newsletter,
+// but written for any small number of options (equal-width pills). Styled with the seg* presets from
 // src/design/qf-presets.js (translucent track + hairline, gold selected,
 // dark bold selected text); behaviour is unchanged.
 export default function SegmentedControl({ options, value, onChange }) {
