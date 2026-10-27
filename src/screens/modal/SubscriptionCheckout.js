@@ -3,6 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ChevronDown } from 'lucide-react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
+import { title as titlePreset, errorText as errorTextPreset } from '../../design/qf-presets';
 
 const CHECKOUT_URL =
   'https://www.quitefrankly.tv/patrons-products/quite-frankly-at-your-service';
@@ -63,9 +64,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   title: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.xxl,
+    ...titlePreset,
     marginBottom: spacing.sm,
   },
   subtitle: {
@@ -74,9 +73,7 @@ const styles = StyleSheet.create({
     fontSize: fontSize.base,
   },
   errorText: {
-    color: colors.statusError,
-    fontFamily: fontFamily.regular,
-    fontSize: fontSize.sm,
+    ...errorTextPreset,
     marginTop: spacing.md,
   },
   continueButton: {

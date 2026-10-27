@@ -1,6 +1,6 @@
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
-import { floating } from '../../design/qf-presets';
+import { floating, title as titlePreset } from '../../design/qf-presets';
 import { GAMES } from '../../games';
 
 // Pull-up tray for picking a game — opened from a video page or Home
@@ -48,9 +48,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   heading: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.xxl,
+    ...titlePreset,
     marginBottom: spacing.md,
   },
   grid: {

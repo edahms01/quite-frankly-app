@@ -2,6 +2,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, spacing } from '../theme';
+import { title as titlePreset } from '../design/qf-presets';
 import AvatarButton from './AvatarButton';
 import OnAirBadge from './OnAirBadge';
 
@@ -67,11 +68,7 @@ const styles = StyleSheet.create({
   titleSlot: {
     flex: 1,
   },
-  title: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.xxl,
-  },
+  title: titlePreset,
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',

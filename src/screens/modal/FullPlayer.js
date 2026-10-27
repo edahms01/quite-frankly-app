@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { ChevronDown, CirclePlay, Pause } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
+import { title as titlePreset } from '../../design/qf-presets';
 import { useAudioPlayer } from '../../context/AudioPlayerContext';
 import { formatTime } from '../../utils/formatTime';
 
@@ -123,9 +124,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   title: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.xxl,
+    ...titlePreset,
     marginBottom: spacing.sm,
   },
   descriptionScroll: {

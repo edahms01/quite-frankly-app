@@ -3,7 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { RotateCcw, X } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
-import { floating } from '../../design/qf-presets';
+import { floating, title as titlePreset } from '../../design/qf-presets';
 
 export const WINDOW_WIDTH = 300;
 export const WINDOW_HEADER_HEIGHT = 44;
@@ -172,11 +172,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     gap: spacing.sm,
   },
-  splashHeading: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.xxl,
-  },
+  splashHeading: titlePreset,
   splashControls: {
     color: colors.inkMuted,
     fontFamily: fontFamily.regular,
