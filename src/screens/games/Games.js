@@ -55,7 +55,7 @@ export default function Games({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <BackHeader navigation={navigation} title="Games" />
+      <BackHeader navigation={navigation} title="Play" />
 
       <View style={styles.body} onLayout={(e) => setBodyLayout(e.nativeEvent.layout)}>
         <View style={styles.grid}>

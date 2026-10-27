@@ -1,6 +1,6 @@
 import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import { MessageCircle, Send, MessageSquare, Camera, X, Music2, CirclePlay, ChevronRight } from 'lucide-react-native';
+import { MessageCircle, Send, MessageSquare, Camera, X, Music2, CirclePlay, ChevronRight, Newspaper } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
 import Section from '../../components/Section';
@@ -22,6 +22,7 @@ const JOIN = [
 ];
 
 const FOLLOW = [
+  { label: 'Substack', Icon: Newspaper, url: 'https://quitefranklyofficial.substack.com' },
   { label: 'Instagram', Icon: Camera, url: 'https://www.instagram.com/quitefranklyofficial/' },
   { label: 'X', Icon: X, url: 'http://twitter.com/QuiteFranklyTV' },
   { label: 'Tumblr', Icon: Music2, url: 'http://stonedandstudying.tumblr.com' },
@@ -32,7 +33,7 @@ const FOLLOW = [
 export default function Community({ navigation }) {
   return (
     <ScrollView style={styles.container}>
-      <BackHeader title="Community" navigation={navigation} />
+      <BackHeader title="Connect" navigation={navigation} />
       <View style={styles.body}>
         <Section title="Join the Conversation">
           <View style={styles.grid}>

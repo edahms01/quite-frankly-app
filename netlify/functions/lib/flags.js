@@ -8,7 +8,7 @@ export const FLAG_DEFAULTS = {
   askfrankie_enabled: false,
   askfrankie_linked_login: false,
   accounts: false,        // app account creation / sign-in / Sign Out / Delete Account / AskFrankie login handoff
-  cultureClub: false,     // the Culture Club tab and page, the Calendar tile and page
+  cultureClub: false,     // the Culture Club tab, page and Home card, and the club days on Schedule (Schedule itself is always on)
 };
 
 export function normalizeFlags(raw) {
