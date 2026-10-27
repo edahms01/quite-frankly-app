@@ -345,13 +345,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accentGold,
   },
   chipText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontFamily: fontFamily.semiBold,
+    fontSize: fontSize.caption,
     color: colors.inkPrimary,
   },
   chipTextSelected: {
     color: colors.textOnGold,
-    fontWeight: '700',
+    fontFamily: fontFamily.bold,
   },
   monthsRow: {
     flexGrow: 0,
@@ -376,15 +376,16 @@ const styles = StyleSheet.create({
     borderColor: colors.accentGold,
   },
   monthCardMonth: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontFamily: fontFamily.bold,
+    fontSize: fontSize.titleSm,
     color: colors.inkPrimary,
   },
   monthCardMonthSelected: {
     color: colors.accentGold,
   },
   monthCardYear: {
-    fontSize: 11,
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.compact,
     color: colors.inkMuted,
     marginTop: 2,
   },
@@ -399,13 +400,13 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   filterHeaderText: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontFamily: fontFamily.bold,
+    fontSize: fontSize.meta,
     color: colors.inkPrimary,
   },
   clearText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontFamily: fontFamily.semiBold,
+    fontSize: fontSize.caption,
     color: colors.inkMuted,
   },
   imagePlaceholder: {
@@ -461,7 +462,7 @@ const styles = StyleSheet.create({
   categoryPillText: {
     color: colors.accentGold,
     fontFamily: fontFamily.bold,
-    fontSize: 10,
+    fontSize: fontSize.micro,
   },
   rowMeta: {
     color: colors.inkMuted,
