@@ -3,10 +3,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fontFamily, fontSize, spacing, radius } from '../../theme';
 import { buttonPrimary, buttonPrimaryText } from '../../design/qf-presets';
 import OnboardingDots from '../../components/OnboardingDots';
+import { useFeatureFlags } from '../../context/FeatureFlagsContext';
+import { onboardingDotCount } from '../../lib/featureFlags';
 import Wordmark from '../../components/Wordmark';
 
 export default function Welcome({ navigation }) {
   const insets = useSafeAreaInsets();
+  const flags = useFeatureFlags();
   return (
     <View style={styles.container}>
       <TouchableOpacity
@@ -17,7 +20,7 @@ export default function Welcome({ navigation }) {
       </TouchableOpacity>
 
       <View style={styles.content}>
-        <OnboardingDots total={4} activeIndex={0} />
+        <OnboardingDots total={onboardingDotCount(flags)} activeIndex={0} />
         <Wordmark centerOnLetters style={styles.wordmark} />
         <Text style={styles.subtitle}>Live weeknights · 7:00 PM ET</Text>
         <Text style={styles.body}>

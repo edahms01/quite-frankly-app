@@ -6,13 +6,17 @@ import { Bell } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, spacing, radius } from '../../theme';
 import { title as titlePreset, buttonPrimary, buttonPrimaryText } from '../../design/qf-presets';
 import OnboardingDots from '../../components/OnboardingDots';
+import { useFeatureFlags } from '../../context/FeatureFlagsContext';
+import { onboardingDotCount, onboardingNextRoute } from '../../lib/featureFlags';
 import { registerForPushNotifications, DEFAULT_PREFERENCES } from '../../lib/pushNotifications';
 
 export default function NotificationsPermission({ navigation }) {
   const insets = useSafeAreaInsets();
+  const flags = useFeatureFlags();
   const [requesting, setRequesting] = useState(false);
 
-  const goNext = () => navigation.navigate('Email');
+  // Email -> CodeEntry only with accounts on; otherwise straight into the app (the screens stay registered).
+  const goNext = () => navigation.navigate(onboardingNextRoute(flags));
 
   const handleEnable = async () => {
     setRequesting(true);
@@ -37,7 +41,7 @@ export default function NotificationsPermission({ navigation }) {
       </TouchableOpacity>
 
       <View style={styles.content}>
-        <OnboardingDots total={4} activeIndex={1} />
+        <OnboardingDots total={onboardingDotCount(flags)} activeIndex={1} />
         <View style={styles.iconCircle}>
           <Bell color={colors.accentGold} size={32} />
         </View>
