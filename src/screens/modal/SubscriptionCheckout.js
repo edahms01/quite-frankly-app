@@ -37,7 +37,7 @@ export default function SubscriptionCheckout({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.title}>Become a Sponsor</Text>
+      <Text style={styles.title}>Support the Show</Text>
       <Text style={styles.subtitle}>Plans start at $5/month.</Text>
 
       {launchFailed && (
