@@ -84,7 +84,7 @@ export default function Email({ navigation }) {
           sent to your email.
         </Text>
         <Text style={styles.sponsorNote}>
-          Are you a Quite Frankly Sponsor? Use the same email you used for
+          Are you a Quite Frankly Supporter? Use the same email you used for
           your subscription.
         </Text>
         <TextInput

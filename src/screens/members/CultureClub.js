@@ -27,7 +27,7 @@ export default function CultureClub({ navigation }) {
               style={styles.actionCard}
               onPress={() => navigation.navigate('Subscription')}
             >
-              <Text style={styles.actionCardText}>Become a Sponsor to join Culture Club</Text>
+              <Text style={styles.actionCardText}>Support the Show to Join Culture Club</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -36,7 +36,7 @@ export default function CultureClub({ navigation }) {
             >
               <Lock color={colors.inkMuted} size={16} />
               <Text style={styles.loginCardText}>
-                Already a Sponsor? Log in to QuiteFrankly.tv to access the Culture Club.
+                Already a Supporter? Log in to QuiteFrankly.tv to access the Culture Club.
               </Text>
               <ArrowRight color={colors.inkMuted} size={16} />
             </TouchableOpacity>

@@ -52,18 +52,6 @@ function metaLine(post) {
   return [date, minutes].filter(Boolean).join(' · ');
 }
 
-// Wireframe's floating header buttons use rgba(18,16,20,0.55) — that's
-// colors.surfaceGround's own RGB at 55% alpha, not a new literal hex.
-// Derived here from the token itself rather than hardcoding a second copy
-// of the color, per the theme-token rule.
-function hexToRgba(hex, alpha) {
-  const clean = hex.replace('#', '');
-  const r = parseInt(clean.substring(0, 2), 16);
-  const g = parseInt(clean.substring(2, 4), 16);
-  const b = parseInt(clean.substring(4, 6), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
 // http/https-only guard for every outbound open on this screen (inline body
 // links + the bottom comments link) — never open an arbitrary scheme.
 function isHttpUrl(url) {
@@ -326,7 +314,7 @@ const styles = StyleSheet.create({
     borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: hexToRgba(colors.surfaceGround, 0.55),
+    backgroundColor: colors.scrimHeaderButton,
   },
   backButtonPos: {
     left: spacing.md,

@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: colors.scrimThumbnail,
     alignItems: 'center',
     justifyContent: 'center',
   },
