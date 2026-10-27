@@ -46,7 +46,7 @@ export default function MiniPlayer() {
         <View style={[styles.progressFill, { width: `${progressPct}%` }]} />
       </View>
       <View style={styles.bar}>
-        <TouchableOpacity style={styles.iconCircle} onPress={togglePlayPause}>
+        <TouchableOpacity style={styles.iconCircle} onPress={togglePlayPause} hitSlop={spacing.xs}>
           {isPlaying ? (
             <Pause color={colors.inkPrimary} size={16} />
           ) : (

@@ -232,6 +232,7 @@ export default function Article({ navigation, route }) {
           style={[styles.circleButton, styles.backButtonPos, { top: insets.top + spacing.sm }]}
           onPress={() => navigation.goBack()}
           accessibilityLabel="Back"
+          hitSlop={spacing.tight}
         >
           <ChevronLeft color={colors.inkPrimary} size={20} />
         </TouchableOpacity>
@@ -240,6 +241,7 @@ export default function Article({ navigation, route }) {
           style={[styles.circleButton, styles.shareButtonPos, { top: insets.top + spacing.sm }]}
           onPress={shareArticle}
           accessibilityLabel="Share"
+          hitSlop={spacing.tight}
         >
           <Share2 color={colors.inkPrimary} size={17} />
         </TouchableOpacity>

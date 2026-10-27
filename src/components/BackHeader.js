@@ -33,7 +33,11 @@ export default function BackHeader({
   return (
     <View style={[styles.wrapper, { paddingTop: insets.top + spacing.md }]}>
       <View style={styles.row}>
-        <TouchableOpacity onPress={onBack ?? (() => navigation.goBack())} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={onBack ?? (() => navigation.goBack())}
+          style={styles.backButton}
+          hitSlop={spacing.tight} // 32dp visual, 44dp touch target
+        >
           <ChevronLeft color={colors.inkPrimary} size={24} />
         </TouchableOpacity>
         <View style={styles.titleSlot}>
