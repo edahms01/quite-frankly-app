@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     fontSize: fontSize.md,
   },
   // Matches Watch.js's platformRow/platformPill exactly (the app's one
-  // Pill family — radius.lg, no shadow, fontSize.base) for consistency
+  // Pill family — radius.pill, no shadow, fontSize.base) for consistency
   // between the two link-out rows.
   platformRow: {
     flexDirection: 'row',
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
     alignItems: 'center',
     justifyContent: 'center',
   },

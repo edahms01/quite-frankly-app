@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: radius.sm,
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     marginTop: SUBTITLE_GAP,
   },
   badge: {
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
     borderRadius: radius.sm,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,

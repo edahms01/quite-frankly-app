@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { RefreshControl,ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, FileText, Music2, Gamepad2, Bot, Phone } from 'lucide-react-native';
-import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../../theme';
+import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import DestinationCard from '../../components/DestinationCard';
 import AvatarButton from '../../components/AvatarButton';
 import Wordmark from '../../components/Wordmark';
@@ -234,7 +234,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceCard,
     borderRadius: radius.lg,
     overflow: 'hidden',
-    ...shadows.sm,
+    borderWidth: 1,
+    borderColor: colors.borderDefault,
   },
   badge: {
     position: 'absolute',

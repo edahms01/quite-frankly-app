@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
   heroWrap: {
     width: '100%',
     height: HERO_HEIGHT,
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
   },
   hero: {
     width: '100%',
@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
   },
   bylineText: {
     color: colors.inkMuted,
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
     marginBottom: spacing.lg,
   },
   bodyFallback: {

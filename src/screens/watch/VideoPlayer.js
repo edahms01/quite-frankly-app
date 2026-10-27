@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
     marginVertical: spacing.md,
   },
   description: {

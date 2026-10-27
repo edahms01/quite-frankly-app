@@ -17,7 +17,7 @@ const styles = StyleSheet.create({
   // a narrow sibling (e.g. an address) truncates instead of pushing it out.
   badge: {
     flexShrink: 0,
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
     borderRadius: radius.sm,
     paddingHorizontal: spacing.xs,
     paddingVertical: 2,

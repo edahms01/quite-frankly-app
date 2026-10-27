@@ -1,5 +1,5 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { colors, fontFamily, fontSize, radius, spacing, shadows } from '../theme';
+import { colors, fontFamily, fontSize, radius, spacing } from '../theme';
 
 // A shade darker than colors.inkMuted, specifically for a "coming soon"
 // tile's icon/label/subtext — inkMuted itself is a shared token used all
@@ -46,7 +46,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
-    ...shadows.sm,
+    borderWidth: 1,
+    borderColor: colors.borderDefault,
   },
   // Fixed height (exactly 2 lines) on the wrapping View, not the Text
   // itself — a Text taller than its content top-aligns by default (no

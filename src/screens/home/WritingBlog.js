@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   imagePlaceholder: {
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
     marginTop: spacing.xs,
     marginBottom: spacing.md,
   },

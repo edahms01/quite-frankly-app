@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     borderColor: colors.surfaceGround,
   },
   cellHidden: {
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
   },
   cellRevealed: {
     backgroundColor: colors.surfaceCard,

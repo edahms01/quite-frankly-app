@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
     color: colors.inkMuted,
   },
   imagePlaceholder: {
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
   bulletinThumb: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.surfaceLine,
+    backgroundColor: colors.bgRaised2,
   },
   rowText: {
     flex: 1,
