@@ -1,5 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { colors, fontFamily, fontSize, spacing } from '../theme';
+import { errorText as errorTextPreset } from '../design/qf-presets';
 
 /**
  * Shared error message — matches the red error text Listen.js and
@@ -26,9 +27,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   message: {
-    color: colors.statusError,
-    fontFamily: fontFamily.medium,
-    fontSize: fontSize.base,
+    ...errorTextPreset,
     textAlign: 'center',
   },
   retryText: {

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
+import { errorText as errorTextPreset } from '../../design/qf-presets';
 import BackHeader from '../../components/BackHeader';
 import { deleteAccount } from '../../lib/account';
 
@@ -73,7 +74,7 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.regular,
     fontSize: fontSize.xl,
   },
-  error: { color: colors.statusError, fontFamily: fontFamily.medium, fontSize: fontSize.base },
+  error: errorTextPreset,
   button: { backgroundColor: colors.brandRed, borderRadius: radius.md, paddingVertical: spacing.md, alignItems: 'center' },
   buttonDisabled: { opacity: 0.4 },
   buttonText: { color: colors.inkPrimary, fontFamily: fontFamily.semiBold, fontSize: fontSize.lg },

@@ -13,6 +13,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { ImagePlus, CircleCheck } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
+import { errorText as errorTextPreset } from '../../design/qf-presets';
 import BackHeader from '../../components/BackHeader';
 import appConfig from '../../../app.json';
 
@@ -166,9 +167,7 @@ const styles = StyleSheet.create({
     fontSize: fontSize.base,
   },
   errorText: {
-    color: colors.statusError,
-    fontFamily: fontFamily.medium,
-    fontSize: fontSize.base,
+    ...errorTextPreset,
   },
   submitButton: {
     backgroundColor: colors.brandRed,
