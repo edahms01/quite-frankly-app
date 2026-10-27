@@ -5,6 +5,7 @@ import { colors, fontFamily, fontSize, radius, shadows, spacing } from '../../th
 import { relativeTime } from '../../utils/relativeTime';
 import VideoEmbed from '../../components/VideoEmbed';
 import VideoThumbnailOverlay from '../../components/VideoThumbnailOverlay';
+import SponsorButton from '../../components/SponsorButton';
 import BackHeader from '../../components/BackHeader';
 import VideoTypePill from '../../components/VideoTypePill';
 import { useVideoActiveSource } from '../../hooks/useVideoActiveSource';
@@ -186,12 +187,10 @@ export default function VideoPlayer({ navigation, route }) {
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity
-              style={styles.sponsorButton}
+            <SponsorButton
+              style={styles.sponsorButtonSpacing}
               onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })}
-            >
-              <Text style={styles.sponsorButtonText}>Become a Sponsor</Text>
-            </TouchableOpacity>
+            />
 
             {video?.description ? (
               <>
@@ -279,22 +278,9 @@ const styles = StyleSheet.create({
     ...shadows.md,
     elevation: 6,
   },
-  // Matches Home.js's sponsorButton exactly (full-width, gold-bordered,
-  // centered label) for visual consistency across screens.
-  sponsorButton: {
-    backgroundColor: colors.surfaceCard,
-    borderWidth: 1,
-    borderColor: colors.accentGold,
-    borderRadius: radius.md,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    alignItems: 'center',
+  // Contextual spacing only; the button itself is components/SponsorButton.
+  sponsorButtonSpacing: {
     marginTop: spacing.md,
-  },
-  sponsorButtonText: {
-    color: colors.accentGold,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.md,
   },
   playerArea: {
     height: PLAYER_HEIGHT,

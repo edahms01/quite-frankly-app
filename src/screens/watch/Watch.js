@@ -3,6 +3,8 @@ import { ActivityIndicator, Image, Linking, RefreshControl, ScrollView, StyleShe
 import * as WebBrowser from 'expo-web-browser';
 import { CirclePlay } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
+import { pill, pillText } from '../../design/qf-presets';
+import SponsorButton from '../../components/SponsorButton';
 import BackHeader from '../../components/BackHeader';
 import VideoTypePill from '../../components/VideoTypePill';
 import { relativeTime } from '../../utils/relativeTime';
@@ -134,12 +136,7 @@ export default function Watch({ navigation }) {
         navigation={navigation}
         onBack={() => navigation.getParent()?.navigate('Home')}
       >
-        <TouchableOpacity
-          style={styles.sponsorButton}
-          onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })}
-        >
-          <Text style={styles.sponsorButtonText}>Become a Sponsor</Text>
-        </TouchableOpacity>
+        <SponsorButton onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })} />
       </BackHeader>
 
       <View style={styles.body}>
@@ -194,22 +191,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.surfaceGround,
   },
-  // Matches Home.js's sponsorButton exactly (full-width, gold-bordered,
-  // centered label) for visual consistency across screens.
-  sponsorButton: {
-    backgroundColor: colors.surfaceCard,
-    borderWidth: 1,
-    borderColor: colors.accentGold,
-    borderRadius: radius.md,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    alignItems: 'center',
-  },
-  sponsorButtonText: {
-    color: colors.accentGold,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.md,
-  },
   body: {
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.lg,
@@ -226,15 +207,12 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   platformPill: {
-    backgroundColor: colors.surfaceCard,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    ...pill,
+    backgroundColor: colors.bgRaised,
   },
   platformText: {
-    color: colors.inkPrimary,
-    fontFamily: fontFamily.semiBold,
-    fontSize: fontSize.base,
+    ...pillText,
+    color: colors.textPrimary,
   },
   grid: {
     flexDirection: 'row',
