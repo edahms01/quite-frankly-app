@@ -82,10 +82,8 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.md,
   },
-  // Same muted "coming soon" shade as DestinationCard's — see its
-  // inkMutedDark comment for why this isn't the shared colors.inkMuted
-  // token (that's the app's general secondary-text color).
+  // Same muted "coming soon" shade as DestinationCard's (colors.textDisabled).
   labelDisabled: {
-    color: '#5C554E',
+    color: colors.textDisabled,
   },
 });

@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     color: colors.inkPrimary,
   },
   chipTextSelected: {
-    color: '#121014',
+    color: colors.textOnGold,
     fontWeight: '700',
   },
   monthsRow: {
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: colors.surfaceCard,
     borderWidth: 1,
-    borderColor: '#2a2422',
+    borderColor: colors.borderDefault,
     alignItems: 'center',
     justifyContent: 'center',
   },

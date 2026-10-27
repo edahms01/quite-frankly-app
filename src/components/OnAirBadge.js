@@ -27,11 +27,11 @@ const styles = StyleSheet.create({
     // that deep maroon doesn't read as "lit," it just reads as another
     // button. This one, with a wide soft-opacity glow behind it, is
     // closer to an actual neon/bulb "ON AIR" sign.
-    backgroundColor: '#E0332B',
-    borderColor: '#E0332B',
+    backgroundColor: colors.statusLive,
+    borderColor: colors.statusLive,
     ...Platform.select({
       ios: {
-        shadowColor: '#E0332B',
+        shadowColor: colors.statusLive,
         shadowOffset: { width: 0, height: 0 },
         shadowOpacity: 0.95,
         shadowRadius: 12,
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     // Dimmer than the usual inkMuted secondary-text color on purpose —
     // this needs to read as "unlit," not just "quieter," so it can't be
     // mistaken for the live state at a glance.
-    color: '#5C554E',
+    color: colors.textDisabled,
     fontFamily: fontFamily.bold,
     fontSize: fontSize.xs,
     letterSpacing: 1,

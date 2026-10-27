@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     fontSize: fontSize.base,
   },
   errorText: {
-    color: colors.brandRed,
+    color: colors.statusError,
     fontFamily: fontFamily.medium,
     fontSize: fontSize.base,
   },

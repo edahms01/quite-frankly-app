@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
   // directly since it hardcodes "Try again" as its action label and this
   // screen needs "Open on quitefrankly.tv" instead.
   bodyFallbackMessage: {
-    color: colors.brandRed,
+    color: colors.statusError,
     fontFamily: fontFamily.medium,
     fontSize: fontSize.base,
     textAlign: 'center',
