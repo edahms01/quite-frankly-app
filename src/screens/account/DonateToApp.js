@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   tipCard: {
     width: '47%',
     backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.md,
     alignItems: 'center',
   },

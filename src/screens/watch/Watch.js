@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
   },
   platformPill: {
     backgroundColor: colors.surfaceCard,
-    borderRadius: radius.lg,
+    borderRadius: radius.pill,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
   videoCard: {
     width: '47%',
     backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     overflow: 'hidden',
     ...shadows.sm,
   },

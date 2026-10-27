@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   },
   mostRecentCard: {
     backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     overflow: 'hidden',
     ...shadows.sm,
   },

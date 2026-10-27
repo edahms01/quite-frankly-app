@@ -120,7 +120,7 @@ const tagsStyles = {
     fontStyle: 'italic',
   },
   img: {
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
   },
   // Inter's weights are separate font families here (not one family
   // toggled via fontWeight) -- a plain CSS `font-weight` on a single-weight
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
   categoryPill: {
     borderWidth: 1,
     borderColor: colors.accentGold,
-    borderRadius: radius.lg,
+    borderRadius: radius.pill,
     paddingVertical: 2,
     paddingHorizontal: spacing.sm,
   },

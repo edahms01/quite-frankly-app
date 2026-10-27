@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
   typePill: {
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.md,
-    borderRadius: radius.lg,
+    borderRadius: radius.pill,
   },
   typePillText: {
     fontFamily: fontFamily.semiBold,

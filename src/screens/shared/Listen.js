@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
   platformPill: {
     flexShrink: 1,
     backgroundColor: colors.surfaceCard,
-    borderRadius: radius.lg,
+    borderRadius: radius.pill,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.sm,
   },
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     paddingHorizontal: spacing.md,
     height: ROW_HEIGHT,
     gap: spacing.md,

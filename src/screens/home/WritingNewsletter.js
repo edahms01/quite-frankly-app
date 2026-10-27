@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
     backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.md,
   },
   rowThumb: {
@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
   categoryPill: {
     borderWidth: 1,
     borderColor: colors.accentGold,
-    borderRadius: radius.lg,
+    borderRadius: radius.pill,
     paddingVertical: 1,
     paddingHorizontal: 6,
   },

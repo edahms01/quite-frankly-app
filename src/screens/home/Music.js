@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   },
   playerCard: {
     width: '100%',
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     overflow: 'hidden',
     backgroundColor: colors.surfaceCard,
   },

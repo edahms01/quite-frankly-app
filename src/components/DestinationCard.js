@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
   card: {
     width: '47%',
     backgroundColor: colors.surfaceCard,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     paddingVertical: spacing.lg,
     alignItems: 'center',
     justifyContent: 'center',

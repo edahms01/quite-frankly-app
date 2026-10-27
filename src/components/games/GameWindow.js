@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     // order on Android (paint order there follows elevation), so both are
     // set to the same value rather than relying on sibling JSX order.
     zIndex: 10,
-    borderRadius: radius.lg,
+    borderRadius: radius.xl,
     overflow: 'hidden',
     backgroundColor: colors.surfaceCard,
     ...shadows.md,
