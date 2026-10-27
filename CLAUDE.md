@@ -32,7 +32,7 @@ Design tokens and components: `src/design/` (synced from AskFrankie's `design/`,
 - Hover neutral, selected gold, focus red ring, links gold, one filled red button per view, no all-caps, buttons Title Case.
 - Need a value that isn't a token? Add it to AskFrankie's `design/tokens/tokens.json`, run `npm run tokens` there, then `npm run sync:tokens` here, then use it.
 - Cards: 1px hairline, no shadow (`shadows.sm` is gone from cards; Android keeps its edge because the hairline is a border, not elevation). Panels/windows: the hero surface. Radii 6/10/14/22/pill only.
-- Error text uses `colors.statusError`, never `brandRed` (brand red text is 2.4:1); `brandRed` is for fills.
+- Error and destructive text uses `colors.statusLive` (Eric's call, 2026-10-27: the pale `statusError` looked muted next to the old red; no new colour added), never `brandRed` (brand red text is 2.4:1); `brandRed` is for fills.
 - After a token change in AskFrankie: commit `design/dist/`, then in this repo run `npm run sync:tokens` (set `QF_DESIGN_DIR` if the AskFrankie checkout is not at `../AskFrankie`).
 
 ---

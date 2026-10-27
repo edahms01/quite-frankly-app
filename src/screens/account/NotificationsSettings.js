@@ -50,7 +50,7 @@ export default function NotificationsSettings({ navigation }) {
               value={item.disabled ? false : values[item.key]}
               onValueChange={(v) => handleToggle(item.key, v)}
               disabled={item.disabled}
-              trackColor={{ false: colors.surfaceLine, true: colors.accentGold }}
+              trackColor={{ false: colors.bgRaised2, true: colors.accentGold }}
               thumbColor={colors.inkPrimary}
             />
           </View>

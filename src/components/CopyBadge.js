@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../theme';
 
-// The app's standard "Copy" pill (gold label on surfaceLine). Presentational
+// The app's standard "Copy" pill (gold label on bgRaised2). Presentational
 // only — wrap it in a TouchableOpacity that does the actual copy. Used by
 // CryptoCard and PhoneLines.
 export default function CopyBadge() {

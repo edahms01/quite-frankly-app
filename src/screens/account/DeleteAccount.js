@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.regular,
     fontSize: fontSize.xl,
   },
-  error: { color: colors.statusError, fontFamily: fontFamily.medium, fontSize: fontSize.base },
+  error: { color: colors.statusLive, fontFamily: fontFamily.medium, fontSize: fontSize.base },
   button: { backgroundColor: colors.brandRed, borderRadius: radius.md, paddingVertical: spacing.md, alignItems: 'center' },
   buttonDisabled: { opacity: 0.4 },
   buttonText: { color: colors.inkPrimary, fontFamily: fontFamily.semiBold, fontSize: fontSize.lg },

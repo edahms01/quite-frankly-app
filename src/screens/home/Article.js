@@ -75,7 +75,7 @@ function openOutbound(url) {
 }
 
 // Same missing-heroImageUrl treatment as WritingBlog.js's ImagePlaceholder:
-// a flat surfaceLine block + centered lucide image icon (no gradient
+// a flat bgRaised2 block + centered lucide image icon (no gradient
 // primitive available in RN's StyleSheet, no gradient lib installed —
 // same deviation Task 5 already flagged and Eric signed off on).
 function HeroImage({ post }) {
@@ -402,12 +402,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
   },
-  // Matches ErrorState.js's message/retryText styling exactly (brandRed
+  // Matches ErrorState.js's message/retryText styling exactly (red
   // message, accentGold semibold link) — not reusing that shared component
   // directly since it hardcodes "Try again" as its action label and this
   // screen needs "Open on quitefrankly.tv" instead.
   bodyFallbackMessage: {
-    color: colors.statusError,
+    color: colors.statusLive,
     fontFamily: fontFamily.medium,
     fontSize: fontSize.base,
     textAlign: 'center',

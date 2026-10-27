@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   signOutText: {
-    color: colors.statusError,
+    color: colors.statusLive,
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.md,
   },
