@@ -7,7 +7,7 @@ import { useAccountEmail } from '../../hooks/useAccountEmail';
 import { signOut } from '../../lib/account';
 
 const ROWS = [
-  { label: 'Become a Sponsor', route: 'Subscription' },
+  { label: 'Support the Show', route: 'Subscription' },
   { label: 'Notifications', route: 'NotificationsSettings' },
 ];
 

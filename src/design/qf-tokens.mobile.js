@@ -1,9 +1,9 @@
-// GENERATED from tokens/tokens.json (v1.0.0, sha f8b92aa59549). Do not edit by hand: change tokens.json and run `npm run tokens`.
+// GENERATED from tokens/tokens.json (v1.0.0, sha 819bc46af01f). Do not edit by hand: change tokens.json and run `npm run tokens`.
 // Drop-in replacement for src/theme.js: every old key (brandRed, surfaceCard, fontSize.md, radius.md ...) still exists.
 // VALUES changed on purpose (see docs: radius.md 12->10, radius.lg 20->14, surfaces now match AskFrankie).
 import { Platform } from 'react-native';
 
-export const tokensVersion = "1.0.0+f8b92aa59549";
+export const tokensVersion = "1.0.0+819bc46af01f";
 
 export const colors = {
   "bgPage": "#05060a",
