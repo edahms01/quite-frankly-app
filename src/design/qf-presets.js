@@ -55,7 +55,9 @@ export const buttonPrimary = { ...button, backgroundColor: colors.brandRed, bord
 export const buttonPrimaryText = { ...buttonText, color: colors.textOnRed };
 export const buttonGold = { ...button, borderColor: colors.accentGold, backgroundColor: colors.bgRaised };       // 'Become a Sponsor'
 export const buttonGoldText = { ...buttonText, fontSize: fontSize.ui, color: colors.accentGold };
-export const buttonQuiet = { ...button, borderColor: 'transparent' };
+export const buttonGoldFill = { ...button, borderColor: 'transparent', backgroundColor: colors.accentGold };       // web .qf-btn--gold-fill
+export const buttonGoldFillText = { ...buttonText, color: colors.textOnGold };
+export const buttonQuiet ={ ...button, borderColor: 'transparent' };
 export const buttonQuietText = { ...buttonText, color: colors.textSecondary };
 export const buttonDisabled = { opacity: opacity.disabled };
 
