@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   message: {
-    color: colors.statusLive,
+    color: colors.statusError,
     fontFamily: fontFamily.medium,
     fontSize: fontSize.base,
     textAlign: 'center',
