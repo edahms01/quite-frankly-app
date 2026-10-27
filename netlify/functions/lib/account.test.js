@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import { createSessions, emailKey, INDEX, MAX_SESSIONS, SESSIONS } from './session.js';
 import { signLinkToken } from './linktoken.js';
-import { normalizeFlags } from './flags.js';
+import { normalizeFlags, readFlags } from './flags.js';
 import linkFn from '../askfrankie-link.js';
 import deleteFn from '../delete-account.js';
 import signOutFn from '../sign-out.js';
@@ -169,8 +169,19 @@ test('link token: off unless BOTH flags are true; 401 for no/unknown/old session
 });
 
 test('flags: defaults are off; only a literal true turns one on', () => {
-  assert.deepEqual(normalizeFlags(null), { askfrankie_enabled: false, askfrankie_linked_login: false });
-  assert.deepEqual(normalizeFlags({ askfrankie_enabled: 'yes', askfrankie_linked_login: true, extra: true }), { askfrankie_enabled: false, askfrankie_linked_login: true });
+  const OFF = { askfrankie_enabled: false, askfrankie_linked_login: false, accounts: false, cultureClub: false };
+  assert.deepEqual(normalizeFlags(null), OFF);
+  assert.deepEqual(normalizeFlags({ askfrankie_enabled: 'yes', askfrankie_linked_login: true, extra: true }), { ...OFF, askfrankie_linked_login: true });
+  // the two feature flags: off by default, each on only for a literal true, independent of each other
+  assert.deepEqual(normalizeFlags({ accounts: true }), { ...OFF, accounts: true });
+  assert.deepEqual(normalizeFlags({ cultureClub: true }), { ...OFF, cultureClub: true });
+  assert.deepEqual(normalizeFlags({ accounts: 'true', cultureClub: 1 }), OFF);
+});
+
+test('flags: a failed read returns every flag OFF (the app never breaks on a flags error)', async () => {
+  const flags = await readFlags(async () => { throw new Error('blobs down'); });
+  assert.deepEqual(flags, { askfrankie_enabled: false, askfrankie_linked_login: false, accounts: false, cultureClub: false });
+  assert.equal((await readFlags(async () => ({ accounts: true }))).accounts, true);
 });
 
 test('signLinkToken refuses a bad purpose and missing inputs', () => {

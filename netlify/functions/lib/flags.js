@@ -1,9 +1,15 @@
 import { getJSON } from './blobs.js';
 
 // Remote feature flags (Blobs store `qf-flags`, key `flags`). Defaults are OFF so a missing or broken flag never turns a feature on. Flip with
-//   netlify blobs:set qf-flags flags '{"askfrankie_enabled":true,"askfrankie_linked_login":true}' --site <app site id>
+//   node scripts/set-flag.mjs accounts on        (merges into the current blob; raw `blobs:set` replaces the whole object)
+//   netlify blobs:set qf-flags flags '{"askfrankie_enabled":true,"accounts":true}' --force --site <app site id>
 // (no app release needed). Only a literal `true` counts.
-export const FLAG_DEFAULTS = { askfrankie_enabled: false, askfrankie_linked_login: false };
+export const FLAG_DEFAULTS = {
+  askfrankie_enabled: false,
+  askfrankie_linked_login: false,
+  accounts: false,        // app account creation / sign-in / Sign Out / Delete Account / AskFrankie login handoff
+  cultureClub: false,     // the Culture Club tab and page, the Calendar tile and page
+};
 
 export function normalizeFlags(raw) {
   const out = { ...FLAG_DEFAULTS };

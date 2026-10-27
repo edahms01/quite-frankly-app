@@ -10,6 +10,7 @@ import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
 import { APP_UA_NAME, ASKFRANKIE_ORIGIN, ASKFRANKIE_URL } from '../../config/askfrankie';
 import { classifyRequest, linkInjection, parsePageMessage } from '../../lib/askfrankieNav';
+import { shouldRunAskFrankieHandoff } from '../../lib/featureFlags';
 import { fetchLinkToken, getStoredEmail } from '../../lib/account';
 
 // AskFrankie inside the app: the product site in a WebView (page opens in app layout: "?app=1" + the QFApp/ user agent). The page tells us when it has loaded
@@ -18,7 +19,8 @@ import { fetchLinkToken, getStoredEmail } from '../../lib/account';
 // prefill the email (a hint: it may be unverified, the code is still required).
 export default function AskFrankie({ navigation }) {
   const { isConnected } = useNetwork();
-  const { askfrankie_linked_login: linkedLoginOn } = useFeatureFlags();
+  const flags = useFeatureFlags();
+  const { askfrankie_linked_login: linkedLoginOn } = flags;
   const webRef = useRef(null);
   const canGoBackRef = useRef(false);
   const suppressRelinkRef = useRef(false);   // the person signed out or deleted inside the page: do not sign them straight back in during this visit
@@ -51,7 +53,8 @@ export default function AskFrankie({ navigation }) {
     const msg = parsePageMessage(data, url, ASKFRANKIE_ORIGIN);      // only the chat origin, only the three fixed message types
     if (!msg) return;
     if (msg.type === 'deleted' || msg.type === 'signedOut') { suppressRelinkRef.current = true; return; }
-    if (msg.type === 'ready' && !msg.signedIn) handshake();
+    // No login handoff (link token or email prefill) unless the `accounts` flag is on: the page then runs as a guest.
+    if (msg.type === 'ready' && !msg.signedIn && shouldRunAskFrankieHandoff(flags)) handshake();
   };
 
   const onShouldStart = (request) => {

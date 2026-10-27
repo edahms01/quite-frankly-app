@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, Switch, Text, View } from 'react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
+import { useFeatureFlags } from '../../context/FeatureFlagsContext';
+import { notificationRows } from '../../lib/featureFlags';
 import {
   getStoredPreferences,
   setStoredPreferences,
@@ -19,6 +21,7 @@ const INITIAL = [
 ];
 
 export default function NotificationsSettings({ navigation }) {
+  const flags = useFeatureFlags();      // the Culture Club reminder row shows only with the cultureClub flag
   const [values, setValues] = useState(DEFAULT_PREFERENCES);
 
   useEffect(() => {
@@ -43,7 +46,7 @@ export default function NotificationsSettings({ navigation }) {
     <View style={styles.container}>
       <BackHeader title="Notifications" navigation={navigation} />
       <View style={styles.body}>
-        {INITIAL.map((item) => (
+        {notificationRows(INITIAL, flags).map((item) => (
           <View key={item.key} style={styles.row}>
             <Text style={[styles.label, item.disabled && styles.labelDisabled]}>{item.label}</Text>
             <Switch
