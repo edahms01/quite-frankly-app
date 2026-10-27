@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
   actionCards: {
     gap: spacing.md,
   },
-  // Matches the gold "Become a Sponsor" button style used elsewhere
+  // Matches the gold "Support the Show" button style used elsewhere
   // (Watch/Listen/Video Player's sponsorButton) exactly, so both the
   // join and login cards read as the same family of action.
   actionCard: {

@@ -19,7 +19,7 @@ import OnAirBadge from './OnAirBadge';
 // titleElement: replaces the default Text title with a custom node (Video
 // Player's wordmark image in place of a text title).
 // children: an extra row rendered below the title row, inside the same
-// horizontal padding (Watch/Listen/Video Player's "Become a Sponsor" CTA).
+// horizontal padding (Watch/Listen/Video Player's "Support the Show" CTA).
 export default function BackHeader({
   title,
   navigation,
