@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronRight, Eye, EyeOff, User } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
@@ -7,6 +8,8 @@ import { useAccountEmail } from '../../hooks/useAccountEmail';
 import { signOut } from '../../lib/account';
 import { useFeatureFlags } from '../../context/FeatureFlagsContext';
 import { accountScreen } from '../../lib/featureFlags';
+import { caption } from '../../design/qf-presets';
+import { OWNERSHIP_NOTICE } from '../../config/legal';
 
 const ROWS = [
   { label: 'Support the Show', route: 'Subscription' },
@@ -18,6 +21,9 @@ export default function Account({ navigation }) {
   const view = accountScreen(useFeatureFlags());
   const { email } = useAccountEmail();
   const [emailVisible, setEmailVisible] = useState(false);
+  const insets = useSafeAreaInsets();
+  // keep the notice clear of the system bar / gesture area. (The global MiniPlayer renders only on the main tabs, never on this screen, so it can not cover it: checked.)
+  const bottomPad = insets.bottom + spacing.lg;
 
   const emailDisplay = email ?? 'No email on file';
 
@@ -30,7 +36,7 @@ export default function Account({ navigation }) {
   return (
     <View style={styles.container}>
       <BackHeader title={view.title} navigation={navigation} hideAvatar />
-      <View style={styles.body}>
+      <ScrollView style={styles.scroll} contentContainerStyle={[styles.body, { paddingBottom: bottomPad }]}>
         {view.showEmailRow ? (
         <View style={styles.profileRow}>
           <View style={styles.avatar}>
@@ -91,7 +97,9 @@ export default function Account({ navigation }) {
           ) : null}
         </View>
         ) : null}
-      </View>
+
+        {view.showOwnershipNotice ? <Text style={styles.notice}>{OWNERSHIP_NOTICE}</Text> : null}
+      </ScrollView>
     </View>
   );
 }
@@ -101,10 +109,20 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.surfaceGround,
   },
+  scroll: {
+    flex: 1,
+  },
   body: {
+    flexGrow: 1,
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.lg,
     gap: spacing.xl,
+  },
+  // small, muted, centred, last in the content; marginTop auto pins it to the bottom of a short screen
+  notice: {
+    ...caption,
+    textAlign: 'center',
+    marginTop: 'auto',
+    paddingTop: spacing.xl,
   },
   profileRow: {
     flexDirection: 'row',
