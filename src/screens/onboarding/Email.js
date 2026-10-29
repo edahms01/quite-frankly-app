@@ -83,10 +83,6 @@ export default function Email({ navigation }) {
           Enter your email address and a one-time verification code will be
           sent to your email.
         </Text>
-        <Text style={styles.sponsorNote}>
-          Are you a Quite Frankly Supporter? Use the same email you used for
-          your subscription.
-        </Text>
         <TextInput
           style={[styles.input, focused && inputFocused]}
           onFocus={() => setFocused(true)}
@@ -159,14 +155,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.md,
     textAlign: 'center',
     marginTop: spacing.sm,
-  },
-  sponsorNote: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.regularItalic,
-    fontSize: fontSize.sm,
-    textAlign: 'center',
-    marginTop: spacing.lg,
-    marginBottom: spacing.lg,
   },
   input: {
     ...input,

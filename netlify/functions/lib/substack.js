@@ -317,7 +317,8 @@ export function mergeById(existing, incoming) {
 //     lands last
 export function selectPushPosts(newPosts, { isSeed, now, max = MAX_PUSHES_PER_RUN, recencyMs = PUSH_RECENCY_MS }) {
   if (isSeed) return [];
-  const recent = newPosts.filter((p) => {
+  // Launch rule: the app never shows paid posts, so never push one either (a notification for a post the list does not contain).
+  const recent = newPosts.filter((p) => p.audience !== 'paid').filter((p) => {
     const t = new Date(p.publishedAt).getTime();
     return Number.isFinite(t) && now - t <= recencyMs;
   });

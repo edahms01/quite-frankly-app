@@ -8,9 +8,8 @@ export const FLAG_DEFAULTS = {
   askfrankie_enabled: true,   // AskFrankie is live in the launch build; only a literal `false` in the blob turns it off
   askfrankie_linked_login: false,
   accounts: false,        // app account creation / sign-in / Sign Out / Delete Account / AskFrankie login handoff
-  cultureClub: false,     // the Culture Club tab, page and Home card, and the club days on Schedule (Schedule itself is always on)
   onboarding: false,      // the Welcome / notifications / email onboarding on a fresh install (OFF = a fresh install opens straight on Home)
-  androidMonthlySupport: false,   // Android only: show the Monthly Support section on Support the Show (OFF = hidden on Android; iOS always shows it)
+  websiteLink: true,      // the one neutral "More info at quitefrankly.tv" row on Home; default ON, a literal `false` hides it
 };
 
 export function normalizeFlags(raw) {

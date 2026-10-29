@@ -17,7 +17,6 @@ import { relativeTime } from '../../utils/relativeTime';
 import { useAudioPlayer } from '../../context/AudioPlayerContext';
 import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
-import SponsorButton from '../../components/SponsorButton';
 import BackHeader from '../../components/BackHeader';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
@@ -158,9 +157,7 @@ export default function Listen({ navigation }) {
         title="Listen"
         navigation={navigation}
         onBack={() => navigation.getParent()?.navigate('Home')}
-      >
-        <SponsorButton onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })} />
-      </BackHeader>
+      />
 
       <View style={styles.platformRow}>
         {PLATFORMS.map((p) => (

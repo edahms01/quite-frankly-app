@@ -12,11 +12,6 @@ import { caption } from '../../design/qf-presets';
 import * as WebBrowser from 'expo-web-browser';
 import { OWNERSHIP_NOTICE, PRIVACY_POLICY_URL } from '../../config/legal';
 
-const ROWS = [
-  { label: 'Support the Show', route: 'Subscription' },
-  { label: 'Notifications', route: 'NotificationsSettings' },
-];
-
 // With the `accounts` flag off this screen is "Settings": no email row, no Sign Out, no Delete Account; every other row is unchanged.
 export default function Account({ navigation }) {
   const view = accountScreen(useFeatureFlags());
@@ -61,19 +56,13 @@ export default function Account({ navigation }) {
         ) : null}
 
         <View style={styles.menuGroup}>
-          {ROWS.map((r) => (
-            <TouchableOpacity
-              key={r.label}
-              style={styles.row}
-              onPress={() => navigation.navigate(r.route)}
-            >
-              <Text style={styles.rowLabel}>{r.label}</Text>
-              <ChevronRight color={colors.inkMuted} size={18} />
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <View style={styles.menuGroup}>
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() => navigation.navigate('NotificationsSettings')}
+          >
+            <Text style={styles.rowLabel}>Notifications</Text>
+            <ChevronRight color={colors.inkMuted} size={18} />
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.row}
             onPress={() => navigation.navigate('ReportBug')}

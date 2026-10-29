@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Flip one remote feature flag without wiping the others.
 //   node scripts/set-flag.mjs accounts on [--site <netlify site id>]
-//   node scripts/set-flag.mjs cultureClub off
+//   node scripts/set-flag.mjs websiteLink off
 //   node scripts/set-flag.mjs --show
 // Reads the current Blobs value (store qf-flags, key flags) with the Netlify CLI, changes ONE key, writes the whole object back (raw
 // `netlify blobs:set` replaces the entire object, so setting one flag by hand would turn the others off). The store is site-wide: this changes

@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, Switch, Text, View } from 'react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
-import { useFeatureFlags } from '../../context/FeatureFlagsContext';
-import { notificationRows } from '../../lib/featureFlags';
 import {
   getStoredPreferences,
   setStoredPreferences,
@@ -15,14 +13,9 @@ const INITIAL = [
   { key: 'live', label: 'Live Alerts' },
   { key: 'video', label: 'New Video Alerts' },
   { key: 'substack', label: 'New Substack Post Alerts' },
-  // No trigger wired yet (see CLAUDE.md's "Known open items") — kept
-  // visible as a teaser for the feature, grayed out and non-interactive
-  // rather than hidden, since toggling it would have no real effect.
-  { key: 'club', label: 'Culture Club Event Reminders', disabled: true },
 ];
 
 export default function NotificationsSettings({ navigation }) {
-  const flags = useFeatureFlags();      // the Culture Club reminder row shows only with the cultureClub flag
   const [values, setValues] = useState(DEFAULT_PREFERENCES);
 
   useEffect(() => {
@@ -47,7 +40,7 @@ export default function NotificationsSettings({ navigation }) {
     <View style={styles.container}>
       <BackHeader title="Notifications" navigation={navigation} />
       <View style={styles.body}>
-        {notificationRows(INITIAL, flags).map((item) => (
+        {INITIAL.map((item) => (
           <View key={item.key} style={styles.row}>
             <Text style={[styles.label, item.disabled && styles.labelDisabled]}>{item.label}</Text>
             <Switch

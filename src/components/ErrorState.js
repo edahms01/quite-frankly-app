@@ -3,8 +3,7 @@ import { colors, fontFamily, fontSize, spacing } from '../theme';
 import { errorText as errorTextPreset } from '../design/qf-presets';
 
 /**
- * Shared error message — matches the red error text Listen.js and
- * SubscriptionCheckout.js already hand-rolled. Pass onRetry to render a
+ * Shared error message — matches the red error text Listen.js already hand-rolled. Pass onRetry to render a
  * retry link below the message; omit it for message-only errors.
  */
 export default function ErrorState({ message, onRetry, style }) {

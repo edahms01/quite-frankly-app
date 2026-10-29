@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Platform, RefreshControl,ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, BookOpen, Music2, Gamepad2, Bot, Phone } from 'lucide-react-native';
+import { CirclePlay, Headphones, MessageSquare, ShoppingBag, Calendar as CalendarIcon, BookOpen, Music2, Gamepad2, Bot, Phone } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
-import { homeDestinations, isEnabled } from '../../lib/featureFlags';
-import { tag, tagLive, tagLiveText, tagSolid, tagSolidText } from '../../design/qf-presets';
-import SponsorButton from '../../components/SponsorButton';
+import * as WebBrowser from 'expo-web-browser';
+import { homeDestinations, homeWebsiteLink, isEnabled } from '../../lib/featureFlags';
+import { caption, tag, tagLive, tagLiveText, tagSolid, tagSolidText } from '../../design/qf-presets';
 import DestinationCard from '../../components/DestinationCard';
 import AvatarButton from '../../components/AvatarButton';
 import Wordmark from '../../components/Wordmark';
@@ -40,12 +40,11 @@ const VIDEO_HEIGHT = 220;
 // map below (no hard-coded cards, no per-card JSX branches). Visible labels
 // are verb-themed (renamed 2026-10-27); routes and files keep their old names
 // (route 'Writing' is the Read screen, 'Community' is Connect, and so on).
-//   flag       shown only while that remote flag is on (Culture Club stays hidden with the flag off)
+//   flag       shown only while that remote flag is on (no entry uses it today; the rule stays)
 //   enabledBy  always shown, but tappable only while that flag is on; otherwise it renders the muted `subtext` and no onPress
 const DESTINATIONS = [
   { label: 'Watch', Icon: CirclePlay, route: 'Watch' },
   { label: 'Listen', Icon: Headphones, route: 'Listen' },
-  { label: 'Culture Club', Icon: Crown, route: 'CultureClubTab', flag: 'cultureClub' },   // hidden unless the cultureClub flag is on
   { label: 'Read', Icon: BookOpen, route: 'Writing' },
   { label: 'Shop', Icon: ShoppingBag, route: 'Shop' },
   { label: 'Connect', Icon: MessageSquare, route: 'Community' },
@@ -78,13 +77,8 @@ export default function Home({ navigation }) {
     setRefreshing(false);
   };
 
-  const goTo = (route) => {
-    if (route === 'CultureClubTab') {
-      navigation.getParent()?.navigate('CultureClub');
-    } else {
-      navigation.navigate(route);
-    }
-  };
+  const goTo = (route) => navigation.navigate(route);
+  const websiteLink = homeWebsiteLink(flags);      // the one neutral website row at the bottom; the `websiteLink` flag can only hide it
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -148,8 +142,6 @@ export default function Home({ navigation }) {
         </View>
       </TouchableOpacity>
 
-      <SponsorButton onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })} />
-
       <View style={styles.grid}>
         {homeDestinations(DESTINATIONS, flags, Platform.OS).map((d) => {
           const live = !d.enabledBy || isEnabled(flags, d.enabledBy);
@@ -165,6 +157,17 @@ export default function Home({ navigation }) {
           );
         })}
       </View>
+
+      {websiteLink ? (
+        <TouchableOpacity
+          style={styles.websiteLink}
+          onPress={() => WebBrowser.openBrowserAsync(websiteLink.url, { dismissButtonStyle: 'close' })}
+          hitSlop={8}
+          accessibilityRole="link"
+        >
+          <Text style={styles.websiteLinkText}>{websiteLink.label}</Text>
+        </TouchableOpacity>
+      ) : null}
     </ScrollView>
     </SafeAreaView>
   );
@@ -258,5 +261,15 @@ const styles = StyleSheet.create({
   comingSoonCard: {
     paddingVertical: spacing.sm,
     gap: 2,
+  },
+  // The one neutral website link: small, muted, centred; deliberately NOT gold and not a button.
+  websiteLink: {
+    alignSelf: 'center',
+    paddingVertical: spacing.sm,
+  },
+  websiteLinkText: {
+    ...caption,
+    textAlign: 'center',
+    textDecorationLine: 'underline',
   },
 });

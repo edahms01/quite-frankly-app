@@ -259,6 +259,12 @@ const NOW = Date.parse('2026-10-27T12:00:00.000Z');
 const HOUR = 3600_000;
 const post = (id, hoursAgo) => ({ id, title: id, publishedAt: new Date(NOW - hoursAgo * HOUR).toISOString() });
 
+test('selectPushPosts: paid posts never push (the app does not list them)', () => {
+  const paid = { ...post('p', 1), audience: 'paid' };
+  const free = { ...post('f', 1), audience: 'free' };
+  assert.deepEqual(selectPushPosts([paid, free], { isSeed: false, now: NOW }).map((x) => x.id), ['f']);
+});
+
 test('selectPushPosts: seed run -> never', () => {
   assert.deepEqual(selectPushPosts([post('a', 1)], { isSeed: true, now: NOW }), []);
 });

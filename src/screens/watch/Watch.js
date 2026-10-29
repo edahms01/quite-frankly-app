@@ -4,7 +4,6 @@ import * as WebBrowser from 'expo-web-browser';
 import { CirclePlay } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import { pill, pillText } from '../../design/qf-presets';
-import SponsorButton from '../../components/SponsorButton';
 import BackHeader from '../../components/BackHeader';
 import VideoTypePill from '../../components/VideoTypePill';
 import { relativeTime } from '../../utils/relativeTime';
@@ -135,9 +134,7 @@ export default function Watch({ navigation }) {
         title="Watch"
         navigation={navigation}
         onBack={() => navigation.getParent()?.navigate('Home')}
-      >
-        <SponsorButton onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })} />
-      </BackHeader>
+      />
 
       <View style={styles.body}>
         <View style={styles.platformRow}>

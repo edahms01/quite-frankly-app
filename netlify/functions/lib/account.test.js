@@ -170,15 +170,15 @@ test('link token: off unless BOTH flags are true; 401 for no/unknown/old session
 });
 
 test('flags: default-OFF flags turn on only for a literal true; askfrankie_enabled is ON by default and only a literal false is the kill switch', () => {
-  const OFF = { askfrankie_enabled: true, askfrankie_linked_login: false, accounts: false, cultureClub: false, onboarding: false, androidMonthlySupport: false };      // askfrankie_enabled is ON by default (Play launch)
+  const OFF = { askfrankie_enabled: true, askfrankie_linked_login: false, accounts: false, onboarding: false, websiteLink: true };      // askfrankie_enabled is ON by default (Play launch)
   assert.deepEqual(normalizeFlags(null), OFF);
   assert.deepEqual(normalizeFlags({ askfrankie_enabled: 'yes', askfrankie_linked_login: true, extra: true }), { ...OFF, askfrankie_linked_login: true });
   // the two feature flags: off by default, each on only for a literal true, independent of each other
   assert.deepEqual(normalizeFlags({ accounts: true }), { ...OFF, accounts: true });
-  assert.deepEqual(normalizeFlags({ cultureClub: true }), { ...OFF, cultureClub: true });
+  assert.deepEqual(normalizeFlags({ websiteLink: false }), { ...OFF, websiteLink: false });
   assert.deepEqual(normalizeFlags({ onboarding: true }), { ...OFF, onboarding: true });
-  assert.deepEqual(normalizeFlags({ androidMonthlySupport: true }), { ...OFF, androidMonthlySupport: true });
-  assert.deepEqual(normalizeFlags({ accounts: 'true', cultureClub: 1, onboarding: 'yes', androidMonthlySupport: 'true' }), OFF);
+  assert.deepEqual(normalizeFlags({ cultureClub: true, androidMonthlySupport: true }), OFF);   // removed flags are dropped
+  assert.deepEqual(normalizeFlags({ accounts: 'true', onboarding: 'yes', websiteLink: 'false' }), OFF);
   // the kill switch: ON when the key is missing / odd, OFF only for a literal false
   for (const v of [undefined, null, 'false', 0, 'yes', true]) assert.equal(normalizeFlags({ askfrankie_enabled: v }).askfrankie_enabled, true, String(v));
   assert.equal(normalizeFlags({ askfrankie_enabled: false }).askfrankie_enabled, false);
@@ -187,7 +187,7 @@ test('flags: default-OFF flags turn on only for a literal true; askfrankie_enabl
 
 test('flags: a failed read returns the defaults (every feature flag OFF, AskFrankie ON; the app never breaks on a flags error)', async () => {
   const flags = await readFlags(async () => { throw new Error('blobs down'); });
-  assert.deepEqual(flags, { askfrankie_enabled: true, askfrankie_linked_login: false, accounts: false, cultureClub: false, onboarding: false, androidMonthlySupport: false });
+  assert.deepEqual(flags, { askfrankie_enabled: true, askfrankie_linked_login: false, accounts: false, onboarding: false, websiteLink: true });
   assert.equal((await readFlags(async () => ({ accounts: true }))).accounts, true);
 });
 

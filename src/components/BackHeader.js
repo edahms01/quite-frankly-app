@@ -15,12 +15,12 @@ import OnAirBadge from './OnAirBadge';
 // hideAvatar: Account.js already shows its own avatar inline (with the
 // full email attached) — repeating it here would just duplicate it.
 // onBack: defaults to navigation.goBack(), but a bottom-tab root screen
-// (Watch/Listen/Culture Club) has nothing local to go back to — those
+// (Watch/Listen) has nothing local to go back to — those
 // pass navigation.getParent()?.navigate('Home') instead.
 // titleElement: replaces the default Text title with a custom node (Video
 // Player's wordmark image in place of a text title).
 // children: an extra row rendered below the title row, inside the same
-// horizontal padding (Watch/Listen/Video Player's "Support the Show" CTA).
+// horizontal padding (the old Watch/Listen/Video Player gold CTA, removed 2026-10-29; the slot is kept for future header actions).
 export default function BackHeader({
   title,
   navigation,

@@ -5,19 +5,20 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   FLAG_DEFAULTS, normalizeFlags, parseCachedFlags, applyOverride, isEnabled,
-  onboardingNextRoute, onboardingDotCount, initialRoute, visibleTabs, homeDestinations, showMonthlySupport, scheduleWeek, showScheduleLegend, NORMAL_SHOW_DAY, notificationRows, accountEntry, accountScreen, shouldRunAskFrankieHandoff,
+  onboardingNextRoute, onboardingDotCount, initialRoute, homeDestinations, homeWebsiteLink, WEBSITE_LINK, accountEntry, accountScreen, shouldRunAskFrankieHandoff,
 } from './featureFlags.js';
 import { FLAG_DEFAULTS as SERVER_DEFAULTS } from '../../netlify/functions/lib/flags.js';
 
 const OFF = normalizeFlags({});
-const ON = normalizeFlags({ accounts: true, cultureClub: true });
+const ON = normalizeFlags({ accounts: true });
 const ACCOUNTS_ON = normalizeFlags({ accounts: true });
-const CLUB_ON = normalizeFlags({ cultureClub: true });
 
-test('defaults: accounts, cultureClub and onboarding are OFF; client and server list the same flags', () => {
+test('defaults: accounts and onboarding are OFF; websiteLink is ON; the removed Culture Club / Monthly Support flags are gone; client and server list the same flags', () => {
   assert.equal(FLAG_DEFAULTS.onboarding, false);
   assert.equal(FLAG_DEFAULTS.accounts, false);
-  assert.equal(FLAG_DEFAULTS.cultureClub, false);
+  assert.equal(FLAG_DEFAULTS.websiteLink, true);
+  assert.equal('cultureClub' in FLAG_DEFAULTS, false);
+  assert.equal('androidMonthlySupport' in FLAG_DEFAULTS, false);
   assert.deepEqual(FLAG_DEFAULTS, SERVER_DEFAULTS);
   assert.deepEqual(normalizeFlags(null), FLAG_DEFAULTS);
   assert.deepEqual(normalizeFlags(undefined), FLAG_DEFAULTS);
@@ -26,7 +27,7 @@ test('defaults: accounts, cultureClub and onboarding are OFF; client and server 
 test('only a literal true turns a flag on; unknown keys are dropped', () => {
   assert.equal(normalizeFlags({ accounts: 'true' }).accounts, false);
   assert.equal(normalizeFlags({ accounts: 1 }).accounts, false);
-  assert.equal(normalizeFlags({ cultureClub: 'yes' }).cultureClub, false);
+  assert.equal(normalizeFlags({ cultureClub: true }).cultureClub, undefined);   // removed flags are dropped
   assert.equal(normalizeFlags({ accounts: true, extra: true }).extra, undefined);
   assert.equal(normalizeFlags({ accounts: true }).accounts, true);
 });
@@ -34,14 +35,14 @@ test('only a literal true turns a flag on; unknown keys are dropped', () => {
 test('cache and offline: unreadable or missing cached value is all OFF; a good one is used', () => {
   assert.deepEqual(parseCachedFlags(null), FLAG_DEFAULTS);
   assert.deepEqual(parseCachedFlags('not json'), FLAG_DEFAULTS);
-  assert.deepEqual(parseCachedFlags('{"accounts":true,"cultureClub":false}'), { ...FLAG_DEFAULTS, accounts: true });
+  assert.deepEqual(parseCachedFlags('{"accounts":true,"websiteLink":true}'), { ...FLAG_DEFAULTS, accounts: true });
 });
 
 test('dev override: forces only the named flags; bad JSON changes nothing', () => {
   assert.equal(applyOverride(OFF, '{"accounts":true}').accounts, true);
-  assert.equal(applyOverride(OFF, '{"accounts":true}').cultureClub, false);
-  assert.equal(applyOverride(ON, '{"cultureClub":false}').cultureClub, false);
-  assert.equal(applyOverride(ON, '{"cultureClub":false}').accounts, true);
+  assert.equal(applyOverride(OFF, '{"accounts":true}').websiteLink, true);
+  assert.equal(applyOverride(ON, '{"websiteLink":false}').websiteLink, false);
+  assert.equal(applyOverride(ON, '{"websiteLink":false}').accounts, true);
   assert.deepEqual(applyOverride(OFF, '{oops'), OFF);
   assert.deepEqual(applyOverride(OFF, undefined), OFF);
 });
@@ -69,61 +70,37 @@ test('accounts OFF: gear and "Settings" without email, Sign Out and Delete Accou
 
 test('accounts OFF: no AskFrankie login handoff; ON: handoff runs', () => {
   assert.equal(shouldRunAskFrankieHandoff(OFF), false);
-  assert.equal(shouldRunAskFrankieHandoff(CLUB_ON), false);
   assert.equal(shouldRunAskFrankieHandoff(ACCOUNTS_ON), true);
 });
 
-test('cultureClub OFF: 3 tabs, no Culture Club tile, no Event Reminders row; ON: they come back. Schedule is visible in both states', () => {
-  assert.deepEqual(visibleTabs(OFF), ['Home', 'Watch', 'Listen']);
-  assert.deepEqual(visibleTabs(CLUB_ON), ['Home', 'Watch', 'Listen', 'CultureClub']);
-  const tiles = [{ label: 'Watch' }, { label: 'Culture Club', flag: 'cultureClub' }, { label: 'Schedule' }, { label: 'Shop' }];
-  assert.deepEqual(homeDestinations(tiles, OFF).map((t) => t.label), ['Watch', 'Schedule', 'Shop']);
-  assert.deepEqual(homeDestinations(tiles, ACCOUNTS_ON).map((t) => t.label), ['Watch', 'Schedule', 'Shop']);   // accounts does not bring Culture Club back
-  assert.deepEqual(homeDestinations(tiles, CLUB_ON).map((t) => t.label), ['Watch', 'Culture Club', 'Schedule', 'Shop']);
-  const rows = [{ key: 'live' }, { key: 'video' }, { key: 'club' }];
-  assert.deepEqual(notificationRows(rows, OFF).map((r) => r.key), ['live', 'video']);
-  assert.deepEqual(notificationRows(rows, CLUB_ON).map((r) => r.key), ['live', 'video', 'club']);
+test('websiteLink: default ON shows the one Home link; only a literal false hides it', () => {
+  assert.deepEqual(WEBSITE_LINK, { label: 'More info at quitefrankly.tv', url: 'https://quitefrankly.tv' });
+  assert.deepEqual(homeWebsiteLink(OFF), WEBSITE_LINK);
+  assert.deepEqual(homeWebsiteLink(normalizeFlags({ websiteLink: true })), WEBSITE_LINK);
+  for (const v of [undefined, null, 'false', 0, 'no']) assert.deepEqual(homeWebsiteLink(normalizeFlags({ websiteLink: v })), WEBSITE_LINK, String(v));
+  assert.equal(homeWebsiteLink(normalizeFlags({ websiteLink: false })), null);
+  assert.equal(parseCachedFlags('{"websiteLink":false}').websiteLink, false);
+  assert.equal(parseCachedFlags(null).websiteLink, true);
+  assert.equal(normalizeFlags({ accounts: true }).websiteLink, true);   // a blob that never mentioned it keeps it on
+  assert.ok(!/sponsor|about|member|patron|donat/i.test(WEBSITE_LINK.url), 'only the plain site address, never a payment or membership page');
 });
 
-const WEEK = [
-  { day: 'Sun', title: 'Quite Frankly Live', time: '7:00 PM ET', period: 'evening', club: false },
-  { day: 'Wed', title: 'Book Club', time: '7:30 PM ET', period: 'evening', club: true, extra: 'Guest: [Name]' },
-  { day: 'Fri', title: 'Film Club', time: '8:00 PM ET', period: 'evening', club: true },
-  { day: 'Sat', title: 'Morning Stream', time: '10:00 AM ET', period: 'day', club: false },
-];
-
-test('Schedule with cultureClub OFF: club days become normal shows (7 days stay), no club, no extra, no legend', () => {
-  const week = scheduleWeek(OFF, WEEK);
-  assert.equal(week.length, WEEK.length);
-  assert.deepEqual(week.map((d) => d.day), ['Sun', 'Wed', 'Fri', 'Sat']);
-  assert.ok(week.every((d) => d.club === false));
-  assert.ok(week.every((d) => !('extra' in d)));
-  assert.ok(!week.some((d) => /club/i.test(d.title)));
-  assert.deepEqual(week[1], { day: 'Wed', ...NORMAL_SHOW_DAY });
-  assert.deepEqual(week[1], { day: 'Wed', title: 'Quite Frankly Live', time: '7:00 PM ET', period: 'evening', club: false });
-  assert.deepEqual(week[0], WEEK[0]);   // regular days untouched
-  assert.deepEqual(week[3], WEEK[3]);   // including a non-default time/period
-  assert.equal(showScheduleLegend(OFF), false);
-  assert.equal(showScheduleLegend(ACCOUNTS_ON), false);
-  assert.deepEqual(WEEK[1].club, true);   // the input is not mutated
+test('homeDestinations: a destination with a `flag` shows only when that flag is on; others always show', () => {
+  const tiles = [{ label: 'Watch' }, { label: 'Gated', flag: 'accounts' }, { label: 'Shop' }];
+  assert.deepEqual(homeDestinations(tiles, OFF).map((t) => t.label), ['Watch', 'Shop']);
+  assert.deepEqual(homeDestinations(tiles, ACCOUNTS_ON).map((t) => t.label), ['Watch', 'Gated', 'Shop']);
 });
 
-test('Schedule with cultureClub ON: exactly as today (club days, extras and legend)', () => {
-  assert.deepEqual(scheduleWeek(CLUB_ON, WEEK), WEEK);
-  assert.equal(showScheduleLegend(CLUB_ON), true);
-});
-
-test('no code removed: every hidden screen still exists and stays registered', () => {
+test('hidden, not deleted: the account screens and Schedule still exist and stay registered', () => {
   const root = new URL('../../', import.meta.url);
   for (const f of ['src/screens/onboarding/Email.js', 'src/screens/onboarding/CodeEntry.js', 'src/screens/account/DeleteAccount.js', 'src/screens/account/Account.js',
-    'src/screens/members/CultureClub.js', 'src/screens/home/Calendar.js', 'src/navigation/CultureClubStackNavigator.js', 'src/lib/account.js']) {
+    'src/screens/home/Calendar.js', 'src/lib/account.js']) {
     assert.ok(existsSync(new URL(f, root)), `${f} must still exist`);
   }
   const reg = (f) => readFileSync(new URL(f, root), 'utf8');
   assert.match(reg('src/navigation/OnboardingNavigator.js'), /name="Email"[\s\S]*name="CodeEntry"/);
   assert.match(reg('src/navigation/AccountStackNavigator.js'), /name="Account"[\s\S]*name="DeleteAccount"/);
   assert.match(reg('src/navigation/HomeStackNavigator.js'), /name="Calendar"/);
-  assert.match(reg('src/navigation/MainTabNavigator.js'), /name="CultureClub"/);
 });
 
 test('onboarding flag: OFF = Home for everyone (even an install that never finished onboarding); ON = Onboarding only until the install has reached Home', () => {
@@ -152,7 +129,7 @@ test('AskFrankie is ON by default (Play launch): the tile is there from the firs
   assert.equal(parseCachedFlags(null).askfrankie_enabled, true);
   assert.equal(parseCachedFlags('{not json').askfrankie_enabled, true);
   for (const v of [undefined, null, 'false', 0, 'no', true]) assert.equal(normalizeFlags({ askfrankie_enabled: v }).askfrankie_enabled, true, String(v));
-  assert.equal(normalizeFlags({ cultureClub: true }).askfrankie_enabled, true);       // a blob that never mentioned it keeps it on
+  assert.equal(normalizeFlags({ websiteLink: false }).askfrankie_enabled, true);       // a blob that never mentioned it keeps it on
   assert.equal(normalizeFlags({ askfrankie_enabled: false }).askfrankie_enabled, false);   // the kill switch
   assert.equal(parseCachedFlags('{"askfrankie_enabled":false}').askfrankie_enabled, false);
   assert.equal(applyOverride(OFF, '{"askfrankie_enabled":false}').askfrankie_enabled, false);   // the dev override is explicit
@@ -161,7 +138,7 @@ test('AskFrankie is ON by default (Play launch): the tile is there from the firs
 
 const ASK = { label: 'Ask', route: 'AskFrankie', enabledBy: 'askfrankie_enabled', subtext: 'Coming Soon', hideWhenOffOnAndroid: true };
 const WATCH = { label: 'Watch', route: 'Watch' };
-const CLUB = { label: 'Club', route: 'Club', flag: 'cultureClub' };
+const GATED = { label: 'Gated', route: 'Gated', flag: 'accounts' };
 const labels = (xs) => xs.map((d) => d.label);
 
 test('Home Ask tile: ON = shown on both platforms; kill switch OFF = hidden on Android (no "Coming Soon"), still the muted "Coming Soon" tile on iOS', () => {
@@ -172,20 +149,8 @@ test('Home Ask tile: ON = shown on both platforms; kill switch OFF = hidden on A
   assert.deepEqual(labels(homeDestinations([WATCH, ASK], KILLED, 'android')), ['Watch']);
   assert.deepEqual(labels(homeDestinations([WATCH, ASK], KILLED, 'ios')), ['Watch', 'Ask']);
   assert.deepEqual(labels(homeDestinations([WATCH, ASK], KILLED)), ['Watch', 'Ask']);      // no platform given: unchanged behaviour
-  assert.deepEqual(labels(homeDestinations([WATCH, CLUB], ON, 'android')), ['Watch']);       // the older `flag` rule is untouched
-  assert.deepEqual(labels(homeDestinations([WATCH, CLUB], CLUB_ON, 'android')), ['Watch', 'Club']);
-});
-
-test('androidMonthlySupport: default OFF; Monthly Support is hidden on Android unless the flag is on; iOS and everything else always show it', () => {
-  const ANDROID_ON = normalizeFlags({ androidMonthlySupport: true });
-  assert.equal(FLAG_DEFAULTS.androidMonthlySupport, false);
-  assert.equal(normalizeFlags({ androidMonthlySupport: 'true' }).androidMonthlySupport, false);
-  assert.equal(showMonthlySupport(OFF, 'android'), false);
-  assert.equal(showMonthlySupport(ANDROID_ON, 'android'), true);
-  assert.equal(showMonthlySupport(OFF, 'ios'), true);
-  assert.equal(showMonthlySupport(ANDROID_ON, 'ios'), true);
-  assert.equal(showMonthlySupport(OFF, 'web'), true);
-  assert.equal(showMonthlySupport(OFF), true);
+  assert.deepEqual(labels(homeDestinations([WATCH, GATED], ON, 'android')), ['Watch']);       // the older `flag` rule is untouched
+  assert.deepEqual(labels(homeDestinations([WATCH, GATED], ACCOUNTS_ON, 'android')), ['Watch', 'Gated']);
 });
 
 test('Settings shows the Privacy Policy row with the accounts flag OFF ("Settings") and ON ("Account")', () => {
@@ -193,13 +158,15 @@ test('Settings shows the Privacy Policy row with the accounts flag OFF ("Setting
   assert.equal(accountScreen(ACCOUNTS_ON).showPrivacyRow, true);
 });
 
-test('Support the Show gates the Monthly Support section and the checkout line on showMonthlySupport(flags, Platform.OS); the sponsor entries, One-Time Donation and Mail are not gated', () => {
-  const sub = readFileSync(new URL('../screens/shared/Subscription.js', import.meta.url), 'utf8');
-  assert.match(sub, /\{showMonthlySupport\(flags, Platform\.OS\) \? \(\s*<Section title="Monthly Support">/);
-  assert.ok(sub.indexOf('showMonthlySupport(') < sub.indexOf('title="One-Time Donation"') && sub.indexOf('title="One-Time Donation"') < sub.indexOf('title="Mail"'));
-  assert.equal((sub.match(/showMonthlySupport\(/g) || []).length, 1, 'the gate wraps ONLY the Monthly Support section');
-  const co = readFileSync(new URL('../screens/modal/SubscriptionCheckout.js', import.meta.url), 'utf8');
-  assert.match(co, /showMonthlySupport\(flags, Platform\.OS\) \? <Text style=\{styles\.subtitle\}>Plans start at \$5\/month\.<\/Text> : null/);
+test('removed for the first release (recoverable from tag pre-link-cleanup): no screen, route or file for support / donation / Culture Club', () => {
+  const root = new URL('../../', import.meta.url);
+  for (const f of ['src/screens/shared/Subscription.js', 'src/screens/modal/SubscriptionCheckout.js', 'src/screens/account/DonateToApp.js', 'src/components/CryptoCard.js',
+    'src/components/SponsorButton.js', 'src/screens/members/CultureClub.js', 'src/navigation/CultureClubStackNavigator.js']) {
+    assert.equal(existsSync(new URL(f, root)), false, `${f} must stay removed`);
+  }
+  for (const f of ['src/navigation/RootNavigator.js', 'src/navigation/AccountStackNavigator.js', 'src/navigation/MainTabNavigator.js', 'src/screens/home/Home.js', 'src/screens/account/Account.js']) {
+    assert.doesNotMatch(readFileSync(new URL(f, root), 'utf8'), /Subscription|DonateToApp|CultureClub|SponsorButton/, f);
+  }
 });
 
 test('no plain http:// URLs ship in src/ (Play: use https)', () => {
