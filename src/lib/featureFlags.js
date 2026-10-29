@@ -84,10 +84,10 @@ export function accountEntry(flags) {
     : { icon: 'gear', title: 'Settings' };
 }
 
-/** What the account screen shows: with accounts off it is "Settings" without the email row, Sign Out and Delete Account. */
+/** What the account screen shows: with accounts off it is "Settings" without the email row, Sign Out and Delete Account. The ownership notice at the bottom shows in both states. */
 export function accountScreen(flags) {
   const on = isEnabled(flags, 'accounts');
-  return { title: on ? 'Account' : 'Settings', showEmailRow: on, showSignOut: on, showDeleteAccount: on };
+  return { title: on ? 'Account' : 'Settings', showEmailRow: on, showSignOut: on, showDeleteAccount: on, showOwnershipNotice: true };
 }
 
 /** AskFrankie in the app: the login handoff (link token, email prefill) runs only with accounts on. */

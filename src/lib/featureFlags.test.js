@@ -61,9 +61,9 @@ test('accounts OFF: onboarding goes Welcome -> notifications -> the app; ON keep
 
 test('accounts OFF: gear and "Settings" without email, Sign Out and Delete Account; ON: avatar and "Account" with all of them', () => {
   assert.deepEqual(accountEntry(OFF), { icon: 'gear', title: 'Settings' });
-  assert.deepEqual(accountScreen(OFF), { title: 'Settings', showEmailRow: false, showSignOut: false, showDeleteAccount: false });
+  assert.deepEqual(accountScreen(OFF), { title: 'Settings', showEmailRow: false, showSignOut: false, showDeleteAccount: false, showOwnershipNotice: true });
   assert.deepEqual(accountEntry(ACCOUNTS_ON), { icon: 'avatar', title: 'Account' });
-  assert.deepEqual(accountScreen(ACCOUNTS_ON), { title: 'Account', showEmailRow: true, showSignOut: true, showDeleteAccount: true });
+  assert.deepEqual(accountScreen(ACCOUNTS_ON), { title: 'Account', showEmailRow: true, showSignOut: true, showDeleteAccount: true, showOwnershipNotice: true });
 });
 
 test('accounts OFF: no AskFrankie login handoff; ON: handoff runs', () => {
