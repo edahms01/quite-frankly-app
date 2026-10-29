@@ -5,6 +5,7 @@ import {
   useAudioPlayerStatus,
 } from 'expo-audio';
 import { lockScreenMetadata } from '../lib/lockScreenArtwork';
+import { upgradeToHttps } from '../lib/mediaUrl';
 import { loadLockScreenArtwork } from '../lib/lockScreenArtworkNative';
 
 const AudioPlayerContext = createContext({
@@ -60,7 +61,8 @@ export function AudioPlayerProvider({ children }) {
         return;
       }
       // Single track at a time — replace() swaps the loaded source outright, no queue.
-      player.replace({ uri: episode.audioUrl });
+      // https only: release builds block the cleartext hop in the tracker-wrapped feed URLs (see src/lib/mediaUrl.js)
+      player.replace({ uri: upgradeToHttps(episode.audioUrl) });
       setCurrentTrack(episode);
       // Android kills background audio after ~3 min without this — must be
       // called for every new track, not just once at app start.
