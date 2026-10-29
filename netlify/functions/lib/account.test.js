@@ -169,18 +169,19 @@ test('link token: off unless BOTH flags are true; 401 for no/unknown/old session
 });
 
 test('flags: defaults are off; only a literal true turns one on', () => {
-  const OFF = { askfrankie_enabled: false, askfrankie_linked_login: false, accounts: false, cultureClub: false };
+  const OFF = { askfrankie_enabled: false, askfrankie_linked_login: false, accounts: false, cultureClub: false, onboarding: false };
   assert.deepEqual(normalizeFlags(null), OFF);
   assert.deepEqual(normalizeFlags({ askfrankie_enabled: 'yes', askfrankie_linked_login: true, extra: true }), { ...OFF, askfrankie_linked_login: true });
   // the two feature flags: off by default, each on only for a literal true, independent of each other
   assert.deepEqual(normalizeFlags({ accounts: true }), { ...OFF, accounts: true });
   assert.deepEqual(normalizeFlags({ cultureClub: true }), { ...OFF, cultureClub: true });
-  assert.deepEqual(normalizeFlags({ accounts: 'true', cultureClub: 1 }), OFF);
+  assert.deepEqual(normalizeFlags({ onboarding: true }), { ...OFF, onboarding: true });
+  assert.deepEqual(normalizeFlags({ accounts: 'true', cultureClub: 1, onboarding: 'yes' }), OFF);
 });
 
 test('flags: a failed read returns every flag OFF (the app never breaks on a flags error)', async () => {
   const flags = await readFlags(async () => { throw new Error('blobs down'); });
-  assert.deepEqual(flags, { askfrankie_enabled: false, askfrankie_linked_login: false, accounts: false, cultureClub: false });
+  assert.deepEqual(flags, { askfrankie_enabled: false, askfrankie_linked_login: false, accounts: false, cultureClub: false, onboarding: false });
   assert.equal((await readFlags(async () => ({ accounts: true }))).accounts, true);
 });
 

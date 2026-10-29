@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import {
   FLAG_DEFAULTS, normalizeFlags, parseCachedFlags, applyOverride, isEnabled,
-  onboardingNextRoute, onboardingDotCount, visibleTabs, homeDestinations, scheduleWeek, showScheduleLegend, NORMAL_SHOW_DAY, notificationRows, accountEntry, accountScreen, shouldRunAskFrankieHandoff,
+  onboardingNextRoute, onboardingDotCount, initialRoute, visibleTabs, homeDestinations, scheduleWeek, showScheduleLegend, NORMAL_SHOW_DAY, notificationRows, accountEntry, accountScreen, shouldRunAskFrankieHandoff,
 } from './featureFlags.js';
 import { FLAG_DEFAULTS as SERVER_DEFAULTS } from '../../netlify/functions/lib/flags.js';
 
@@ -13,7 +13,8 @@ const ON = normalizeFlags({ accounts: true, cultureClub: true });
 const ACCOUNTS_ON = normalizeFlags({ accounts: true });
 const CLUB_ON = normalizeFlags({ cultureClub: true });
 
-test('defaults: accounts and cultureClub are OFF; client and server list the same flags', () => {
+test('defaults: accounts, cultureClub and onboarding are OFF; client and server list the same flags', () => {
+  assert.equal(FLAG_DEFAULTS.onboarding, false);
   assert.equal(FLAG_DEFAULTS.accounts, false);
   assert.equal(FLAG_DEFAULTS.cultureClub, false);
   assert.deepEqual(FLAG_DEFAULTS, SERVER_DEFAULTS);
@@ -122,4 +123,24 @@ test('no code removed: every hidden screen still exists and stays registered', (
   assert.match(reg('src/navigation/AccountStackNavigator.js'), /name="Account"[\s\S]*name="DeleteAccount"/);
   assert.match(reg('src/navigation/HomeStackNavigator.js'), /name="Calendar"/);
   assert.match(reg('src/navigation/MainTabNavigator.js'), /name="CultureClub"/);
+});
+
+test('onboarding flag: OFF = Home for everyone (even an install that never finished onboarding); ON = Onboarding only until the install has reached Home', () => {
+  const ONBOARDING_ON = normalizeFlags({ onboarding: true });
+  for (const done of [undefined, null, false, true]) assert.equal(initialRoute(OFF, done), 'MainTabs', `OFF, done=${String(done)}`);
+  assert.equal(initialRoute(ONBOARDING_ON, false), 'Onboarding');
+  assert.equal(initialRoute(ONBOARDING_ON, undefined), 'Onboarding');
+  assert.equal(initialRoute(ONBOARDING_ON, true), 'MainTabs');
+  assert.equal(normalizeFlags({ onboarding: 'true' }).onboarding, false);      // only a literal true
+  assert.equal(initialRoute(applyOverride(OFF, '{"onboarding":true}'), false), 'Onboarding');   // the dev override used for QA
+  assert.equal(initialRoute(normalizeFlags(undefined), false), 'MainTabs');    // a first launch with no cached flags: no Welcome flash
+});
+
+test('hidden, not deleted: the onboarding screens and navigator still exist and stay registered', () => {
+  for (const f of ['Welcome', 'NotificationsPermission', 'Email', 'CodeEntry']) assert.ok(existsSync(new URL(`../screens/onboarding/${f}.js`, import.meta.url)), f);
+  const nav = readFileSync(new URL('../navigation/OnboardingNavigator.js', import.meta.url), 'utf8');
+  for (const f of ['Welcome', 'NotificationsPermission', 'Email', 'CodeEntry']) assert.match(nav, new RegExp(`name="${f}"`), f);
+  const root = readFileSync(new URL('../navigation/RootNavigator.js', import.meta.url), 'utf8');
+  assert.match(root, /name="Onboarding" component=\{OnboardingNavigator\}/);
+  assert.match(root, /initialRouteName=\{initial\.current\}/);
 });
