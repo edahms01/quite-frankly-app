@@ -17,6 +17,7 @@ import { useYouTubeFeed } from '../../context/YouTubeFeedContext';
 import { useLiveStatus } from '../../context/LiveStatusContext';
 import { useFeatureFlags } from '../../context/FeatureFlagsContext';
 import { useVideoActiveSource } from '../../hooks/useVideoActiveSource';
+import { useFirstHomePushPrompt } from '../../hooks/useFirstHomePushPrompt';
 import { relativeTime } from '../../utils/relativeTime';
 import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
@@ -56,6 +57,7 @@ const DESTINATIONS = [
 ];
 
 export default function Home({ navigation }) {
+  useFirstHomePushPrompt(navigation);      // the one-time notification prompt (onboarding no longer asks)
   const { mostRecent, loading, error, refetch } = useYouTubeFeed();
   const { isLive } = useLiveStatus();
   const flags = useFeatureFlags();

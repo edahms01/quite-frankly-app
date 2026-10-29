@@ -7,6 +7,7 @@ export const FLAG_DEFAULTS = {
   askfrankie_linked_login: false,
   accounts: false,        // account creation, sign-in, Sign Out, Delete Account, the AskFrankie login handoff
   cultureClub: false,     // the Culture Club tab/page, its Home card, and the club days on Schedule (Schedule itself is always on)
+  onboarding: false,      // the onboarding stack (Welcome, notifications, email steps) on a fresh install; OFF = straight to Home
 };
 
 /** Only a literal `true` counts; unknown keys are dropped. */
@@ -43,6 +44,14 @@ export function isEnabled(flags, name) {
 /** Onboarding: Welcome -> notifications -> (Email -> CodeEntry only when accounts is on) -> the app. */
 export function onboardingNextRoute(flags) { return isEnabled(flags, 'accounts') ? 'Email' : 'MainTabs'; }
 export function onboardingDotCount(flags) { return isEnabled(flags, 'accounts') ? 4 : 2; }
+
+/**
+ * The first screen of the root navigator. Onboarding OFF (the default, and what a first launch with no cached flags sees) = Home for everyone. Onboarding ON = the
+ * onboarding stack, but only for an install that has not finished it (`onboarding_done` marker, written when the app first reaches Home).
+ */
+export function initialRoute(flags, onboardingDone) {
+  return isEnabled(flags, 'onboarding') && onboardingDone !== true ? 'Onboarding' : 'MainTabs';
+}
 
 /** Bottom tabs, in order. */
 export function visibleTabs(flags) {
