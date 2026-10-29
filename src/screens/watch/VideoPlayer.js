@@ -6,7 +6,6 @@ import { button, buttonText } from '../../design/qf-presets';
 import { relativeTime } from '../../utils/relativeTime';
 import VideoEmbed from '../../components/VideoEmbed';
 import VideoThumbnailOverlay from '../../components/VideoThumbnailOverlay';
-import SponsorButton from '../../components/SponsorButton';
 import BackHeader from '../../components/BackHeader';
 import VideoTypePill from '../../components/VideoTypePill';
 import { useVideoActiveSource } from '../../hooks/useVideoActiveSource';
@@ -17,6 +16,7 @@ import Wordmark from '../../components/Wordmark';
 import GameTray from '../../components/games/GameTray';
 import GameWindow from '../../components/games/GameWindow';
 import { GAMES } from '../../games';
+import { describe, sanitizeDescription } from '../../lib/sanitizeDescription';
 
 // Matches Home.js's mostRecentCard video area, and playerArea's own height
 // below — kept as one constant so VideoEmbed's explicit numeric height
@@ -24,21 +24,15 @@ import { GAMES } from '../../games';
 const PLAYER_HEIGHT = 220;
 
 // "Lines" here means raw \n-delimited lines from YouTube's own description
-// text, not visually-wrapped lines (which vary by device width/font and
+// text (after payment/donation lines are stripped by sanitizeDescription, so
+// the preview is recomputed from what is actually shown), not visually-wrapped lines (which vary by device width/font and
 // wouldn't give a predictable "10 lines" truncation point).
 const DESCRIPTION_PREVIEW_LINES = 10;
-
-function isDescriptionLong(description) {
-  return description.split('\n').length > DESCRIPTION_PREVIEW_LINES;
-}
-
-function truncateDescription(description) {
-  return description.split('\n').slice(0, DESCRIPTION_PREVIEW_LINES).join('\n');
-}
 
 export default function VideoPlayer({ navigation, route }) {
   const video = route?.params?.video;
   const title = video?.title ?? '[Video title]';
+  const desc = describe(video?.description, DESCRIPTION_PREVIEW_LINES);
   const youtubeUrl = video?.id
     ? `https://www.youtube.com/watch?v=${video.id}`
     : 'https://www.youtube.com/channel/UCtB5nbKHYsX8EGIk9cOevaQ';
@@ -182,24 +176,19 @@ export default function VideoPlayer({ navigation, route }) {
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.actionButton}
-                onPress={() => Share.share({ message: title, url: youtubeUrl })}
+                onPress={() => Share.share({ message: sanitizeDescription(title), url: youtubeUrl })}
               >
                 <Text style={styles.actionText}>Share</Text>
               </TouchableOpacity>
             </View>
 
-            <SponsorButton
-              style={styles.sponsorButtonSpacing}
-              onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })}
-            />
-
-            {video?.description ? (
+            {!desc.isEmpty ? (
               <>
                 <View style={styles.divider} />
                 <Text style={styles.description}>
-                  {descriptionExpanded ? video.description : truncateDescription(video.description)}
+                  {descriptionExpanded ? desc.full : desc.preview}
                 </Text>
-                {isDescriptionLong(video.description) ? (
+                {desc.isLong ? (
                   <TouchableOpacity onPress={() => setDescriptionExpanded((e) => !e)}>
                     <Text style={styles.descriptionToggle}>
                       {descriptionExpanded ? 'Show less' : 'Show more'}
@@ -278,10 +267,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     ...shadows.md,
     elevation: 6,
-  },
-  // Contextual spacing only; the button itself is components/SponsorButton.
-  sponsorButtonSpacing: {
-    marginTop: spacing.md,
   },
   playerArea: {
     height: PLAYER_HEIGHT,

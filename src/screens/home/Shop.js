@@ -11,25 +11,11 @@ import DestinationCard from '../../components/DestinationCard';
 import ExternalRow from '../../components/ExternalRow';
 import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
+import { filterCachedShop, partitionShopRows } from '../../lib/shopRows';
 
 const CSV_URL =
   'https://docs.google.com/spreadsheets/d/e/2PACX-1vTPD9jF4yGWK1nP6NTVLWieooQGpWYRO0h2RVK0zBQNIoUYDLAhUmHp7Y23I9bHjWMvvqSjxLrLQl6T/pub?gid=863514589&single=true&output=csv';
 const CACHE_KEY = 'shop_csv_cache';
-
-function partition(rows) {
-  const stores = rows
-    .filter((r) => r.Category === 'Shop')
-    .map((r) => ({ label: r.Name, url: r.URL }));
-  const affiliates = rows
-    .filter((r) => r.Category === 'Affiliate')
-    .map((r) => ({
-      title: r.Name,
-      subtitle: r.Note || undefined,
-      badge: r.Code || undefined,
-      url: r.URL,
-    }));
-  return { stores, affiliates };
-}
 
 export default function Shop({ navigation }) {
   const [data, setData] = useState({ stores: [], affiliates: [] });
@@ -47,7 +33,7 @@ export default function Shop({ navigation }) {
         if (!response.ok) throw new Error(`CSV request failed: ${response.status}`);
         const csvText = await response.text();
         const { data: rows } = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-        const partitioned = partition(rows);
+        const partitioned = partitionShopRows(rows);
         if (!cancelled) {
           setData(partitioned);
           setLoading(false);
@@ -58,7 +44,7 @@ export default function Shop({ navigation }) {
         const cached = await AsyncStorage.getItem(CACHE_KEY);
         if (!cancelled) {
           if (cached) {
-            setData(JSON.parse(cached));
+            setData(filterCachedShop(JSON.parse(cached)));
             setUsingCache(true);
           } else {
             // No cache to fall back to and the fetch failed — nothing to

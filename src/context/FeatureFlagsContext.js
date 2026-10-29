@@ -68,7 +68,7 @@ export function FeatureFlagsProvider({ children }) {
   return <FeatureFlagsContext.Provider value={value}>{children}</FeatureFlagsContext.Provider>;
 }
 
-/** The flags object ({ accounts, cultureClub, askfrankie_enabled, ... }). */
+/** The flags object ({ accounts, onboarding, askfrankie_enabled, websiteLink, ... }). */
 export function useFeatureFlags() {
   return useContext(FeatureFlagsContext).flags;
 }

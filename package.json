@@ -44,7 +44,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "prebuild:ios": "expo prebuild --platform ios",
-    "test": "node --test netlify/functions/lib src/lib src/design/design.test.js",
+    "test": "node --test netlify/functions/lib src/lib scripts/lib src/design/design.test.js",
+    "check:bundle": "node scripts/check-bundle-links.mjs",
     "sync:tokens": "node scripts/sync-tokens.mjs",
     "lint:design": "node scripts/lint-design.mjs --native ."
   },

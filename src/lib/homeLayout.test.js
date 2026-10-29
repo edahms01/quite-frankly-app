@@ -13,15 +13,15 @@ const ENTRIES = [...listText.matchAll(/\{\s*label: '([^']+)'[^}]*\}/g)].map((m) 
 });
 const labels = (flags) => homeDestinations(ENTRIES.map((e) => ({ ...e, flag: e.flag || undefined })), normalizeFlags(flags)).map((e) => e.label);
 
-test('Home list: agreed order, Culture Club right after Listen (inert while the flag is off)', () => {
+test('Home list: agreed order, 10 cards (Culture Club removed for the first release)', () => {
   assert.deepEqual(ENTRIES.map((e) => e.label),
-    ['Watch', 'Listen', 'Culture Club', 'Read', 'Shop', 'Connect', 'Ask', 'Jam', 'Play', 'Call', 'Schedule']);
+    ['Watch', 'Listen', 'Read', 'Shop', 'Connect', 'Ask', 'Jam', 'Play', 'Call', 'Schedule']);
 });
 
-test('Home cards, flag OFF: the 10 even-grid cards, Culture Club hidden; flag ON: Culture Club returns in place', () => {
+test('Home cards: the 10 even-grid cards, no Culture Club card whatever the flags say', () => {
   assert.deepEqual(labels({}), ['Watch', 'Listen', 'Read', 'Shop', 'Connect', 'Ask', 'Jam', 'Play', 'Call', 'Schedule']);
   assert.equal(labels({}).length, 10);
-  assert.deepEqual(labels({ cultureClub: true }), ['Watch', 'Listen', 'Culture Club', 'Read', 'Shop', 'Connect', 'Ask', 'Jam', 'Play', 'Call', 'Schedule']);
+  assert.deepEqual(labels({ cultureClub: true }), labels({}));
   assert.deepEqual(labels({ askfrankie_enabled: true }), labels({}));   // askfrankie_enabled changes the Ask card, not the list
 });
 
@@ -34,8 +34,7 @@ test('Home routes keep their old internal names; Schedule is not flag-gated', ()
   assert.equal(by.Call.route, 'PhoneLines');
   assert.equal(by.Schedule.route, 'Calendar');
   assert.equal(by.Schedule.flag, null);
-  assert.equal(by['Culture Club'].flag, 'cultureClub');
-  assert.equal(by['Culture Club'].route, 'CultureClubTab');
+  assert.equal(by['Culture Club'], undefined);
 });
 
 test('every Home card renders from the one list: a single DestinationCard in Home.js, no special-case branches', () => {

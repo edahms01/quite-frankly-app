@@ -3,7 +3,7 @@ import { Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image as ImageIcon } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
-import { tag, tagGold, tagText } from '../../design/qf-presets';
+import { listablePosts } from '../../lib/substackPosts';
 import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
 import EmptyState from '../../components/EmptyState';
@@ -35,11 +35,8 @@ function ImagePlaceholder({ style }) {
   );
 }
 
-// Free row = the Blog row. Paid row = the same plus a 2-line blurb and a
-// small gold-outline "Paid" tag; no button on the row (the locked Article
-// screen carries the one "Subscribe to Read" button).
+// A row = the Blog row (free posts only: paid posts are filtered out by listablePosts before they get here).
 function PostRow({ post, onPress }) {
-  const paid = post.audience === 'paid';
   return (
     <TouchableOpacity style={styles.row} onPress={onPress}>
       {post.heroImageUrl ? (
@@ -49,15 +46,7 @@ function PostRow({ post, onPress }) {
       )}
       <View style={styles.rowText}>
         <Text style={styles.rowTitle} numberOfLines={2}>{post.title}</Text>
-        {paid && post.blurb ? (
-          <Text style={styles.rowBlurb} numberOfLines={2}>{post.blurb}</Text>
-        ) : null}
         <View style={styles.rowMetaLine}>
-          {paid ? (
-            <View style={[tag, tagGold]}>
-              <Text style={tagText}>Paid</Text>
-            </View>
-          ) : null}
           <Text style={styles.rowMeta}>{metaLine(post)}</Text>
         </View>
       </View>
@@ -70,7 +59,8 @@ export default function WritingSubstack({ navigation }) {
   // ({ nextCursor: null, hasMore: false }). Otherwise the same shape as
   // WritingBlog.js: mountedRef guard, loadInitial shared by mount + pull to
   // refresh, AsyncStorage cache fallback only when nothing is on screen yet.
-  const [posts, setPosts] = useState([]);
+  const [allPosts, setPosts] = useState([]);
+  const posts = listablePosts(allPosts);      // paid posts are never shown
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
@@ -211,12 +201,6 @@ const styles = StyleSheet.create({
     color: colors.inkPrimary,
     fontFamily: fontFamily.semiBold,
     fontSize: fontSize.md,
-  },
-  rowBlurb: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.regular,
-    fontSize: fontSize.sm,
-    marginTop: spacing.hair,
   },
   rowMetaLine: {
     flexDirection: 'row',

@@ -7,9 +7,8 @@ export const FLAG_DEFAULTS = {
   askfrankie_enabled: true,   // AskFrankie is live in the launch build: the Home tile is there from the first launch; `false` from the server hides it (Android) / shows "Coming Soon" (iOS)
   askfrankie_linked_login: false,
   accounts: false,        // account creation, sign-in, Sign Out, Delete Account, the AskFrankie login handoff
-  cultureClub: false,     // the Culture Club tab/page, its Home card, and the club days on Schedule (Schedule itself is always on)
   onboarding: false,      // the onboarding stack (Welcome, notifications, email steps) on a fresh install; OFF = straight to Home
-  androidMonthlySupport: false,   // ANDROID ONLY: show the Monthly Support section (Squarespace card, Patreon, SubscribeStar) on Support the Show; OFF = hidden on Android (Play Payments policy); iOS always shows it
+  websiteLink: true,      // the one neutral "More info at quitefrankly.tv" row on Home. Default ON; the flag can only HIDE it (a literal `false` from the server), nothing else depends on it
 };
 
 /** One flag from a raw server value: default-ON flags are off only for a literal `false`; default-OFF flags are on only for a literal `true`. */
@@ -58,36 +57,12 @@ export function initialRoute(flags, onboardingDone) {
   return isEnabled(flags, 'onboarding') && onboardingDone !== true ? 'Onboarding' : 'MainTabs';
 }
 
-/** Bottom tabs, in order. */
-export function visibleTabs(flags) {
-  return ['Home', 'Watch', 'Listen', ...(isEnabled(flags, 'cultureClub') ? ['CultureClub'] : [])];
-}
-
 /**
  * Home tiles: an entry with `flag` is shown only while that flag is on. An entry with `enabledBy` + `hideWhenOffOnAndroid` is hidden entirely (no "Coming Soon"
  * tile) on Android while that flag is off; iOS keeps the muted "Coming Soon" tile.
  */
 export function homeDestinations(all, flags, os) {
   return all.filter((d) => (!d.flag || isEnabled(flags, d.flag)) && !(d.hideWhenOffOnAndroid && os === 'android' && d.enabledBy && !isEnabled(flags, d.enabledBy)));
-}
-
-/** Support the Show: the "Monthly Support" section (and the checkout's "Plans start at $5/month.") is hidden on Android unless `androidMonthlySupport` is on (Play Payments policy). iOS and everything else: shown. */
-export function showMonthlySupport(flags, os) {
-  return os !== 'android' || isEnabled(flags, 'androidMonthlySupport');
-}
-
-/** Schedule (the Calendar.js page): with cultureClub OFF every club day shows as a normal show day, so Culture Club never appears; ON: the week as given. */
-export const NORMAL_SHOW_DAY = { title: 'Quite Frankly Live', time: '7:00 PM ET', period: 'evening', club: false };
-export function scheduleWeek(flags, week) {
-  if (isEnabled(flags, 'cultureClub')) return week;
-  return week.map((d) => (d.club ? { day: d.day, ...NORMAL_SHOW_DAY } : d));
-}
-/** The Regular show / Culture Club legend only makes sense while club days are visible. */
-export function showScheduleLegend(flags) { return isEnabled(flags, 'cultureClub'); }
-
-/** Notification toggles: the Culture Club reminder row only while cultureClub is on. */
-export function notificationRows(rows, flags) {
-  return rows.filter((r) => r.key !== 'club' || isEnabled(flags, 'cultureClub'));
 }
 
 /** The header button that opens the account area: the avatar with accounts on, a gear ("Settings") with accounts off. */
@@ -105,3 +80,9 @@ export function accountScreen(flags) {
 
 /** AskFrankie in the app: the login handoff (link token, email prefill) runs only with accounts on. */
 export function shouldRunAskFrankieHandoff(flags) { return isEnabled(flags, 'accounts'); }
+
+/** Home: the one neutral website link ("More info at quitefrankly.tv"). Shown unless the server sends a literal `websiteLink: false` (default ON; it can only hide it). */
+export const WEBSITE_LINK = { label: 'More info at quitefrankly.tv', url: 'https://quitefrankly.tv' };
+export function homeWebsiteLink(flags) {
+  return isEnabled(flags, 'websiteLink') ? WEBSITE_LINK : null;
+}

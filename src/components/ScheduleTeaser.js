@@ -29,7 +29,6 @@ function DayCard({ item, isToday }) {
     <View
       style={[
         styles.dayCard,
-        item.club && styles.dayCardClub,
         isToday && styles.dayCardToday,
       ]}
     >
@@ -44,7 +43,7 @@ function DayCard({ item, isToday }) {
         )}
       </View>
       <View style={styles.dayCardBody}>
-        <PeriodIcon color={item.club ? colors.inkPrimary : colors.inkMuted} size={22} />
+        <PeriodIcon color={colors.inkMuted} size={22} />
         <View>
           <Text style={styles.dayTitle}>{item.title}</Text>
           <Text style={styles.dayTime}>
@@ -60,7 +59,7 @@ function DayCard({ item, isToday }) {
 // Non-interactive preview of what a real digital calendar could look like —
 // dimmed and un-tappable, with a "Coming Soon" badge, rather than fully
 // hidden. See mockSchedule.js for why.
-export default function ScheduleTeaser({ items, showLegend = true, note }) {
+export default function ScheduleTeaser({ items, note }) {
   return (
     <View>
       <View style={styles.comingSoonBadge}>
@@ -68,18 +67,6 @@ export default function ScheduleTeaser({ items, showLegend = true, note }) {
       </View>
 
       <View style={styles.teaserBody} pointerEvents="none">
-        {showLegend && (
-          <View style={styles.legendRow}>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: colors.inkMuted }]} />
-              <Text style={styles.legendText}>Regular show</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: colors.inkPrimary }]} />
-              <Text style={styles.legendText}>Culture Club</Text>
-            </View>
-          </View>
-        )}
         <View style={styles.weekBody}>
           {items.map((item) => (
             <DayCard key={item.day} item={item} isToday={item.day === TODAY_ABBREVIATION} />
@@ -117,26 +104,6 @@ const styles = StyleSheet.create({
   teaserBody: {
     opacity: 0.45,
   },
-  legendRow: {
-    flexDirection: 'row',
-    gap: spacing.lg,
-    marginBottom: spacing.sm,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  legendText: {
-    color: colors.inkMuted,
-    fontFamily: fontFamily.regular,
-    fontSize: fontSize.sm,
-  },
   // xs (not sm) so a full 7-day week fits on one screen without scrolling.
   weekBody: {
     gap: spacing.xs,
@@ -148,12 +115,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.surfaceLine,
   },
-  dayCardClub: {
-    borderColor: colors.inkPrimary,
-  },
   // No color change here (todayBadge below stays gold, at Eric's call) —
-  // just a thicker neutral outline so it doesn't compete with dayCardClub's
-  // white border for the same "highlight" language.
+  // just a thicker neutral outline.
   dayCardToday: {
     borderColor: colors.surfaceLine,
     borderWidth: 2,

@@ -19,6 +19,7 @@
 // Accepted gap (same as Blog): a post deleted on Substack lingers.
 import { getJSON, setJSON, deleteKey } from './lib/blobs.js';
 import { getTokensForPreference, sendExpoPushBatch } from './lib/push.js';
+import { sanitizeDescription } from '../../src/lib/sanitizeDescription.js';
 import {
   SUBSTACK_POSTS_STORE,
   SUBSTACK_POSTS_KEY,
@@ -127,7 +128,7 @@ export async function runPollSubstack({
     try {
       const tokens = await getTokensFn('substack');
       for (const post of toPush) {
-        const result = await sendPushFn(tokens, { title: PUSH_TITLE, body: post.title });
+        const result = await sendPushFn(tokens, { title: PUSH_TITLE, body: sanitizeDescription(post.title) || 'Read now' });
         pushed += result?.sent ?? 0;
       }
     } catch (err) {

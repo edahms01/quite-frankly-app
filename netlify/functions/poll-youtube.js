@@ -5,6 +5,7 @@ import { filterNewByKey } from './lib/idempotency.js';
 import { getTokensForPreference, sendExpoPushBatch } from './lib/push.js';
 import { CHANNEL_ID, classifyVideo, mergeVideosById, parseISO8601Duration, pickMostRecent, buildFeedCache } from './lib/youtube.js';
 import { secondsToTimestamp } from './lib/duration.js';
+import { sanitizeDescription } from '../../src/lib/sanitizeDescription.js';
 
 export const config = { schedule: '*/15 * * * *' };
 
@@ -214,7 +215,7 @@ export default async () => {
       for (const item of itemsToNotify) {
         await sendExpoPushBatch(tokens, {
           title: 'New video from Quite Frankly',
-          body: item.title,
+          body: sanitizeDescription(item.title) || 'Watch now',
         });
       }
     } catch (err) {

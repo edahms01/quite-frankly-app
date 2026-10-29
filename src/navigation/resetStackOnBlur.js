@@ -2,7 +2,7 @@ import { CommonActions } from '@react-navigation/native';
 
 // Bottom-tab navigators keep each tab's nested stack mounted and preserve
 // its state by default — without this, leaving a tab pushed deep into its
-// own stack (e.g. Home -> Shop, CultureClub -> Subscription) and coming
+// own stack (e.g. Home -> Shop, Watch -> Video Player) and coming
 // back later (via the tab bar, or a navigate() from elsewhere in the app)
 // reopens wherever that stack was left, not the tab's root screen.
 //

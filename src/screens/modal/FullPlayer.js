@@ -6,6 +6,7 @@ import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import { title as titlePreset } from '../../design/qf-presets';
 import { useAudioPlayer } from '../../context/AudioPlayerContext';
 import { formatTime } from '../../utils/formatTime';
+import { sanitizeDescription } from '../../lib/sanitizeDescription';
 
 // Hand-rolled tap/drag scrubber on react-native-gesture-handler (already a
 // dependency) rather than pulling in @react-native-community/slider as a
@@ -70,6 +71,7 @@ export default function FullPlayer({ navigation }) {
   }, [currentTrack, navigation]);
 
   if (!currentTrack) return null;
+  const description = sanitizeDescription(currentTrack.description);
 
   const isPlaying = playbackState === 'playing';
 
@@ -85,9 +87,11 @@ export default function FullPlayer({ navigation }) {
 
       <Text style={styles.title}>{currentTrack.title}</Text>
 
-      <ScrollView style={styles.descriptionScroll}>
-        <Text style={styles.description}>{currentTrack.description}</Text>
-      </ScrollView>
+      {description ? (
+        <ScrollView style={styles.descriptionScroll}>
+          <Text style={styles.description}>{description}</Text>
+        </ScrollView>
+      ) : null}
 
       <Scrubber position={position} duration={duration} seekTo={seekTo} />
 

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { DEFAULT_PREFERENCES, mergePreferences } from './pushPreferences.js';
 
 test('defaults include substack ON', () => {
-  assert.deepEqual(DEFAULT_PREFERENCES, { live: true, video: true, club: true, substack: true });
+  assert.deepEqual(DEFAULT_PREFERENCES, { live: true, video: true, substack: true });
 });
 
 test('old stored prefs with no substack key merge to substack ON, keeping the user\'s other choices', () => {

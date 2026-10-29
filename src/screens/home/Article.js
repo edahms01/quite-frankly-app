@@ -14,14 +14,14 @@ import * as WebBrowser from 'expo-web-browser';
 import RenderHTML, { defaultSystemFonts } from 'react-native-render-html';
 import { ChevronLeft, ChevronRight, Image as ImageIcon, Share2 } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
-import { activeOpacity, buttonGold, buttonGoldText, errorText as errorTextPreset, link, titleLg } from '../../design/qf-presets';
+import { activeOpacity, errorText as errorTextPreset, link, titleLg } from '../../design/qf-presets';
 import LoadingState from '../../components/LoadingState';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 // Same value as netlify/functions/lib/squarespaceBlog.js's SITE_BASE_URL --
 // not imported directly since this frontend file has no existing precedent
 // of importing from netlify/functions (every other quitefrankly.tv literal
-// in this codebase, e.g. Writing.js/Community.js/CultureClub.js, is its own
+// in this codebase, e.g. Writing.js/Community.js, is its own
 // local hardcoded string, same pattern kept here). Used to resolve
 // relative hrefs/srcs in post bodies (Squarespace posts commonly link to
 // other same-site pages with a relative path) so react-native-render-html
@@ -172,7 +172,7 @@ export default function Article({ navigation, route }) {
   const source = route?.params?.source ?? 'blog';
   const sourceConfig = SOURCES[source] ?? SOURCES.blog;
   // Paid Substack post: locked teaser, no body fetch, no paywalled text ever
-  // stored or shown. The one action is "Subscribe to Read" -> Substack.
+  // stored or shown. No action: paid posts are not listed at all (WritingSubstack hides them), so this teaser is a safety net only.
   const isLocked = source === 'substack' && post.audience === 'paid';
   const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
@@ -289,15 +289,6 @@ export default function Article({ navigation, route }) {
         {isLocked ? (
           <View style={styles.locked}>
             {post.blurb ? <Text style={styles.lockedBlurb}>{post.blurb}</Text> : null}
-            {isHttpUrl(post.url) ? (
-              <TouchableOpacity
-                style={styles.subscribeButton}
-                onPress={() => openOutbound(post.url)}
-                activeOpacity={activeOpacity}
-              >
-                <Text style={styles.subscribeButtonText}>Subscribe to Read</Text>
-              </TouchableOpacity>
-            ) : null}
           </View>
         ) : bodyLoading ? (
           <LoadingState message="Loading article…" />
@@ -454,8 +445,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.md,
     lineHeight: fontSize.md * 1.6,
   },
-  subscribeButton: buttonGold,
-  subscribeButtonText: buttonGoldText,
   commentsLink: {
     flexDirection: 'row',
     alignItems: 'center',

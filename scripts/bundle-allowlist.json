@@ -1,0 +1,4 @@
+{
+  "_doc": "Accepted bundle hits for scripts/check-bundle-links.mjs: [{ kind: host|path|phrase|removed-screen|crypto, match: exact string, reason }]. Empty on purpose: quitefrankly.tv (the Home website link), the Shop CSV host (docs.google.com), our API hosts, askfrankie.netlify.app, YouTube / Spotify / Bandcamp embeds and affiliate / shop domains are simply not on the deny-list, so they need no entry. The deny-list config modules themselves (src/config/paymentDenyList.js, src/lib/shopRows.js) are skipped by marker, see scripts/lib/bundleScan.mjs.",
+  "allow": []
+}

@@ -2,6 +2,8 @@
 
 Companion to `quite-frankly-app-plan.md` (decisions/reasoning) — this doc is the flat reference: every screen, what it does, where it's reached from, where it goes, and what data feeds it. Built for handoff, not for reading top to bottom.
 
+> **2026-10-29 launch link cleanup:** the Members Only (Culture Club), Subscription, Subscription Checkout, Subscription Confirmed and Donation (DonateToApp) rows below describe screens that were REMOVED from the first release (recoverable from git tag `pre-link-cleanup`). Account now links only to Notifications and Report a Bug (plus Privacy Policy). Home has no Culture Club card and shows one low-key "More info at quitefrankly.tv" link. Video and audio descriptions are cleaned by `sanitizeDescription` at render time. See CLAUDE.md "Launch link cleanup".
+
 ## Data source legend
 
 | Code | Source | Notes |
