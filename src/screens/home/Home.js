@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { RefreshControl,ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { Platform, RefreshControl,ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CirclePlay, Headphones, Crown, MessageSquare, ShoppingBag, Calendar as CalendarIcon, BookOpen, Music2, Gamepad2, Bot, Phone } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
@@ -49,7 +49,7 @@ const DESTINATIONS = [
   { label: 'Read', Icon: BookOpen, route: 'Writing' },
   { label: 'Shop', Icon: ShoppingBag, route: 'Shop' },
   { label: 'Connect', Icon: MessageSquare, route: 'Community' },
-  { label: 'Ask', Icon: Bot, route: 'AskFrankie', enabledBy: 'askfrankie_enabled', subtext: 'Coming Soon' },   // the page itself stays "AskFrankie AI"
+  { label: 'Ask', Icon: Bot, route: 'AskFrankie', enabledBy: 'askfrankie_enabled', subtext: 'Coming Soon', hideWhenOffOnAndroid: true },   // the page itself stays "AskFrankie AI"
   { label: 'Jam', Icon: Music2, route: 'Music' },
   { label: 'Play', Icon: Gamepad2, route: 'Games' },
   { label: 'Call', Icon: Phone, route: 'PhoneLines' },
@@ -151,7 +151,7 @@ export default function Home({ navigation }) {
       <SponsorButton onPress={() => navigation.navigate('AccountStack', { screen: 'Subscription' })} />
 
       <View style={styles.grid}>
-        {homeDestinations(DESTINATIONS, flags).map((d) => {
+        {homeDestinations(DESTINATIONS, flags, Platform.OS).map((d) => {
           const live = !d.enabledBy || isEnabled(flags, d.enabledBy);
           return (
             <DestinationCard

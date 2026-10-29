@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { normalizeFlags, accountScreen } from './featureFlags.js';
-import { OWNERSHIP_NOTICE } from '../config/legal.js';
+import { OWNERSHIP_NOTICE, PRIVACY_POLICY_URL } from '../config/legal.js';
 
 const read = (rel) => readFileSync(new URL(rel, import.meta.url), 'utf8');
 const EXACT = '© 2026 DahmsIO LTD (app software and design). The Quite Frankly name, logos, episodes and show content belong to Frank / Quite Frankly. Any other names, logos and embedded content belong to their owners.';
@@ -37,7 +37,7 @@ test('Settings shows the notice with the accounts flag OFF ("Settings") and ON (
 
 test('Account.js renders the notice from the constant, AFTER every row (rows, Sign Out and Delete Account), inside the scrolling body', () => {
   const src = read('../screens/account/Account.js');
-  assert.match(src, /import \{ OWNERSHIP_NOTICE \} from '\.\.\/\.\.\/config\/legal'/);
+  assert.match(src, /import \{ OWNERSHIP_NOTICE, PRIVACY_POLICY_URL \} from '\.\.\/\.\.\/config\/legal'/);
   assert.match(src, /view\.showOwnershipNotice \? <Text style=\{styles\.notice\}>\{OWNERSHIP_NOTICE\}<\/Text> : null/);
   const at = (needle) => src.indexOf(needle);
   assert.ok(at('{OWNERSHIP_NOTICE}') > at('Delete Account'), 'after Delete Account');
@@ -67,4 +67,24 @@ test('app privacy page: retired sign-in wording is gone, the approved guest-only
     'Last updated: 29 October 2026',
   ]) assert.ok(text.includes(want), `missing: ${want}`);
   assert.match(html, /href="delete-account\.html"/);       // existing accounts can still be deleted on the web
+});
+
+test('Settings > Privacy Policy opens the app privacy page in the in-app browser, sits with the other rows ABOVE the ownership notice, and is shown whatever the accounts flag says', () => {
+  assert.equal(PRIVACY_POLICY_URL, 'https://quite-frankly-app.netlify.app/privacy.html');
+  const src = read('../screens/account/Account.js');
+  assert.match(src, /view\.showPrivacyRow \? \(/);
+  assert.match(src, /WebBrowser\.openBrowserAsync\(PRIVACY_POLICY_URL, \{ dismissButtonStyle: 'close' \}\)/);
+  assert.match(src, /<Text style=\{styles\.rowLabel\}>Privacy Policy<\/Text>/);
+  assert.ok(src.indexOf('Privacy Policy</Text>') < src.indexOf('{OWNERSHIP_NOTICE}'), 'above the notice');
+});
+
+test('app privacy page: the YouTube API Services paragraph is in, word for word, with both policy URLs as links, and the #58 wording is still there', () => {
+  const html = read('../../netlify/public/privacy.html');
+  const text = html.replace(/<[^>]*>/g, '').replace(/&rsquo;/g, '\u2019');
+  assert.ok(text.includes('This app uses YouTube API Services. By using the app\u2019s YouTube features you also agree to be bound by the YouTube Terms of Service (https://www.youtube.com/t/terms) and Google\u2019s Privacy Policy (https://policies.google.com/privacy).'));
+  assert.match(html, /<a href="https:\/\/www\.youtube\.com\/t\/terms">https:\/\/www\.youtube\.com\/t\/terms<\/a>/);
+  assert.match(html, /<a href="https:\/\/policies\.google\.com\/privacy">https:\/\/policies\.google\.com\/privacy<\/a>/);
+  assert.ok(html.indexOf('Who we share it with') < html.indexOf('This app uses YouTube API Services') && html.indexOf('This app uses YouTube API Services') < html.indexOf('Some of these providers are based in the US'));
+  assert.ok(text.includes('Last updated: 29 October 2026'));
+  assert.ok(text.includes('The app no longer has accounts.'));            // #58 edits kept
 });

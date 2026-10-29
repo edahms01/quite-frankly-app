@@ -27,7 +27,12 @@
         "android.permission.MODIFY_AUDIO_SETTINGS",
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
-      ]
+      ],
+      "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.CAMERA"
+      ],
+      "allowBackup": false
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -51,7 +56,8 @@
       [
         "expo-audio",
         {
-          "enableBackgroundPlayback": true
+          "enableBackgroundPlayback": true,
+          "recordAudioAndroid": false
         }
       ],
       "expo-web-browser",
@@ -64,7 +70,8 @@
           "backgroundColor": "#0c0f14"
         }
       ],
-      "./plugins/withSplashWordmark"
+      "./plugins/withSplashWordmark",
+      "expo-asset"
     ],
     "extra": {
       "eas": {

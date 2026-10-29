@@ -158,7 +158,8 @@ test('link token: a LOGIN token for the session email (body ignored), valid sign
 test('link token: off unless BOTH flags are true; 401 for no/unknown/old session; 429 over the limit; 503 without a key; GET is 405', async () => {
   const m = memory(), deps = linkDeps(m);
   const t = await deps.sessions.createSession(A);
-  for (const f of [{}, { askfrankie_enabled: true }, { askfrankie_linked_login: true }, { askfrankie_enabled: 'true', askfrankie_linked_login: 1 }]) assert.equal((await linkFn(post(t), {}, { ...deps, readFlags: async () => normalizeFlags(f) })).status, 404);
+  // askfrankie_enabled is ON by default now (only a literal false is the kill switch), so the link stays off unless linked_login is a literal true AND enabled is not false
+  for (const f of [{}, { askfrankie_enabled: true }, { askfrankie_enabled: false, askfrankie_linked_login: true }, { askfrankie_enabled: 'true', askfrankie_linked_login: 1 }]) assert.equal((await linkFn(post(t), {}, { ...deps, readFlags: async () => normalizeFlags(f) })).status, 404);
   assert.equal((await linkFn(post(null), {}, deps)).status, 401);
   assert.equal((await linkFn(post('c'.repeat(64)), {}, deps)).status, 401);
   const old = { ...deps, sessions: { getSession: async () => ({ email: A, ageDays: 181 }) } };
@@ -168,20 +169,25 @@ test('link token: off unless BOTH flags are true; 401 for no/unknown/old session
   assert.equal((await linkFn(new Request('https://x.test/fn'), {}, deps)).status, 405);
 });
 
-test('flags: defaults are off; only a literal true turns one on', () => {
-  const OFF = { askfrankie_enabled: false, askfrankie_linked_login: false, accounts: false, cultureClub: false, onboarding: false };
+test('flags: default-OFF flags turn on only for a literal true; askfrankie_enabled is ON by default and only a literal false is the kill switch', () => {
+  const OFF = { askfrankie_enabled: true, askfrankie_linked_login: false, accounts: false, cultureClub: false, onboarding: false, androidMonthlySupport: false };      // askfrankie_enabled is ON by default (Play launch)
   assert.deepEqual(normalizeFlags(null), OFF);
   assert.deepEqual(normalizeFlags({ askfrankie_enabled: 'yes', askfrankie_linked_login: true, extra: true }), { ...OFF, askfrankie_linked_login: true });
   // the two feature flags: off by default, each on only for a literal true, independent of each other
   assert.deepEqual(normalizeFlags({ accounts: true }), { ...OFF, accounts: true });
   assert.deepEqual(normalizeFlags({ cultureClub: true }), { ...OFF, cultureClub: true });
   assert.deepEqual(normalizeFlags({ onboarding: true }), { ...OFF, onboarding: true });
-  assert.deepEqual(normalizeFlags({ accounts: 'true', cultureClub: 1, onboarding: 'yes' }), OFF);
+  assert.deepEqual(normalizeFlags({ androidMonthlySupport: true }), { ...OFF, androidMonthlySupport: true });
+  assert.deepEqual(normalizeFlags({ accounts: 'true', cultureClub: 1, onboarding: 'yes', androidMonthlySupport: 'true' }), OFF);
+  // the kill switch: ON when the key is missing / odd, OFF only for a literal false
+  for (const v of [undefined, null, 'false', 0, 'yes', true]) assert.equal(normalizeFlags({ askfrankie_enabled: v }).askfrankie_enabled, true, String(v));
+  assert.equal(normalizeFlags({ askfrankie_enabled: false }).askfrankie_enabled, false);
+  assert.deepEqual(normalizeFlags({ askfrankie_enabled: false }), { ...OFF, askfrankie_enabled: false });
 });
 
-test('flags: a failed read returns every flag OFF (the app never breaks on a flags error)', async () => {
+test('flags: a failed read returns the defaults (every feature flag OFF, AskFrankie ON; the app never breaks on a flags error)', async () => {
   const flags = await readFlags(async () => { throw new Error('blobs down'); });
-  assert.deepEqual(flags, { askfrankie_enabled: false, askfrankie_linked_login: false, accounts: false, cultureClub: false, onboarding: false });
+  assert.deepEqual(flags, { askfrankie_enabled: true, askfrankie_linked_login: false, accounts: false, cultureClub: false, onboarding: false, androidMonthlySupport: false });
   assert.equal((await readFlags(async () => ({ accounts: true }))).accounts, true);
 });
 

@@ -1,8 +1,10 @@
-import { Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import BackHeader from '../../components/BackHeader';
 import Section from '../../components/Section';
 import CryptoCard, { CryptoCardGrid } from '../../components/CryptoCard';
+import { useFeatureFlags } from '../../context/FeatureFlagsContext';
+import { showMonthlySupport } from '../../lib/featureFlags';
 
 // Patreon/SubscribeStar use OS-level Linking.openURL (not WebView) so
 // Universal Links/App Links can hand off to their native apps — see
@@ -20,16 +22,18 @@ const PLATFORMS = [
   },
 ];
 
-const PAYPAL_URL = 'http://www.paypal.me/QuiteFranklyLive';
+const PAYPAL_URL = 'https://www.paypal.me/QuiteFranklyLive';
 const AMAZON_URL = 'https://amazon.com/shop/quitefranklyofficial';
 const BTC_ADDRESS = 'bc1q97w5aazjf7pjjl50n42kdmj9pqyn5zndwh3lng';
 const XRP_ADDRESS = 'rnES2vQV6d2jLpavzf7y97XD4AfK1MjePu';
 
 export default function Subscription({ navigation }) {
+  const flags = useFeatureFlags();      // Android hides the Monthly Support section unless `androidMonthlySupport` is on (Google Play Payments policy)
   return (
     <ScrollView style={styles.container}>
       <BackHeader title="Support the Show" navigation={navigation} />
       <View style={styles.body}>
+        {showMonthlySupport(flags, Platform.OS) ? (
         <Section title="Monthly Support">
           <TouchableOpacity
             style={styles.qfCard}
@@ -71,6 +75,7 @@ export default function Subscription({ navigation }) {
             ))}
           </View>
         </Section>
+        ) : null}
 
         <Section title="One-Time Donation">
           <CryptoCardGrid>

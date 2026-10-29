@@ -2,3 +2,6 @@
 // Later, with Frank's written permission, "used with permission" may be added; not yet. Keep this the ONLY place the string lives.
 export const OWNERSHIP_NOTICE =
   '© 2026 DahmsIO LTD (app software and design). The Quite Frankly name, logos, episodes and show content belong to Frank / Quite Frankly. Any other names, logos and embedded content belong to their owners.';
+
+// The privacy policy (also linked from the Play Console listing). Settings > Privacy Policy opens this in the in-app browser.
+export const PRIVACY_POLICY_URL = 'https://quite-frankly-app.netlify.app/privacy.html';

@@ -1,10 +1,11 @@
 // Both flag states for the remote feature flags (pure logic; the screens call these helpers). Run with: node --test src/lib
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import {
   FLAG_DEFAULTS, normalizeFlags, parseCachedFlags, applyOverride, isEnabled,
-  onboardingNextRoute, onboardingDotCount, initialRoute, visibleTabs, homeDestinations, scheduleWeek, showScheduleLegend, NORMAL_SHOW_DAY, notificationRows, accountEntry, accountScreen, shouldRunAskFrankieHandoff,
+  onboardingNextRoute, onboardingDotCount, initialRoute, visibleTabs, homeDestinations, showMonthlySupport, scheduleWeek, showScheduleLegend, NORMAL_SHOW_DAY, notificationRows, accountEntry, accountScreen, shouldRunAskFrankieHandoff,
 } from './featureFlags.js';
 import { FLAG_DEFAULTS as SERVER_DEFAULTS } from '../../netlify/functions/lib/flags.js';
 
@@ -61,9 +62,9 @@ test('accounts OFF: onboarding goes Welcome -> notifications -> the app; ON keep
 
 test('accounts OFF: gear and "Settings" without email, Sign Out and Delete Account; ON: avatar and "Account" with all of them', () => {
   assert.deepEqual(accountEntry(OFF), { icon: 'gear', title: 'Settings' });
-  assert.deepEqual(accountScreen(OFF), { title: 'Settings', showEmailRow: false, showSignOut: false, showDeleteAccount: false, showOwnershipNotice: true });
+  assert.deepEqual(accountScreen(OFF), { title: 'Settings', showEmailRow: false, showSignOut: false, showDeleteAccount: false, showPrivacyRow: true, showOwnershipNotice: true });
   assert.deepEqual(accountEntry(ACCOUNTS_ON), { icon: 'avatar', title: 'Account' });
-  assert.deepEqual(accountScreen(ACCOUNTS_ON), { title: 'Account', showEmailRow: true, showSignOut: true, showDeleteAccount: true, showOwnershipNotice: true });
+  assert.deepEqual(accountScreen(ACCOUNTS_ON), { title: 'Account', showEmailRow: true, showSignOut: true, showDeleteAccount: true, showPrivacyRow: true, showOwnershipNotice: true });
 });
 
 test('accounts OFF: no AskFrankie login handoff; ON: handoff runs', () => {
@@ -143,4 +144,67 @@ test('hidden, not deleted: the onboarding screens and navigator still exist and 
   const root = readFileSync(new URL('../navigation/RootNavigator.js', import.meta.url), 'utf8');
   assert.match(root, /name="Onboarding" component=\{OnboardingNavigator\}/);
   assert.match(root, /initialRouteName=\{initial\.current\}/);
+});
+
+test('AskFrankie is ON by default (Play launch): the tile is there from the first launch, and only a literal false from the server turns it off', () => {
+  assert.equal(FLAG_DEFAULTS.askfrankie_enabled, true);
+  assert.equal(normalizeFlags(undefined).askfrankie_enabled, true);                 // first launch, nothing cached, nothing fetched
+  assert.equal(parseCachedFlags(null).askfrankie_enabled, true);
+  assert.equal(parseCachedFlags('{not json').askfrankie_enabled, true);
+  for (const v of [undefined, null, 'false', 0, 'no', true]) assert.equal(normalizeFlags({ askfrankie_enabled: v }).askfrankie_enabled, true, String(v));
+  assert.equal(normalizeFlags({ cultureClub: true }).askfrankie_enabled, true);       // a blob that never mentioned it keeps it on
+  assert.equal(normalizeFlags({ askfrankie_enabled: false }).askfrankie_enabled, false);   // the kill switch
+  assert.equal(parseCachedFlags('{"askfrankie_enabled":false}').askfrankie_enabled, false);
+  assert.equal(applyOverride(OFF, '{"askfrankie_enabled":false}').askfrankie_enabled, false);   // the dev override is explicit
+  assert.equal(normalizeFlags({ askfrankie_enabled: false, accounts: true }).accounts, true);
+});
+
+const ASK = { label: 'Ask', route: 'AskFrankie', enabledBy: 'askfrankie_enabled', subtext: 'Coming Soon', hideWhenOffOnAndroid: true };
+const WATCH = { label: 'Watch', route: 'Watch' };
+const CLUB = { label: 'Club', route: 'Club', flag: 'cultureClub' };
+const labels = (xs) => xs.map((d) => d.label);
+
+test('Home Ask tile: ON = shown on both platforms; kill switch OFF = hidden on Android (no "Coming Soon"), still the muted "Coming Soon" tile on iOS', () => {
+  const ON = normalizeFlags({});
+  const KILLED = normalizeFlags({ askfrankie_enabled: false });
+  assert.deepEqual(labels(homeDestinations([WATCH, ASK], ON, 'android')), ['Watch', 'Ask']);
+  assert.deepEqual(labels(homeDestinations([WATCH, ASK], ON, 'ios')), ['Watch', 'Ask']);
+  assert.deepEqual(labels(homeDestinations([WATCH, ASK], KILLED, 'android')), ['Watch']);
+  assert.deepEqual(labels(homeDestinations([WATCH, ASK], KILLED, 'ios')), ['Watch', 'Ask']);
+  assert.deepEqual(labels(homeDestinations([WATCH, ASK], KILLED)), ['Watch', 'Ask']);      // no platform given: unchanged behaviour
+  assert.deepEqual(labels(homeDestinations([WATCH, CLUB], ON, 'android')), ['Watch']);       // the older `flag` rule is untouched
+  assert.deepEqual(labels(homeDestinations([WATCH, CLUB], CLUB_ON, 'android')), ['Watch', 'Club']);
+});
+
+test('androidMonthlySupport: default OFF; Monthly Support is hidden on Android unless the flag is on; iOS and everything else always show it', () => {
+  const ANDROID_ON = normalizeFlags({ androidMonthlySupport: true });
+  assert.equal(FLAG_DEFAULTS.androidMonthlySupport, false);
+  assert.equal(normalizeFlags({ androidMonthlySupport: 'true' }).androidMonthlySupport, false);
+  assert.equal(showMonthlySupport(OFF, 'android'), false);
+  assert.equal(showMonthlySupport(ANDROID_ON, 'android'), true);
+  assert.equal(showMonthlySupport(OFF, 'ios'), true);
+  assert.equal(showMonthlySupport(ANDROID_ON, 'ios'), true);
+  assert.equal(showMonthlySupport(OFF, 'web'), true);
+  assert.equal(showMonthlySupport(OFF), true);
+});
+
+test('Settings shows the Privacy Policy row with the accounts flag OFF ("Settings") and ON ("Account")', () => {
+  assert.equal(accountScreen(OFF).showPrivacyRow, true);
+  assert.equal(accountScreen(ACCOUNTS_ON).showPrivacyRow, true);
+});
+
+test('Support the Show gates the Monthly Support section and the checkout line on showMonthlySupport(flags, Platform.OS); the sponsor entries, One-Time Donation and Mail are not gated', () => {
+  const sub = readFileSync(new URL('../screens/shared/Subscription.js', import.meta.url), 'utf8');
+  assert.match(sub, /\{showMonthlySupport\(flags, Platform\.OS\) \? \(\s*<Section title="Monthly Support">/);
+  assert.ok(sub.indexOf('showMonthlySupport(') < sub.indexOf('title="One-Time Donation"') && sub.indexOf('title="One-Time Donation"') < sub.indexOf('title="Mail"'));
+  assert.equal((sub.match(/showMonthlySupport\(/g) || []).length, 1, 'the gate wraps ONLY the Monthly Support section');
+  const co = readFileSync(new URL('../screens/modal/SubscriptionCheckout.js', import.meta.url), 'utf8');
+  assert.match(co, /showMonthlySupport\(flags, Platform\.OS\) \? <Text style=\{styles\.subtitle\}>Plans start at \$5\/month\.<\/Text> : null/);
+});
+
+test('no plain http:// URLs ship in src/ (Play: use https)', () => {
+  const bad = [];
+  const walk = (dir) => { for (const f of readdirSync(dir)) { const p = join(dir, f); if (statSync(p).isDirectory()) walk(p); else if (/\.js$/.test(f) && !/\.test\.js$/.test(f)) for (const m of readFileSync(p, 'utf8').matchAll(/http:\/\/[^\s'"`)]+/g)) if (!/^http:\/\/(localhost|127\.0\.0\.1|10\.0\.2\.2)/.test(m[0]) && !/w3\.org/.test(m[0])) bad.push(`${p.replace(/.*\/src\//, 'src/')}: ${m[0]}`); } };
+  walk(new URL('..', import.meta.url).pathname);
+  assert.deepEqual(bad, []);
 });

@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ChevronDown } from 'lucide-react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
+import { useFeatureFlags } from '../../context/FeatureFlagsContext';
+import { showMonthlySupport } from '../../lib/featureFlags';
 import { title as titlePreset, errorText as errorTextPreset, buttonPrimary, buttonPrimaryText } from '../../design/qf-presets';
 
 const CHECKOUT_URL =
@@ -10,6 +12,7 @@ const CHECKOUT_URL =
 const REDIRECT_URL = 'quitefrankly://checkout-complete';
 
 export default function SubscriptionCheckout({ navigation }) {
+  const flags = useFeatureFlags();
   const [launchFailed, setLaunchFailed] = useState(false);
 
   const handleContinue = async () => {
@@ -39,7 +42,7 @@ export default function SubscriptionCheckout({ navigation }) {
       </View>
 
       <Text style={styles.title}>Support the Show</Text>
-      <Text style={styles.subtitle}>Plans start at $5/month.</Text>
+      {showMonthlySupport(flags, Platform.OS) ? <Text style={styles.subtitle}>Plans start at $5/month.</Text> : null}
 
       {launchFailed && (
         <Text style={styles.errorText}>Couldn't open checkout. Please try again.</Text>
