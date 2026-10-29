@@ -1,10 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { Image } from 'react-native';
 import {
   setAudioModeAsync,
   useAudioPlayer as useExpoAudioPlayer,
   useAudioPlayerStatus,
 } from 'expo-audio';
+import { lockScreenMetadata } from '../lib/lockScreenArtwork';
+import { upgradeToHttps } from '../lib/mediaUrl';
+import { loadLockScreenArtwork } from '../lib/lockScreenArtworkNative';
 
 const AudioPlayerContext = createContext({
   currentTrack: null,
@@ -20,13 +22,6 @@ const AudioPlayerContext = createContext({
   setVideoActive: () => {},
 });
 
-// No per-episode artwork exists in the feed data — static show logo, resolved
-// to a URI via RN's built-in resolver (expo-audio's artworkUrl takes a URL
-// string, not a raw require() result — no need for the expo-asset dependency).
-const ARTWORK_URI = Image.resolveAssetSource(
-  require('../assets/images/quite-frankly-logo-final.png')
-).uri;
-
 export function AudioPlayerProvider({ children }) {
   const player = useExpoAudioPlayer();
   const status = useAudioPlayerStatus(player);
@@ -34,6 +29,19 @@ export function AudioPlayerProvider({ children }) {
   // Shared with video screens (see useVideoActiveSource) so podcast and
   // video playback stay mutually exclusive — 'podcast' | 'video' | null.
   const [activeSource, setActiveSource] = useState(null);
+
+  // Lock-screen artwork = the app icon, copied to a file:// URL on Android release builds (see src/lib/lockScreenArtwork.js).
+  // Resolved once at start-up; null (not ready / failed) just means no artwork, never an error.
+  const artworkUriRef = useRef(null);
+  useEffect(() => {
+    let alive = true;
+    loadLockScreenArtwork().then((uri) => {
+      if (alive) artworkUriRef.current = uri;
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   useEffect(() => {
     // doNotMix is required for setActiveForLockScreen to work (per expo-audio docs).
@@ -53,15 +61,21 @@ export function AudioPlayerProvider({ children }) {
         return;
       }
       // Single track at a time — replace() swaps the loaded source outright, no queue.
-      player.replace({ uri: episode.audioUrl });
+      // https only: release builds block the cleartext hop in the tracker-wrapped feed URLs (see src/lib/mediaUrl.js)
+      player.replace({ uri: upgradeToHttps(episode.audioUrl) });
       setCurrentTrack(episode);
       // Android kills background audio after ~3 min without this — must be
       // called for every new track, not just once at app start.
-      player.setActiveForLockScreen(
-        true,
-        { title: episode.title, artist: 'Quite Frankly', artworkUrl: ARTWORK_URI },
-        { isLiveStream: false }
-      );
+      // Lock-screen metadata is a nicety: if native rejects it, playback must still start.
+      try {
+        player.setActiveForLockScreen(
+          true,
+          lockScreenMetadata({ title: episode.title, artworkUri: artworkUriRef.current }),
+          { isLiveStream: false }
+        );
+      } catch (err) {
+        console.warn('setActiveForLockScreen failed', err);
+      }
       player.play();
     },
     [currentTrack, player]

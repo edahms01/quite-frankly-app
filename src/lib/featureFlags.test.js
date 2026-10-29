@@ -169,9 +169,9 @@ test('removed for the first release (recoverable from tag pre-link-cleanup): no 
   }
 });
 
-test('no plain http:// URLs ship in src/ (Play: use https)', () => {
+test('no plain http:// URLs ship in src/ (Play: use https; mediaUrl.js, the http->https converter, is the one file that names the scheme)', () => {
   const bad = [];
-  const walk = (dir) => { for (const f of readdirSync(dir)) { const p = join(dir, f); if (statSync(p).isDirectory()) walk(p); else if (/\.js$/.test(f) && !/\.test\.js$/.test(f)) for (const m of readFileSync(p, 'utf8').matchAll(/http:\/\/[^\s'"`)]+/g)) if (!/^http:\/\/(localhost|127\.0\.0\.1|10\.0\.2\.2)/.test(m[0]) && !/w3\.org/.test(m[0])) bad.push(`${p.replace(/.*\/src\//, 'src/')}: ${m[0]}`); } };
+  const walk = (dir) => { for (const f of readdirSync(dir)) { const p = join(dir, f); if (statSync(p).isDirectory()) walk(p); else if (/\.js$/.test(f) && !/\.test\.js$/.test(f) && f !== 'mediaUrl.js') for (const m of readFileSync(p, 'utf8').matchAll(/http:\/\/[^\s'"`)]+/g)) if (!/^http:\/\/(localhost|127\.0\.0\.1|10\.0\.2\.2)/.test(m[0]) && !/w3\.org/.test(m[0])) bad.push(`${p.replace(/.*\/src\//, 'src/')}: ${m[0]}`); } };
   walk(new URL('..', import.meta.url).pathname);
   assert.deepEqual(bad, []);
 });
