@@ -5,6 +5,7 @@ import { PROMPT_DELAY_MS, shouldPromptForPush, shouldRegisterWithoutPrompt } fro
 import { DEFAULT_PREFERENCES, registerForPushNotifications } from '../lib/pushNotifications';
 
 /**
+ * (Android 13+ reports `denied` with canAskAgain=true before the first request, so `canAskAgain` is part of the decision.)
  * The only place the app asks for notification permission now that onboarding is skipped by default. Runs from Home: about 1.5 s after Home first shows, if the OS has
  * never been asked and we have not asked before, show the system prompt once (the marker is written BEFORE asking, so a kill mid-prompt never re-asks) and register the
  * device on a yes, exactly as the old onboarding screen did. If Home is not the focused screen at that moment (a modal or another stack is up) nothing happens and the
@@ -16,8 +17,8 @@ export function useFirstHomePushPrompt(navigation) {
     let timer;
     (async () => {
       try {
-        const [{ status }, asked] = await Promise.all([Notifications.getPermissionsAsync(), hasAskedForPush()]);
-        const state = { permission: status, asked };
+        const [{ status, canAskAgain }, asked] = await Promise.all([Notifications.getPermissionsAsync(), hasAskedForPush()]);
+        const state = { permission: status, canAskAgain, asked };
         if (cancelled) return;
         if (shouldRegisterWithoutPrompt(state)) {
           await markAskedForPush();
