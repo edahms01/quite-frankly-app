@@ -43,7 +43,11 @@ test('eas.json production is still an AAB for Play (no android block) and still 
 
 test('app.json: RECORD_AUDIO, SYSTEM_ALERT_WINDOW and CAMERA are kept out of the Android build, backups are off, background audio stays', () => {
   const app = JSON.parse(readFileSync(new URL('../../app.json', import.meta.url), 'utf8')).expo;
-  assert.deepEqual([...app.android.blockedPermissions].sort(), ['android.permission.CAMERA', 'android.permission.SYSTEM_ALERT_WINDOW']);
+  assert.deepEqual([...app.android.blockedPermissions].sort(), ['android.permission.CAMERA', 'android.permission.RECORD_AUDIO', 'android.permission.SYSTEM_ALERT_WINDOW']);
+  // expo-image-picker's plugin ALSO adds RECORD_AUDIO and CAMERA unless told not to (found on the first Stage B build: expo-audio's option alone was not enough)
+  const picker = app.plugins.find((p) => Array.isArray(p) && p[0] === 'expo-image-picker');
+  assert.equal(picker[1].microphonePermission, false);
+  assert.equal(picker[1].cameraPermission, false);
   assert.equal(app.android.allowBackup, false);
   const audio = app.plugins.find((p) => Array.isArray(p) && p[0] === 'expo-audio');
   assert.deepEqual(audio[1], { enableBackgroundPlayback: true, recordAudioAndroid: false });

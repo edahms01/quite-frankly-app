@@ -30,7 +30,8 @@
       ],
       "blockedPermissions": [
         "android.permission.SYSTEM_ALERT_WINDOW",
-        "android.permission.CAMERA"
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
       ],
       "allowBackup": false
     },
@@ -50,7 +51,9 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow Quite Frankly to access your photos to attach a screenshot to a bug report."
+          "photosPermission": "Allow Quite Frankly to access your photos to attach a screenshot to a bug report.",
+          "microphonePermission": false,
+          "cameraPermission": false
         }
       ],
       [
