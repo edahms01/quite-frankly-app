@@ -4,9 +4,7 @@ import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
 import { button, buttonText } from '../../design/qf-presets';
 import BackHeader from '../../components/BackHeader';
 import Section from '../../components/Section';
-
-const BANDCAMP_ALBUM_ID = '1087783863';
-const EMBED_URL = `https://bandcamp.com/EmbeddedPlayer/album=${BANDCAMP_ALBUM_ID}/size=large/bgcol=1E1B1F/linkcol=C9974A/tracklist=false/transparent=true/`;
+import { allowBandcampNavigation, BANDCAMP_EMBED_HEIGHT, BANDCAMP_EMBED_URL } from '../../lib/bandcampEmbed';
 
 const SPOTIFY_PLAYLIST_ID = '1bpbozIzTEHbvtVRf8nyyI';
 const SPOTIFY_PLAYLIST_URL = `https://open.spotify.com/playlist/${SPOTIFY_PLAYLIST_ID}`;
@@ -39,9 +37,12 @@ export default function Music({ navigation }) {
         <Section title="Set the Charge">
           <View style={[styles.playerCard, styles.bandcampCard]}>
             <WebView
-              source={{ uri: EMBED_URL }}
+              source={{ uri: BANDCAMP_EMBED_URL }}
               style={styles.webview}
               scrollEnabled={false}
+              // the player's title and "bc" mark link to the album (store) page: only the player itself may load
+              onShouldStartLoadWithRequest={(request) => allowBandcampNavigation(request.url)}
+              setSupportMultipleWindows={false}
             />
           </View>
           <Text style={styles.caption}>Powered by Bandcamp</Text>
@@ -71,7 +72,7 @@ const styles = StyleSheet.create({
     height: 152,
   },
   bandcampCard: {
-    height: 400,
+    height: BANDCAMP_EMBED_HEIGHT,
   },
   webview: {
     flex: 1,
