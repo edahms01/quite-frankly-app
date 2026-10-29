@@ -24,8 +24,8 @@ const JOIN = [
 const FOLLOW = [
   { label: 'Substack', Icon: Newspaper, url: 'https://quitefranklyofficial.substack.com' },
   { label: 'Instagram', Icon: Camera, url: 'https://www.instagram.com/quitefranklyofficial/' },
-  { label: 'X', Icon: X, url: 'http://twitter.com/QuiteFranklyTV' },
-  { label: 'Tumblr', Icon: Music2, url: 'http://stonedandstudying.tumblr.com' },
+  { label: 'X', Icon: X, url: 'https://twitter.com/QuiteFranklyTV' },
+  { label: 'Tumblr', Icon: Music2, url: 'https://stonedandstudying.tumblr.com' },
   { label: 'YouTube', Icon: CirclePlay, url: 'https://www.youtube.com/@QuiteFrankly/posts' },
   { label: 'Truth', Icon: TruthIcon, url: 'https://truthsocial.com/@QuiteFrankly' },
 ];

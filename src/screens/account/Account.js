@@ -9,7 +9,8 @@ import { signOut } from '../../lib/account';
 import { useFeatureFlags } from '../../context/FeatureFlagsContext';
 import { accountScreen } from '../../lib/featureFlags';
 import { caption } from '../../design/qf-presets';
-import { OWNERSHIP_NOTICE } from '../../config/legal';
+import * as WebBrowser from 'expo-web-browser';
+import { OWNERSHIP_NOTICE, PRIVACY_POLICY_URL } from '../../config/legal';
 
 const ROWS = [
   { label: 'Support the Show', route: 'Subscription' },
@@ -80,6 +81,15 @@ export default function Account({ navigation }) {
             <Text style={styles.rowLabel}>Report a Bug / Request Features</Text>
             <ChevronRight color={colors.inkMuted} size={18} />
           </TouchableOpacity>
+          {view.showPrivacyRow ? (
+            <TouchableOpacity
+              style={styles.row}
+              onPress={() => WebBrowser.openBrowserAsync(PRIVACY_POLICY_URL, { dismissButtonStyle: 'close' })}
+            >
+              <Text style={styles.rowLabel}>Privacy Policy</Text>
+              <ChevronRight color={colors.inkMuted} size={18} />
+            </TouchableOpacity>
+          ) : null}
         </View>
 
         {view.showSignOut || view.showDeleteAccount ? (

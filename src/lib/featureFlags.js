@@ -1,19 +1,24 @@
 // Remote feature flags: pure logic (no React, no native modules) so both flag states can be tested with node --test.
-// The flags come from netlify/functions/get-feature-flags.js (Blobs store qf-flags/flags). Everything is OFF unless the server says a flag is
-// literally `true`. FLAG_DEFAULTS must list the same keys as netlify/functions/lib/flags.js.
+// The flags come from netlify/functions/get-feature-flags.js (Blobs store qf-flags/flags). A flag whose default is OFF turns on only for a literal `true`.
+// A flag whose default is ON (askfrankie_enabled, since the Play launch) stays on unless the server sends a literal `false`: that is the kill switch, and a
+// missing key, a failed fetch or a first launch with no cache all keep it on. FLAG_DEFAULTS must list the same keys as netlify/functions/lib/flags.js.
 
 export const FLAG_DEFAULTS = {
-  askfrankie_enabled: false,
+  askfrankie_enabled: true,   // AskFrankie is live in the launch build: the Home tile is there from the first launch; `false` from the server hides it (Android) / shows "Coming Soon" (iOS)
   askfrankie_linked_login: false,
   accounts: false,        // account creation, sign-in, Sign Out, Delete Account, the AskFrankie login handoff
   cultureClub: false,     // the Culture Club tab/page, its Home card, and the club days on Schedule (Schedule itself is always on)
   onboarding: false,      // the onboarding stack (Welcome, notifications, email steps) on a fresh install; OFF = straight to Home
+  androidMonthlySupport: false,   // ANDROID ONLY: show the Monthly Support section (Squarespace card, Patreon, SubscribeStar) on Support the Show; OFF = hidden on Android (Play Payments policy); iOS always shows it
 };
 
-/** Only a literal `true` counts; unknown keys are dropped. */
+/** One flag from a raw server value: default-ON flags are off only for a literal `false`; default-OFF flags are on only for a literal `true`. */
+const fromRaw = (k, v) => (FLAG_DEFAULTS[k] === true ? v !== false : v === true);
+
+/** Default-OFF flags: only a literal `true` counts. Default-ON flags: only a literal `false` turns them off. Unknown keys are dropped. */
 export function normalizeFlags(raw) {
   const out = { ...FLAG_DEFAULTS };
-  if (raw && typeof raw === 'object') for (const k of Object.keys(FLAG_DEFAULTS)) out[k] = raw[k] === true;
+  if (raw && typeof raw === 'object') for (const k of Object.keys(FLAG_DEFAULTS)) out[k] = fromRaw(k, raw[k]);
   return out;
 }
 
@@ -58,9 +63,17 @@ export function visibleTabs(flags) {
   return ['Home', 'Watch', 'Listen', ...(isEnabled(flags, 'cultureClub') ? ['CultureClub'] : [])];
 }
 
-/** Home tiles: an entry with `flag` is shown only while that flag is on. */
-export function homeDestinations(all, flags) {
-  return all.filter((d) => !d.flag || isEnabled(flags, d.flag));
+/**
+ * Home tiles: an entry with `flag` is shown only while that flag is on. An entry with `enabledBy` + `hideWhenOffOnAndroid` is hidden entirely (no "Coming Soon"
+ * tile) on Android while that flag is off; iOS keeps the muted "Coming Soon" tile.
+ */
+export function homeDestinations(all, flags, os) {
+  return all.filter((d) => (!d.flag || isEnabled(flags, d.flag)) && !(d.hideWhenOffOnAndroid && os === 'android' && d.enabledBy && !isEnabled(flags, d.enabledBy)));
+}
+
+/** Support the Show: the "Monthly Support" section (and the checkout's "Plans start at $5/month.") is hidden on Android unless `androidMonthlySupport` is on (Play Payments policy). iOS and everything else: shown. */
+export function showMonthlySupport(flags, os) {
+  return os !== 'android' || isEnabled(flags, 'androidMonthlySupport');
 }
 
 /** Schedule (the Calendar.js page): with cultureClub OFF every club day shows as a normal show day, so Culture Club never appears; ON: the week as given. */
@@ -84,10 +97,10 @@ export function accountEntry(flags) {
     : { icon: 'gear', title: 'Settings' };
 }
 
-/** What the account screen shows: with accounts off it is "Settings" without the email row, Sign Out and Delete Account. The ownership notice at the bottom shows in both states. */
+/** What the account screen shows: with accounts off it is "Settings" without the email row, Sign Out and Delete Account. The Privacy Policy row and the ownership notice at the bottom show in both states. */
 export function accountScreen(flags) {
   const on = isEnabled(flags, 'accounts');
-  return { title: on ? 'Account' : 'Settings', showEmailRow: on, showSignOut: on, showDeleteAccount: on, showOwnershipNotice: true };
+  return { title: on ? 'Account' : 'Settings', showEmailRow: on, showSignOut: on, showDeleteAccount: on, showPrivacyRow: true, showOwnershipNotice: true };
 }
 
 /** AskFrankie in the app: the login handoff (link token, email prefill) runs only with accounts on. */
