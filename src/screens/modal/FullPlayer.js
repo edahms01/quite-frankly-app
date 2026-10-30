@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { ChevronDown, CirclePlay, Pause } from 'lucide-react-native';
 import { colors, fontFamily, fontSize, radius, spacing } from '../../theme';
@@ -83,7 +83,8 @@ export default function FullPlayer({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.artwork} />
+      {/* the app icon, same image as the lock-screen artwork (assets/icon.png by path); an RN Image resolves bundled assets in release builds, no URL helper needed */}
+      <Image source={require('../../../assets/icon.png')} style={styles.artwork} accessibilityIgnoresInvertColors />
 
       <Text style={styles.title}>{currentTrack.title}</Text>
 
@@ -125,6 +126,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceCard,
     borderWidth: 1,
     borderColor: colors.surfaceLine,
+    overflow: 'hidden',
     marginBottom: spacing.lg,
   },
   title: {
