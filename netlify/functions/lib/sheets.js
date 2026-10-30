@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { fetchWithBackoff } from './fetchWithBackoff.js';
+import { buildDeleteRowRequests } from './bugRetention.js';
 
 let cachedToken = null;
 let cachedTokenExpiry = 0;
@@ -328,4 +329,21 @@ export async function formatColumnsAsText(tab, columnLetters) {
     throw new Error(`Sheets column format update for "${tab}" failed: ${response.status} ${await response.text()}`);
   }
   return response.json();
+}
+
+// Deletes whole rows (1-based sheet row numbers, never row 1) with ONE spreadsheet-level batchUpdate; requests go bottom-up so the numbers stay valid.
+// Used only by the bug-report retention job.
+export async function deleteRows(tab, rowNumbers) {
+  const requests = buildDeleteRowRequests(await getSheetId(tab), rowNumbers);
+  if (requests.length === 0) return { deleted: 0 };
+  const token = await getAccessToken();
+  const response = await fetch(sheetsUrl(':batchUpdate'), {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ requests }),
+  });
+  if (!response.ok) {
+    throw new Error(`Sheets row delete on "${tab}" failed: ${response.status} ${await response.text()}`);
+  }
+  return { deleted: rowNumbers.length };
 }
