@@ -3,12 +3,26 @@
 | Asset | Spec (Console) | Status |
 |---|---|---|
 | **App icon** | 512 x 512 PNG, 32-bit, up to 1 MB, no rounded corners baked in | **Done**: `docs/play-console/store-icon-512.png` (512x512, opaque, from "jester bright 2x") |
-| **Feature graphic** | 1024 x 500 PNG or JPEG, no alpha | **Missing.** Not created. Suggestion: the wide wordmark on the dark background (`src/assets/images/quite-frankly-tv-wordmark-gold.png` is 1260x264 transparent) centred on `#0c0f14`, nothing else, no store badges, no rating text, no "free / new / best" words. Say so and I will make it |
+| **Feature graphic** | 1024 x 500 PNG or JPEG, no alpha, up to 15 MB | **Done**: `docs/play-console/feature-graphic-1024x500.png`. Checked 2026-10-30: exactly 1024x500, PNG, 8-bit RGB (no alpha channel), 188,032 bytes (0.18 MB). Eric's file `feature-graphic-B2-seamless.png`, copied byte for byte (cmp identical), not modified |
 | **Phone screenshots** | 2 to 8; JPEG or 24-bit PNG (**no alpha**); each side 320 to 3840 px; **the long side may not exceed 2x the short side** (so 1080x2400 is rejected, 1080x2160 or 1080x1920 passes). 4 to 8 recommended | **Not captured yet.** Capture list below |
 | 7-inch / 10-inch tablet screenshots | optional (`supportsTablet` is false) | skip |
 | Promo video | optional | skip |
 
-## How to capture from the v8 APK (API 36 emulator, one emulator at a time)
+## The 8 screenshots (captured 2026-10-30 from `quite-frankly-v8-release-qa.apk`, versionCode 8, 1080x1920, gesture navigation, status bar set to 12:00 / full battery)
+| File | Screen |
+|---|---|
+| `01-home.png` | Home: Most Recent card + first tiles |
+| `02-watch.png` | Watch: video grid |
+| `03-video-player.png` | Video Player: title, actions, stripped description preview |
+| `04-listen.png` | Listen: episode list with the MiniPlayer playing |
+| `05-read.png` | Read > Blog |
+| `06-jam.png` | Jam: Spotify playlist + Bandcamp small player |
+| `07-play.png` | Play: Snake window over a playing video |
+| `08-askfrankie.png` | AskFrankie: a streamed answer (AI chat, guest) |
+
+Checked: no removed UI visible (no gold Support button, no Culture Club, no donate or crypto text), no notification prompt, no dev menu or overlay, no error or offline banner. Things to know before uploading: the MiniPlayer bar is visible at the bottom of shots 05 to 08 (it is a real feature; to drop it, force-stop the app before capturing); shot 07 shows Snake at "Game Over - Score: 0" (retake after a few moves if you want a livelier frame); shot 01 shows the red "Live Now" badge, a live show at capture time.
+
+## How they were captured (v8 release-qa APK, API 36 emulator; to redo) (API 36 emulator, one emulator at a time)
 ```
 adb install -r quite-frankly-v8-release-qa.apk
 adb shell wm size 1080x1920 && adb shell wm density 420     # 16:9, passes the 2:1 rule

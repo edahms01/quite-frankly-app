@@ -15,15 +15,22 @@ Source of truth: `netlify/public/privacy.html` (live at https://quite-frankly-ap
 ## Data types (tick exactly these; everything else = not collected)
 | Category > type | Collected | Shared | Optional? | Purposes | Why / what exactly |
 |---|---|---|---|---|---|
-| **Device or other IDs** | Yes | Yes (see "Embedded players" below) | Required | App functionality; Fraud prevention, security and compliance | (a) Expo push token, sent to our server only if the user allows notifications; (b) Firebase installation ID created by Firebase Cloud Messaging (no Analytics, no ads SDK); (c) AskFrankie stores a one-way scrambled (HMAC) network address per question to limit abuse. Not linked to a person; not used for ads |
+| **Device or other IDs** | Yes | **Yes** (embedded players only; see "Shared vs service providers" below) | Required | App functionality; Fraud prevention, security and compliance | (a) Expo push token, sent to our server only if the user allows notifications; (b) Firebase installation ID created by Firebase Cloud Messaging (no Analytics, no ads SDK); (c) AskFrankie stores a one-way scrambled (HMAC) network address per question to limit abuse. Not linked to a person; not used for ads |
 | **App activity > Other user-generated content** | Yes | No | Optional | App functionality | Text of bug reports / feature requests (Settings > Report a Bug) and the optional AskFrankie questions (AI chat). AskFrankie questions go to Anthropic and Voyage AI as service providers (consent box before the first question) |
 | **Photos and videos > Photos** | Yes | No | Optional | App functionality | One optional screenshot the user picks with the system Photo Picker and attaches to a bug report |
 | **App info and performance > Diagnostics** | Yes | No | Optional | App functionality | A short device string sent with a bug report (`android <version> / Quite Frankly 1.0.0`) |
 
 **Not collected (leave unticked):** location, personal info (name, **email**, address, phone, user IDs), financial info, health and fitness, messages, audio, files and docs, calendar, contacts, web browsing, crash logs. The app has no sign-in, so no email is collected; the earlier test accounts (if any) are removable on request.
 
-## Embedded players (decision for Eric; recommendation: declare)
-YouTube, Spotify and Bandcamp load inside the app in WebViews, and SoundCloud / Twitch / Rumble / SpeakPipe open in the browser tab. These sites receive the device's network address and browser details directly. Google may treat that as data "shared" by the app. **Recommended (conservative, matches `privacy.html` "they handle your data under their own policies"):** on *Device or other IDs* answer **Shared: Yes**, recipient type "third party", purpose **App functionality** (playing the embedded content). The alternative (answer No) is the lower-disclosure option and carries a mismatch risk if reviewed. Apple's equivalent answer is in `CLAUDE.md`.
+## Shared vs service providers (decided by Eric 2026-10-30)
+**SHARED = Yes**, on *Device or other IDs*: the **YouTube, Spotify and Bandcamp embedded players**. They load inside the app in WebViews and receive the device's network address and browser details directly, and they handle that data under their own policies. This is what `privacy.html` says ("they handle your data under their own policies"). In the Console: recipient type "third party", purpose **App functionality** (playing the embedded content). SoundCloud, Twitch, Rumble and SpeakPipe only open in the browser tab (the browser, not the app, talks to them): not app-shared, but they are named in `privacy.html`.
+
+**NOT shared (service providers acting on our behalf)**, so they are "collected", not "shared" under Google's definition:
+- **Netlify**: hosts our servers and the small database for push registrations, bug reports and AskFrankie data. It only stores and serves what we send it.
+- **Expo push service (with Google FCM / Apple APNs)**: only delivers the notifications we ask it to send; the push token is used for nothing else.
+- **Anthropic and Voyage AI**: process an AskFrankie question to write and search an answer, under the user's explicit consent box, and only for that request.
+
+Why the difference: the embedded players receive data because the user's device talks to them for their own purposes; the three above receive data only to do a job for us.
 
 ## Retention and deletion (free-text where asked)
 - Push registration: kept until the device unregisters or the user asks for deletion (email).

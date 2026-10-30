@@ -13,11 +13,12 @@ Only `store-icon-512.png` (512x512, opaque; the new jester icon). No other file 
 | `03-foreground-service.md` | App content > Foreground service permissions (text + 30 s video shot list) |
 | `04-store-listing.md` + `listing/*.txt` | Grow > Store presence > Main store listing |
 | `05-app-content.md` | App content: privacy policy, app access, ads, target audience, news, government, financial, health, other |
-| `06-graphics.md` | Store listing graphics + what to capture from the v8 APK |
+| `06-graphics.md` | Store listing graphics (feature graphic + 8 screenshots included) |
 | `07-submission-checklist.md` | The order to do it in, who does each step |
 
-## Decisions that are Eric's (also marked inline)
-1. **App title** while Frank's written permission is pending (`04`).
-2. **Data safety: declare the embedded players as "shared"?** Recommended yes (`01`).
-3. **Developer account type** (personal vs organization) decides whether a 14-day closed test is required before production (`07`).
-4. **Bug-report retention**: the policy promises deletion after 6 months but nothing deletes them automatically yet (`01`).
+## Decisions (Eric, 2026-10-30)
+1. **Title** `Quite Frankly`; keep "fan-built, independent, not run by Frank"; no "used with permission" (`04`).
+2. **Data safety**: YouTube, Spotify and Bandcamp embedded players are **shared**; Netlify, Expo push, Anthropic and Voyage AI are service providers, not shared (`01`).
+3. **Developer account** is an Organization account: no closed-test requirement (`07`).
+4. **Bug-report retention**: automatic 6-month delete is a separate PR, dry-run only until Eric enables it (`01`).
+5. **Graphics**: `feature-graphic-1024x500.png` and `screenshots/` are included (`06`).

@@ -4,7 +4,7 @@ Rules applied (Google Play metadata policy): no price or promo words, no ALL CAP
 
 | Field | Paste / choose | Limit |
 |---|---|---|
-| **App name** | **Decision (Eric).** Until Frank's written permission is confirmed use `Quite Frankly Fan App` (21 / 30). With permission: `Quite Frankly` (13 / 30). The installed app name stays "Quite Frankly" either way; only the Play title changes | 30 |
+| **App name** | **`Quite Frankly`** (13 / 30). Decided by Eric 2026-10-30. Same as the installed app name | 30 |
 | **Short description** | `listing/short-description.txt`: "Watch, listen and read the Quite Frankly show, with alerts for new episodes." (76 / 80) | 80 |
 | **Full description** | `listing/full-description.txt` (2078 / 4000). Includes "This app is fan-built and independent. It is not run by Frank." (true today, matches the in-app bug-report screen), the AskFrankie AI disclosure, and the approved ownership notice word for word (the same string as `src/config/legal.js`) | 4000 |
 | **App or game** | App | |
@@ -18,6 +18,6 @@ Rules applied (Google Play metadata policy): no price or promo words, no ALL CAP
 | **Privacy policy** | https://quite-frankly-app.netlify.app/privacy.html | |
 
 ## Notes
-- The title / brand risk: "Quite Frankly" is the show's name. A listing titled exactly that, with the show's name in the package, can be read as implying the show runs the app. That is why the description says it is fan-built and independent, and why I recommend the `Fan App` title until Frank's permission is in writing. Once you have the permission, say so and I will switch the title and soften the sentence (the ownership notice itself says "used with permission" may be added only when you say so).
+- Brand risk (kept on purpose): "Quite Frankly" is the show's name, so a listing with that exact title can be read as implying the show runs the app. Eric decided to keep the title and to **keep** the sentence "This app is fan-built and independent. It is not run by Frank." in the full description because it lowers the impersonation risk. Do not add "used with permission" anywhere (title, description or ownership notice) unless Eric says so.
 - "Shop" is described as links to partner shops with purchases on the partners' sites; there is no purchase flow in the app. Remove that paragraph if you prefer not to mention shops.
 - Screenshot captions are not needed; graphics are in `06-graphics.md`.
