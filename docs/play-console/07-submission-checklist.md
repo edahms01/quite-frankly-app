@@ -9,7 +9,7 @@
 - [ ] **ERIC / CHECK** App-site publish is current (privacy page is live; the paid-Substack push change and anything else on the app site must be published before launch). Production flags: `accounts` off, `onboarding` off, `askfrankie_enabled` on, `websiteLink` on.
 - [x] **RESOLVED** Developer account is an **Organization** account (DahmsIO LTD), so the 12-tester / 14-day closed-test rule for new personal accounts does not apply.
 - [x] **DECIDED** Title `Quite Frankly`; embedded players declared as shared (`01`); feature graphic and screenshots are in this folder (`06`).
-- [ ] **ERIC** Bug-report retention: the scheduled delete is in its own PR (dry-run only until you say so); enable it before launch or reword `privacy.html`.
+- [ ] **ERIC** Bug-report retention: PR #66 adds the daily delete (dry-run only until you set `BUG_RETENTION_ENABLED=true` in Netlify); merge, publish the app site, then enable it before launch.
 - [x] **READY** AAB: `~/Desktop/Claude/qf-builds/quite-frankly-v8-production.aab` (versionCode 8, signed with the upload key, manifest and 16 KB checks pass). Each new upload needs a higher versionCode.
 
 ## In the Console

@@ -34,7 +34,7 @@ Why the difference: the embedded players receive data because the user's device 
 
 ## Retention and deletion (free-text where asked)
 - Push registration: kept until the device unregisters or the user asks for deletion (email).
-- Bug reports and screenshots: kept up to 6 months, then deleted. **Open item: nothing deletes them automatically yet** (`CLAUDE.md` release-prep 8a). Either build the purge job before launch or reword `privacy.html`.
+- Bug reports and screenshots: kept up to 6 months, then deleted. The automatic delete is built in PR #66 (`bug-report-retention`, daily). **It deletes nothing until Eric sets `BUG_RETENTION_ENABLED=true`**; enable it before launch so the policy statement is true (0 reports are old enough today).
 - AskFrankie guest questions: erased automatically after 90 days (AskFrankie privacy notice, https://askfrankie.netlify.app/privacy.html).
 
 ## Cross-checks (all verified on the v8 build)
