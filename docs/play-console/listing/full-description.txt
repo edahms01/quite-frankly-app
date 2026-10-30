@@ -1,0 +1,34 @@
+Quite Frankly in one app: watch the videos, listen to the podcast, read the posts and get an alert when a new show starts.
+
+This app is fan-built and independent. It is not run by Frank.
+
+What you can do
+
+Watch: browse the video library, play videos inside the app and read the episode notes. A live indicator shows when the show is on air.
+
+Listen: play podcast episodes, keep listening with the screen off, and control playback from the notification and the lock screen.
+
+Read: posts from the Substack, the blog and the newsletter archive, in a clean reading view.
+
+Alerts: choose live alerts, new-video alerts and new-post alerts. Notifications are optional and you can change them at any time in Settings.
+
+Jam: the show's playlist and music from the show's band.
+
+Play: four small games (Snake, Minesweeper, Solitaire and Memory Match) that you can play in a window over a video.
+
+Call: the show's call-in details and a link to leave a voicemail.
+
+Schedule and Connect: the weekly schedule and links to the show's social profiles.
+
+Shop: links to the show's partner shops. Purchases are made on the partners' own sites, never in the app.
+
+AskFrankie (optional, AI)
+AskFrankie is an AI chat that searches the show archive and tells you what was said and in which episode. It opens as a guest, with no account. Before your first question you must agree that your questions are processed by third-party AI providers (Anthropic and Voyage AI). It is for people aged 18 and over. AI answers can be wrong, so use Report a Problem under any answer.
+
+Your privacy
+No account, no sign-in, no advertising and no tracking. Bug reports and feature requests can be sent from Settings and include only what you type, an optional screenshot you choose and basic device information. Privacy policy: https://quite-frankly-app.netlify.app/privacy.html
+
+Ownership
+© 2026 DahmsIO LTD (app software and design). The Quite Frankly name, logos, episodes and show content belong to Frank / Quite Frankly. Any other names, logos and embedded content belong to their owners.
+
+Contact: hello@dahms.io
