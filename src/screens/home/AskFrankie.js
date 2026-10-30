@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { BackHandler, Linking, StyleSheet, View } from 'react-native';
+import { BackHandler, Keyboard, Linking, Platform, StyleSheet, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as WebBrowser from 'expo-web-browser';
 import { colors } from '../../theme';
@@ -12,6 +12,7 @@ import { APP_UA_NAME, ASKFRANKIE_ORIGIN, ASKFRANKIE_URL } from '../../config/ask
 import { classifyRequest, linkInjection, parsePageMessage } from '../../lib/askfrankieNav';
 import { shouldRunAskFrankieHandoff } from '../../lib/featureFlags';
 import { fetchLinkToken, getStoredEmail } from '../../lib/account';
+import { keyboardOverlap } from '../../lib/keyboardOverlap';
 
 // AskFrankie inside the app: the product site in a WebView (page opens in app layout: "?app=1" + the QFApp/ user agent). The page tells us when it has loaded
 // ("ready", and whether it is signed in); a signed-in app user is then handed a short-lived signed login token so they never see a second sign-in. The token goes
@@ -57,6 +58,18 @@ export default function AskFrankie({ navigation }) {
     if (msg.type === 'ready' && !msg.signedIn && shouldRunAskFrankieHandoff(flags)) handshake();
   };
 
+  // Android is edge-to-edge: the keyboard is drawn over the page instead of resizing it, which hid the page's input box. Pad the bottom by the overlap.
+  const wrapRef = useRef(null);
+  const [keyboardPad, setKeyboardPad] = useState(0);
+  useEffect(() => {
+    if (Platform.OS !== 'android') return undefined;
+    const show = Keyboard.addListener('keyboardDidShow', (e) => {
+      wrapRef.current?.measureInWindow((x, y, w, h) => setKeyboardPad(keyboardOverlap({ containerBottom: y + h, keyboardTop: e.endCoordinates.screenY })));
+    });
+    const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboardPad(0));
+    return () => { show.remove(); hide.remove(); };
+  }, []);
+
   const onShouldStart = (request) => {
     const action = classifyRequest(request.url, ASKFRANKIE_ORIGIN);
     if (action === 'stay') return true;
@@ -68,7 +81,7 @@ export default function AskFrankie({ navigation }) {
   return (
     <View style={styles.container}>
       <BackHeader title="AskFrankie AI" navigation={navigation} hideAvatar />
-      <View style={styles.webviewWrap}>
+      <View ref={wrapRef} collapsable={false} style={[styles.webviewWrap, { paddingBottom: keyboardPad }]}>
         {!isConnected ? (
           <ErrorState message="You're offline -- connect and try again." onRetry={retry} />
         ) : error ? (
