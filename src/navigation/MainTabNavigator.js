@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { House as HomeIcon, CirclePlay, Headphones } from 'lucide-react-native';
@@ -6,6 +7,7 @@ import WatchStackNavigator from './WatchStackNavigator';
 import ListenStackNavigator from './ListenStackNavigator';
 import { resetTabStackOnBlur } from './resetStackOnBlur';
 import { colors, spacing } from '../theme';
+import { tabBarMetrics } from '../lib/tabBarMetrics';
 
 const Tab = createBottomTabNavigator();
 
@@ -16,6 +18,8 @@ const Tab = createBottomTabNavigator();
 // instead of trusting the library's default sizing.
 export default function MainTabNavigator() {
   const insets = useSafeAreaInsets();
+  // iOS: the original measured values. Android: a fixed content height above the system bar (src/lib/tabBarMetrics.js).
+  const bar = tabBarMetrics({ platform: Platform.OS, bottomInset: insets.bottom, spacingMd: spacing.md, spacingSm: spacing.sm, spacingXs: spacing.xs });
   return (
     <Tab.Navigator
       screenOptions={{
@@ -36,9 +40,9 @@ export default function MainTabNavigator() {
         tabBarStyle: {
           backgroundColor: colors.surfaceCard,
           borderTopColor: colors.surfaceLine,
-          height: 49 + insets.bottom,
-          paddingTop: spacing.md,
-          paddingBottom: insets.bottom || spacing.xs,
+          height: bar.height,
+          paddingTop: bar.paddingTop,
+          paddingBottom: bar.paddingBottom,
           // Insets the whole row of 3 tabs from both screen edges equally, so
           // the leftmost and rightmost tabs do not sit at the bar's raw edge.
           paddingHorizontal: spacing.md,
