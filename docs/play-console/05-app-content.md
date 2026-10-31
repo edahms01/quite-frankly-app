@@ -16,6 +16,6 @@
 | **Advertising ID** | Does the app use an advertising ID? **No** (`AD_ID` is absent from the merged manifest) |
 | **Foreground service permissions** | see `03-foreground-service.md` |
 | **Photo and video permissions** | Not applicable: the app declares no `READ_MEDIA_*` permission (it uses the system Photo Picker; `READ_EXTERNAL_STORAGE` is capped at Android 12L) |
-| **Data deletion / account deletion** | No accounts, so no account-deletion URL is required. See the deletion answer in `01` |
+| **Data deletion / account deletion** | **No account-deletion URL is needed**: the app has no accounts, no sign-in and no account creation (answer "No" to account creation in Data safety). Data deletion is by email (hello@dahms.io), see the answer in `01`. Do not enter `delete-account.html` |
 | **Exact alarms / full-screen intents / VPN / accessibility / SMS / call log / all-files access** | Not used. Nothing to declare |
 | **Target API level** | 36 (current requirement met). 16 KB page-size compatible (checked on the v8 AAB) |
